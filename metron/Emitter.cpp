@@ -872,8 +872,7 @@ Err Emitter::emit(CNodeConstant* node) {
 
   std::string body = node->get_textstr();
 
-  // FIXME what was this for?
-  // This was for forcing enum constants to the size of the enum type
+  // Size casts are for forcing enum constants to the size of the enum type.
   int size_cast = override_size.top();
 
   // Count how many 's are in the number
@@ -1807,8 +1806,6 @@ Err Emitter::emit_call_arg_bindings(CNodeCompound* node, CNode* child) {
 
     auto src_class = node->ancestor<CNodeClass>();
     auto dst_func = src_class->get_function(func_id->get_text());
-
-    // FIXME we should have an is_builtin or something here...
 
     if (dst_func) {
       if (dst_func->needs_binding()) {

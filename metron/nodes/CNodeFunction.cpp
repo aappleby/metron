@@ -80,27 +80,21 @@ void CNodeFunction::visit_external_callers(func_visitor v) {
 
 void CNodeFunction::set_type(MethodType new_type) {
   assert(method_type == MT_UNKNOWN || method_type == new_type);
-
-  /*
-  if (method_type == MT_UNKNOWN) {
-    printf("Method %s is a %s\n", name.c_str(), to_string(new_type));
-  }
-  */
-
   method_type = new_type;
 }
 
 //------------------------------------------------------------------------------
+// If an internal always_ff is called by an always_comb, we need to generate
+// binding variables for its params.
 
 bool CNodeFunction::needs_binding() {
-  bool needs_binding = false;
-
-  for (auto caller : internal_callers) {
-    needs_binding |= caller->method_type == MT_ALWAYS_COMB && method_type == MT_ALWAYS_FF;
+  if (this->method_type == MT_ALWAYS_FF) {
+    for (auto caller : internal_callers) {
+      if (caller->method_type == MT_ALWAYS_COMB) return true;
+    }
   }
 
-  //needs_binding |= method_type == MT_ALWAYS_COMB && !internal_callers.empty();
-  return needs_binding;
+  return false;
 }
 
 //------------------------------------------------------------------------------

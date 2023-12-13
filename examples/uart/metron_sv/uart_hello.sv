@@ -29,7 +29,6 @@ module uart_hello (
 
   // The byte of data we want transmitted is always the one at the cursor.
   always_comb begin : get_data
-    // FIXME why aren't we seeing "Directly reads uart_hello.memory_"?
     get_data_ret = memory_[cursor_];
   end
 

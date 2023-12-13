@@ -26,9 +26,6 @@ struct CNodeUnion;
 
 bool belongs_to_func(CInstance* inst);
 
-// FIXME - we need a call stack that stores (inst,func) tuples instead of just
-// func
-
 CInstClass* instantiate_class(
   CSourceRepo* repo,
   std::string name,

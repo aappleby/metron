@@ -74,9 +74,9 @@ TokenSpan match_enum        (CContext& ctx, TokenSpan body);
 TokenSpan match_access      (CContext& ctx, TokenSpan body);
 TokenSpan match_type        (CContext& ctx, TokenSpan body);
 TokenSpan match_call        (CContext& ctx, TokenSpan body);
-
-TokenSpan cap_compound(CContext& ctx, TokenSpan body);
-TokenSpan cap_type    (CContext& ctx, TokenSpan body);
+TokenSpan cap_compound      (CContext& ctx, TokenSpan body);
+TokenSpan cap_type          (CContext& ctx, TokenSpan body);
+TokenSpan cap_assignment    (CContext& ctx, TokenSpan body);
 
 using cap_enum =  CaptureAnon<Ref<match_enum>, CNodeEnum>;
 
@@ -90,10 +90,8 @@ using cap_call         = CaptureAnon<Ref<match_call>,        CNodeCall>;
 using cap_decl_list    = CaptureAnon<Ref<match_decl_list>,   CNodeList>;
 using cap_index_list   = CaptureAnon<Ref<match_index_list>,  CNodeList>;
 using cap_function     = CaptureAnon<Ref<match_function>,    CNodeFunction>;
-//using cap_typedef      = CaptureAnon<Ref<match_typedef>,     CNodeTypedef;
 using cap_union        = CaptureAnon<Ref<match_union>,       CNodeUnion>;
 using cap_constructor  = CaptureAnon<Ref<match_constructor>, CNodeConstructor>;
-//using cap_declaration  = CaptureAnon<Ref<match_declaration_exp>, CNodeDeclaration>;
 
 //------------------------------------------------------------------------------
 
@@ -244,6 +242,7 @@ TokenSpan match_identifier(CContext& ctx, TokenSpan body) {
   Seq<
     Not<Ref<&CContext::match_builtin_type_base>>,
     Not<Ref<&CContext::match_typedef_name>>,
+    Not<Ref<match_literal<"logic">>>,
     Atom<LEX_IDENTIFIER>
   >;
   return pattern::match(ctx, body);
@@ -553,7 +552,6 @@ TokenSpan cap_exp_unit(CContext& ctx, TokenSpan body) {
 }
 
 //----------------------------------------
-// FIXME need to cap the then
 
 TokenSpan match_ternary_op(CContext& ctx, TokenSpan body) {
   using pattern =
@@ -848,6 +846,8 @@ using cap_union_name   = CaptureAnon<Ref<&CContext::match_union_name>,        CN
 using cap_enum_name    = CaptureAnon<Ref<&CContext::match_enum_name>,         CNodeIdentifier>;
 using cap_typedef_name = CaptureAnon<Ref<&CContext::match_typedef_name>,      CNodeIdentifier>;
 using cap_builtin_name = CaptureAnon<Ref<&CContext::match_builtin_type_base>, CNodeIdentifier>;
+using cap_logic_name   = CaptureAnon<Ref<match_literal<"logic">>,             CNodeIdentifier>;
+
 
 template<typename cap_name, typename node_type>
 using cap_named_type =
@@ -858,7 +858,8 @@ CaptureAnon<
     Tag<"name", cap_name>,
     Opt<Tag<"template_args", cap_targ_list>>,
 
-    // FIXME this is bleh
+    // FIXME This is a hacky workaround to capture logic<8>::BASE for typed enums
+    // We should really be capturing the logic<8> as the scope and the BASE as the type.
     Opt<
       Tag<
         "scope",
@@ -879,7 +880,8 @@ TokenSpan cap_type(CContext& ctx, TokenSpan body) {
     cap_named_type<cap_union_name,   CNodeUnionType>,
     cap_named_type<cap_enum_name,    CNodeEnumType>,
     cap_named_type<cap_typedef_name, CNodeTypedefType>,
-    cap_named_type<cap_builtin_name, CNodeBuiltinType>
+    cap_named_type<cap_builtin_name, CNodeBuiltinType>,
+    cap_named_type<cap_logic_name,   CNodeBuiltinType>
   >;
 
   return pattern::match(ctx, body);
@@ -1237,9 +1239,6 @@ TokenSpan cap_compound(CContext& ctx, TokenSpan body) {
 }
 
 //------------------------------------------------------------------------------
-// FIXME we should cap the condition/step differently or something
-
-TokenSpan cap_assignment(CContext& ctx, TokenSpan body);
 
 TokenSpan match_for(CContext& ctx, TokenSpan body) {
   // clang-format off
@@ -1475,42 +1474,6 @@ static void extract_type(CContext& ctx) {
   matcheroni_assert(false);
 }
 
-// FIXME this is probably broken since we took the decls off CNodeStruct::match and stuff
-
-#if 0
-
-TokenSpan match_typedef(CContext& ctx, TokenSpan body) {
-  // clang-format off
-  using pattern =
-  Seq<
-    Ref<match_keyword<"typedef">>,
-    Tag<
-      "typedef",
-      CaptureAnon<
-        Oneof<
-          Cap2<"struct", CNodeStruct>,
-          Cap2<"union",  CNodeUnion>,
-          Cap2<"class",  CNodeClass>,
-          Cap2<"enum",   CNodeEnum>,
-          Cap2<"decl",   CNodeDeclaration>
-        >,
-        CNode
-      >
-    >
-  >;
-  // clang-format on
-
-  auto tail = pattern::match(ctx, body);
-  if (tail.is_valid()) {
-    //print_context(ctx.text_span, ctx, 40);
-    extract_type(ctx);
-  }
-
-  return tail;
-};
-
-#endif
-
 //------------------------------------------------------------------------------
 
 TokenSpan cap_assignment(CContext& ctx, TokenSpan body) {
@@ -1591,8 +1554,6 @@ TokenSpan match_translation_unit(CContext& ctx, TokenSpan body) {
     cap_template,
     cap_using,
     statement_wrapper<CaptureAnon<Ref<match_declaration_exp>, CNodeDeclaration>>
-
-    //cap_typedef FIXME
   >;
   // clang-format on
 

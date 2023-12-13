@@ -23,9 +23,9 @@
 
 struct CToken;
 struct CNode;
-struct CContext;
 struct CScope;
-struct CSourceRepo;
+class CSourceRepo;
+class CSourceFile;
 
 using TokenSpan = matcheroni::Span<CToken>;
 
@@ -104,6 +104,8 @@ class CContext : public parseroni::NodeContext<CNode> {
   //----------------------------------------
 
   CSourceRepo* repo;
+  CSourceFile* source_file = nullptr;
+
   CScope global_scope;
   CScope* top_scope = &global_scope;
 

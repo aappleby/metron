@@ -71,9 +71,9 @@ CNodeEnum* CSourceRepo::get_enum(std::string_view name) {
 
 std::string CSourceRepo::resolve_filename(const std::string& filename) {
   for (auto& path : search_paths) {
-    auto joined_path = fs::path(path) / fs::path(filename);
+    auto joined_path = path == "." ? fs::path(filename) : fs::path(path) / fs::path(filename);
     if (fs::is_regular_file(joined_path)) {
-      return fs::canonical(joined_path);
+      return joined_path;
     }
   }
   return "";

@@ -301,9 +301,9 @@ int main_new(Options opts) {
 
   CSourceRepo repo;
 
-  repo.search_paths.insert(fs::canonical("."));
+  repo.search_paths.insert(".");
   if (!opts.inc_path.empty()) {
-    repo.search_paths.insert(fs::canonical(opts.inc_path));
+    repo.search_paths.insert(opts.inc_path);
   }
 
   CSourceFile* root_file = nullptr;
@@ -316,6 +316,7 @@ int main_new(Options opts) {
 
   for (auto file : repo.source_files) {
     file->link();
+    file->update_transitive_deps();
   }
 
   sanity_check_parse_tree(repo);
@@ -325,18 +326,22 @@ int main_new(Options opts) {
 
   LOG_B("Count module instances so we can find top modules\n");
 
-  for (auto c : root_file->all_classes) {
-    for (auto f : c->all_fields) {
-      auto type_class = f->node_decl->get_class();
-      if (type_class) type_class->refcount++;
+  for (auto file : repo.source_files) {
+    for (auto c : file->all_classes) {
+      for (auto f : c->all_fields) {
+        auto type_class = f->node_decl->get_class();
+        if (type_class) type_class->refcount++;
+      }
     }
   }
 
   CNodeClass* top = nullptr;
-  for (auto c : root_file->all_classes) {
-    if (c->refcount == 0) {
-      assert(top == nullptr);
-      top = c;
+  for (auto file : repo.source_files) {
+    for (auto c : file->all_classes) {
+      if (c->refcount == 0) {
+        assert(top == nullptr);
+        top = c;
+      }
     }
   }
 
@@ -669,6 +674,23 @@ int main_new(Options opts) {
 
       fwrite(out_string.data(), 1, out_string.size(), out_file);
       fclose(out_file);
+    }
+
+    {
+      // Write deps file
+      auto dst_dep_name = opts.dst_name + ".d";
+      FILE* out_file = fopen(dst_dep_name.c_str(), "wb");
+      if (!out_file) {
+      }
+      else {
+        fprintf(out_file, "%s: ", opts.dst_name.c_str());
+        fprintf(out_file, "%s", opts.src_name.c_str());
+        for (auto dep : root_file->deps) {
+          fprintf(out_file, " \\\n %s", dep->filepath.c_str());
+        }
+        fprintf(out_file, "\n");
+        fclose(out_file);
+      }
     }
   }
   LOG("\n");

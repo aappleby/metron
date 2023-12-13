@@ -34,7 +34,18 @@ class CSourceFile {
   std::string filepath;
   bool use_utf8_bom = false;
 
-  std::vector<std::string> deps;
+  std::set<CSourceFile*> deps;
+  std::set<CSourceFile*> transitive_deps;
+
+  void update_transitive_deps() {
+    if (!transitive_deps.empty()) return;
+
+    transitive_deps.insert(deps.begin(), deps.end());
+    for (auto file : deps) {
+      file->update_transitive_deps();
+      transitive_deps.insert(file->transitive_deps.begin(), file->transitive_deps.end());
+    }
+  }
 
   CLexer lexer;
   CContext context;

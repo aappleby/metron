@@ -176,6 +176,7 @@ TokenSpan CContext::handle_preproc(TokenSpan body) {
       Err err = repo->load_source(path, &include_file);
 
       if (!err) {
+        source_file->deps.insert(include_file);
         global_scope.merge(&(include_file->context.global_scope));
       }
     }

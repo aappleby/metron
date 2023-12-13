@@ -363,3 +363,10 @@ const char* to_string(TraceState f) {
   }
 }
 // KCOV_ON
+
+void replace(std::string& text, const std::string& a, const std::string& b) {
+  size_t pos;
+  while ((pos = text.find(a)) != std::string::npos) {
+    text.replace(pos, a.size(), b);
+  }
+}

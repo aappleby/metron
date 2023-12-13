@@ -74,4 +74,6 @@ TraceState merge_branch(TraceState ma, TraceState mb);
 
 std::string str_printf(const char* fmt, ...);
 
+void replace(std::string& text, const std::string& a, const std::string& b);
+
 //------------------------------------------------------------------------------

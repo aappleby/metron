@@ -107,7 +107,7 @@ def metronize_dir(src_dir, src_top, dst_dir):
     for src_path in src_paths:
         src_dir, src_name = path.split(src_path)
         dst_path = path.join(dst_dir, swap_ext(src_name, ".sv"))
-        ninja.build(rule="metron",
+        ninja.build(rule="metron2",
                     inputs=[src_path],
                     implicit=["bin/metron"],
                     outputs=[dst_path])

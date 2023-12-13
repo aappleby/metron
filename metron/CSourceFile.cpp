@@ -112,6 +112,7 @@ Err CSourceFile::init(CSourceRepo* _repo, const std::string& _filename,
   context.reset();
   context.repo = _repo;
   context.source = _source_code;
+  context.source_file = this;
 
   LOG("Lexing %s\n", filename.c_str());
   lexer.lex(context.source, context.lexemes);

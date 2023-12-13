@@ -466,7 +466,6 @@ public:
 
   // The byte of data we want transmitted is always the one at the cursor.
   logic<8> get_data() const {
-    // FIXME why aren't we seeing "Directly reads uart_hello.memory_"?
     return memory_[cursor_];
   }
 

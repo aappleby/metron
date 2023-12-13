@@ -15,12 +15,13 @@
         "-e",
 
         //"-i", "../pinwheel",
-        //"-i", "examples/rvsimple/metron",
+        "-i", "examples/rvsimple/metron",
         //"-i", "examples/uart/metron",
 
-        "-c", "tests/metron_good/include_test_submod.h"
+        //"-c", "tests/metron_good/include_test_module.h"
         //"-c", "tests/metron_bad/multiple_submod_function_bindings.h",
 
+        "-c", "examples/rvsimple/metron/toplevel.h",
         //"-c", "examples/uart/metron/uart_hello.h",
         //"-c", "examples/scratch.h", "-o", "examples/scratch.sv",
         //"-c", "examples/j1/metron/j1.h",

@@ -2804,6 +2804,7 @@ class alu_control {
 
 namespace rv_config {
 
+
 // Select ISA extensions
 // `define M_MODULE    // multiplication and division
 

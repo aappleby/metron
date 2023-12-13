@@ -536,6 +536,15 @@ void dump_struct(CNodeStruct* node) {
 void dump_source_file(CSourceFile* file) {
   LOG_L("Source file `%s`\n", file->filepath.c_str());
 
+  if (file->transitive_deps.size()) {
+    LOG_INDENT_SCOPE();
+    LOG_L("Depends on:\n");
+    LOG_INDENT_SCOPE();
+    for (auto d : file->transitive_deps) {
+      LOG_P("%s\n", d->filepath.c_str());
+    }
+  }
+
   for (auto c : file->all_classes) {
     LOG_INDENT_SCOPE();
     dump_class(c);
@@ -565,6 +574,7 @@ void dump_repo(CSourceRepo* repo) {
   }
 
   for (auto file : repo->source_files) {
+    LOG("\n");
     dump_source_file(file);
   }
 }

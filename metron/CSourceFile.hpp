@@ -34,6 +34,8 @@ class CSourceFile {
   std::string filepath;
   bool use_utf8_bom = false;
 
+  std::vector<std::string> deps;
+
   CLexer lexer;
   CContext context;
   CNodeTranslationUnit* translation_unit = nullptr;

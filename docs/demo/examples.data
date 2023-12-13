@@ -6578,6 +6578,34 @@ public:
 };
 
 #endif
+// Metron should be able to handle #included submodules.
+
+#include "include_test_submod.h"
+
+class Module {
+public:
+
+  void tick(int x) {
+    submod.tick(x);
+  }
+
+private:
+  Submod submod;
+};
+// Metron should be able to handle #included submodules.
+
+#include "metron/metron_tools.h"
+
+class Submod {
+public:
+
+  void tick(int x) {
+    y_ += x;
+  }
+
+private:
+  int y_;
+};
 #include "metron/metron_tools.h"
 
 // I don't know why you would want to do this, but it should work.

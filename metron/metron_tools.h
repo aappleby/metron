@@ -173,21 +173,6 @@ class logic {
   }
 
   //----------
-  // Disallow using "<=" with logic<>s, as it means "non-blocking assign" in
-  // Verilog and "less than or equal" in C - a typo while porting could cause
-  // unexpected behavior.
-
-  // Maybe this isn't needed? FIXME - We should add a test...
-
-#if 0
-  template <typename T>
-  logic& operator<=(const T& t) {
-    static_assert(always_false<T>::value, "Using <= with logic<> is forbidden");
-    return *this;
-  }
-#endif
-
-  //----------
   // Logics decay to BASE.
 
   operator BASE() const { return x; }
@@ -460,19 +445,6 @@ inline logic<WIDTH * DUPS> dup(const logic<WIDTH>& a) {
 }
 
 //-----------------------------------------------------------------------------
-
-// FIXME make this work for non-logics
-
-/*
-template <int DST_WIDTH, int SRC_WIDTH>
-inline logic<DST_WIDTH> sign_extend(const uint64_t a) {
-  static_assert(DST_WIDTH >= SRC_WIDTH);
-
-  logic<1> sign = (a >> (SRC_WIDTH - 1)) & 1;
-
-  return cat(dup<DST_WIDTH - SRC_WIDTH>(sign), bx<SRC_WIDTH>(a));
-}
-*/
 
 template <int DST_WIDTH, int SRC_WIDTH>
 inline logic<DST_WIDTH> sign_extend(const logic<SRC_WIDTH> a) {

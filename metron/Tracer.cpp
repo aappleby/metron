@@ -120,15 +120,14 @@ Err Tracer::trace(CNodeAssignment* node) {
 
   err << trace_dispatch(rhs);
 
+  auto inst_lhs = istack.back()->resolve(lhs);
+  if (!inst_lhs) return err;
+
   //----------------------------------------
   // LHS is suffix exp
 
   if (auto lhs_suffix_exp = lhs->as<CNodeSuffixExp>()) {
     err << trace_dispatch(lhs->child("suffix"));
-
-    auto inst_lhs = istack.back()->resolve(lhs);
-    assert(inst_lhs);
-
     err << callback(inst_lhs, node, ACT_READ);
     err << callback(inst_lhs, node, ACT_WRITE);
   }
@@ -137,9 +136,9 @@ Err Tracer::trace(CNodeAssignment* node) {
   // LHS is not suffix exp
 
   else {
-    auto inst_lhs = istack.back()->resolve(lhs);
-    if (!inst_lhs) return err;
-
+    if (op->get_text() != "=") {
+      err << callback(inst_lhs, node, ACT_READ);
+    }
     err << callback(inst_lhs, node, ACT_WRITE);
   }
 

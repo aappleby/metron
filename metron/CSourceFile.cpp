@@ -12,6 +12,37 @@
 
 namespace fs = std::filesystem;
 
+// Dep file format:
+
+/*
+aappleby@lappytron:~/blah$ cat a-main.d
+main.o: main.cpp /usr/include/stdc-predef.h /usr/include/stdio.h \
+ /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
+ /usr/include/features.h /usr/include/features-time64.h \
+ /usr/include/x86_64-linux-gnu/bits/wordsize.h \
+ /usr/include/x86_64-linux-gnu/bits/timesize.h \
+ /usr/include/x86_64-linux-gnu/sys/cdefs.h \
+ /usr/include/x86_64-linux-gnu/bits/long-double.h \
+ /usr/include/x86_64-linux-gnu/gnu/stubs.h \
+ /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
+ /usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h \
+ /usr/lib/gcc/x86_64-linux-gnu/13/include/stdarg.h \
+ /usr/include/x86_64-linux-gnu/bits/types.h \
+ /usr/include/x86_64-linux-gnu/bits/typesizes.h \
+ /usr/include/x86_64-linux-gnu/bits/time64.h \
+ /usr/include/x86_64-linux-gnu/bits/types/__fpos_t.h \
+ /usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h \
+ /usr/include/x86_64-linux-gnu/bits/types/__fpos64_t.h \
+ /usr/include/x86_64-linux-gnu/bits/types/__FILE.h \
+ /usr/include/x86_64-linux-gnu/bits/types/FILE.h \
+ /usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h \
+ /usr/include/x86_64-linux-gnu/bits/types/cookie_io_functions_t.h \
+ /usr/include/x86_64-linux-gnu/bits/stdio_lim.h \
+ /usr/include/x86_64-linux-gnu/bits/floatn.h \
+ /usr/include/x86_64-linux-gnu/bits/floatn-common.h
+aappleby@lappytron:~/blah$ ./run
+*/
+
 //------------------------------------------------------------------------------
 
 Err collect_fields_and_methods(CNodeClass* node, CSourceRepo* repo) {
@@ -32,12 +63,6 @@ Err collect_fields_and_methods(CNodeClass* node, CSourceRepo* repo) {
     if (auto n = child->as<CNodeField>()) {
       n->is_public = child_is_public;
 
-      //n->parent_class = node;
-      //n->parent_struct = nullptr;
-      //n->node_decl->_type_class  = repo->get_class(n->node_decl->node_type->name);
-
-      //printf("%s = %p\n", n->node_decl->node_type->name.c_str(), n->node_decl->_type_class);
-
       if (n->node_decl->is_param()) {
         node->all_localparams.push_back(n);
       } else {
@@ -57,11 +82,6 @@ Err collect_fields_and_methods(CNodeClass* node, CSourceRepo* repo) {
         node->all_functions.push_back(n);
       }
 
-      // Hook up _type_struct on all struct params
-      //for (auto decl : n->params) {
-        //decl->_type_class = repo->get_class(decl->node_type->name);
-        //decl->_type_struct = repo->get_struct(decl->node_type->name);
-      //}
       continue;
     }
   }
@@ -96,13 +116,6 @@ Err CSourceFile::init(CSourceRepo* _repo, const std::string& _filename,
   LOG("Lexing %s\n", filename.c_str());
   lexer.lex(context.source, context.lexemes);
 
-  /*
-  for (auto& t : context.lexemes) {
-    dump_lexeme(t);
-    LOG("\n");
-  }
-  */
-
   LOG("Tokenizing %s\n", filename.c_str());
   for (auto& t : context.lexemes) {
     if (!t.is_gap()) {
@@ -125,7 +138,6 @@ Err CSourceFile::init(CSourceRepo* _repo, const std::string& _filename,
     return ERR("Could not parse file");
   }
 
-  //repo->source_map[filename] = this;
   repo->source_files.push_back(this);
 
   return Err();

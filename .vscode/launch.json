@@ -13,15 +13,18 @@
         "-d",
         "-v",
         "-e",
+
         //"-i", "../pinwheel",
         //"-i", "examples/rvsimple/metron",
-        "-i", "examples/uart/metron",
-        "-c", "examples/uart/metron/uart_hello.h",
-        //"-c", "examples/scratch.h", "-o", "examples/scratch.sv",
-        //"-c", "pinwheel/soc/pinwheel_soc.h",
+        //"-i", "examples/uart/metron",
+
+        "-c", "tests/metron_good/include_test_submod.h"
         //"-c", "tests/metron_bad/multiple_submod_function_bindings.h",
+
+        //"-c", "examples/uart/metron/uart_hello.h",
+        //"-c", "examples/scratch.h", "-o", "examples/scratch.sv",
         //"-c", "examples/j1/metron/j1.h",
-        //"-c", "tests/metron_good/both_tock_and_tick_use_tasks_and_funcs.h"
+        //"-c", "pinwheel/soc/pinwheel_soc.h",
 
       ],
       "setupCommands": [

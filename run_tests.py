@@ -133,7 +133,7 @@ def main():
         print_b("Checking that all converted files can be parsed by Verilator")
         errors += check_commands_good(
             [
-                f"verilator -Wno-width -I. --lint-only {filename}"
+                f"verilator -Wno-width -I. -Itests/metron_sv --lint-only {filename}"
                 for filename in metron_sv
             ]
         )
@@ -143,7 +143,7 @@ def main():
             print_b("Checking that all converted files can be synthesized by Yosys")
             errors += check_commands_good(
                 [
-                    f"yosys -q -p 'read_verilog -I. -sv {filename}; dump; synth_ice40 -json /dev/null'"
+                    f"yosys -q -p 'read_verilog -I. -Itests/metron_sv -sv {filename}; dump; synth_ice40 -json /dev/null'"
                     for filename in metron_sv
                 ]
             )
@@ -151,7 +151,7 @@ def main():
             print_b("Checking that all converted files can be parsed by Yosys")
             errors += check_commands_good(
                 [
-                    f"yosys -q -p 'read_verilog -I. -sv {filename};'"
+                    f"yosys -q -p 'read_verilog -I. -Itests/metron_sv -sv {filename};'"
                     for filename in metron_sv
                 ]
             )
@@ -160,7 +160,7 @@ def main():
         print_b("Checking that all converted files can be parsed by Icarus")
         errors += check_commands_good(
             [
-                f"iverilog -g2012 -Wall -I. -o /dev/null {filename}"
+                f"iverilog -g2012 -Wall -I. -Itests/metron_sv -o /dev/null {filename}"
                 for filename in metron_sv
             ]
         )

@@ -2,8 +2,6 @@
 
 // Tocks should be able to call private tasks and functions
 
-// FIXME task set_signal not getting called
-
 module Module (
   // output signals
   output logic[7:0] my_signal

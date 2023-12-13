@@ -1,6 +1,5 @@
-// FIXME this example is outdated
-
-// By default, "sum" is an output signal assigned in always_comb.
+// If "sum" does not have an underscore suffix, it is a signal and "add" will
+// be converted to an always_comb block.
 class Adder1 {
 public:
   int sum;
@@ -9,23 +8,12 @@ public:
   }
 };
 
-// We can force Metron to emit "sum" as a register by reading from it before
-// we write to it.
+// If "sum" does have an underscore suffix, it is a register and "add" will
+// be converted to an always_ff block.
 class Adder2 {
 public:
   int sum_;
   void add(int a, int b) {
-    int dummy = sum_;
-    sum_ = a + b;
-  }
-};
-
-// Or we can prefix the function name with "tick", which does basically the
-// same thing.
-class Adder3 {
-public:
-  int sum_;
-  void tick_add(int a, int b) {
     sum_ = a + b;
   }
 };

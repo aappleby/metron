@@ -94,7 +94,7 @@ bool assign_method_type(CNodeFunction* func) {
   //----------------------------------------
   // Top-level functions can only be ALWAYS_FF or ALWAYS_COMB
 
-  if (!any_callers) {
+  if (!any_callers && func->is_public) {
     if (self_writes_sig || tree_writes_sig || ext_callees) {
       func->set_type(MT_ALWAYS_COMB);
       return true;
@@ -191,7 +191,7 @@ void assign_method_types(CNodeClass* node_class) {
 
   bool bad = false;
   for (auto f : funcs) {
-    if (f->internal_callers.empty()) {
+    if (f->internal_callers.empty() && f->is_public) {
       if (f->method_type != MT_ALWAYS_COMB && f->method_type != MT_ALWAYS_FF) {
         LOG_R("Top-level function %s is not always_*\n", f->name.c_str());
         exit(-1);
@@ -653,8 +653,6 @@ int main_new(Options opts) {
     LOG_R("Error during code generation\n");
     return -1;
   }
-
-  // FIXME - save .d deps file too
 
   // Save translated source to output directory, if there is one.
   if (opts.dst_name.size()) {

@@ -30,11 +30,8 @@ module Module (
 
 /*private:*/
 
-  // FIXME does not work in yosys
-  /*
-  logic<8> extract_field(MyStruct1 m) {
-    return m.a;
-  }
-  */
+  function logic[7:0] extract_field(MyStruct1 m);
+    extract_field = m.a;
+  endfunction
 
 endmodule

@@ -246,8 +246,6 @@ def build_metron_app():
 def build_metron_ems():
     divider("Emscripten")
 
-    # FIXME did we break emscripten compile?
-
     ################################################################################
     # Emscripten
 

@@ -26,11 +26,8 @@ public:
 
 private:
 
-  // FIXME does not work in yosys
-  /*
   logic<8> extract_field(MyStruct1 m) {
     return m.a;
   }
-  */
 
 };

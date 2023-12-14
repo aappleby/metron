@@ -11,9 +11,9 @@ class Adder2 {
 public:
   int a;
   int b;
-  int sum_;
+  int sum;
 
   void add() {
-    sum_ = a + b;
+    sum = a + b;
   }
 };

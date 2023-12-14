@@ -1,24 +1,19 @@
-#include "metron/metron_tools.h"
-
-// Tocks should be able to call private tasks and functions
-
-class Module {
+// If "sum" does not have an underscore suffix, it is a signal and "add" will
+// be converted to an always_comb block.
+class Adder1 {
 public:
-
-  logic<8> my_signal;
-
-  void tock() {
-    set_signal(get_number());
+  int sum;
+  void add(int a, int b) {
+    sum = a + b;
   }
+};
 
-private:
-
-  logic<8> get_number() const {
-    return 7;
+// If "sum" does have an underscore suffix, it is a register and "add" will
+// be converted to an always_ff block.
+class Adder2 {
+public:
+  int sum_;
+  void add(int a, int b) {
+    sum_ = a + b;
   }
-
-  void set_signal(logic<8> number) {
-    my_signal = number;
-  }
-
 };

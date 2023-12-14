@@ -77,10 +77,9 @@
       filesystem until this page is reloaded.
     </p>
     <p>
-      (FIXME - Not based on TreeSitter anymore, using Matcheroni & Parseroni) One note when editing the live code - Metron is based on TreeSitter, which is _very_ lenient about the code it
-      parses. Metron in contrast is _very_ strict about what code it will convert. The combination can be awkward, and
-      there's no support in this tutorial for doing syntax checking on the C source before we try to convert it. Watch
-      out for typos, and if all else fails just refresh the page and start over.
+      One note when editing the live code - Metron is _very_ strict about what code it will convert, and there's no
+      support in this tutorial for doing syntax checking on the C source before we try to convert it. Watch out for
+      typos, and if all else fails just refresh the page and start over.
     </p>
     <p>
       (One side note for the Verilog experts reading this - I'm aware that I'm playing fast and loose with my
@@ -132,7 +131,7 @@ int main(int argc, char** argv) {
 
     <h1>The "class" keyword turned into "module" and the curly braces are now "begin"/"end(module)"</h1>
     <p>
-      While technically speaking Verilog does have classes, they're usually not synthesizable - they can't be turned
+      While technically speaking (System)Verilog does have classes, they're usually not synthesizable - they can't be turned
       into circuits. The basic synthesizable "unit" of a program in Verilog is a Module, which is similar to a class but
       much more restrictive.
     </p>
@@ -170,9 +169,8 @@ int main(int argc, char** argv) {
       Non-blocking assignments work together with "always_ff" blocks - a clock edge triggers a bunch of always_ff blocks
       to be evaluated, the code non-blockingly (yes, my terminology is awkward) assigns things, and then at some
       unspecified* point in the future after all triggered blocks have been evaluated the assignments take effect.
-      Because non-blocking assignments behave differently from regular assignments in C, <b>Metron will generate an
-        error
-        if you read from a variable after it's assigned if that assignment would be non-blocking in Verilog.</b>
+      Because non-blocking assignments behave differently from regular assignments in C, <b>Metron will generate an error
+      if you read from a variable after it's assigned if that assignment would be non-blocking in Verilog.</b>
     </p>
     <p style="font-size:10px;">
       * (It's not actually unspecified, it's defined in the Verilog language spec - but for the purposes of this
@@ -269,9 +267,11 @@ int main(int argc, char** argv) {
       difference?
     </h1>
     <p>
-      In order for Metron to convert your C code, it needs to be able to infer which member variables are
-      "register-type" and which are "signal-type" (the equivalent terms in Verilog are "reg" and "wire"). There's a
-      whole separate document in the Metron repo going into more detail on how the inference works, but to summarize:
+      In order for Metron to convert your C code, it has to know which member variables are "register-type" and which
+      are "signal-type" (the equivalent terms in Verilog are "reg" and "wire"). Metron relies on a simple naming
+      convention to distinguish between the two - "register-type" variables end with an underscore, "signal-type"
+      variables do not. This is similar in practice to a common C++ coding convention of adding an underscore to
+      private variable names, though
     </p>
     <ul>
       <li>Registers store state across clock cycles</li>
@@ -293,10 +293,10 @@ int main(int argc, char** argv) {
       <li>Signals change their values immediately after being assigned</li>
     </ul>
     <p>
-      If Metron can't infer the translation type of a member variable or if it sees a variable that breaks both the
-      "read-before-write" and "read-after-write" rules, it will refuse to translate the code. This is a fundamental part
-      of Metron's attempt to guarantee that the translated code behaves identically in both languages. I believe that
-      the logic it uses to do this is correct, but I only have a very informal proof at this point - caveat emptor.
+      If Metron sees code that breaks the "read-before-write" or "read-after-write" rules, it will refuse to translate
+      the code. This is a fundamental part of Metron's attempt to guarantee that the translated code behaves identically
+      in both languages. I believe that the logic it uses to do this is correct, but I only have a very informal proof
+      at this point - caveat emptor.
     </p>
 
 
@@ -323,8 +323,8 @@ int main(int argc, char** argv) {
     <p>
       It's totally reasonable to want to delay the output of a computation until the next clock cycle - the module that
       sent A and B in to be added may not be able to process the result until the next clock cycle, or we may have
-      timing constraints in our system that require us to break our computations down into smaller steps. We have two
-      ways of forcing a computation to be "clocked":
+      timing constraints in our system that require us to break our computations down into smaller steps. If we rename
+      "sum" to "sum_", we get this:
     </p>
 
     <div class="live_code" id="./examples/tutorial/clocked_adder.h">
@@ -343,21 +343,7 @@ int main(int argc, char** argv) {
     </div>
 
     <p>
-      Again, both of the "clocked" adders do the same thing. The first inserts a dummy read so that "sum" is always
-      read-before-write (and thus _must_ be a register), the second uses the magic prefix "tick" to flag the method as
-      "must be in (or called by) an always_ff block". One caveat though - "tick" methods can't return values, as doing
-      so would create a mismatch between the C++ behavior (the return value would be immediately visible to the caller)
-      and the Verilog behavior (the value visible in the port would be delayed until the clock edge).
-    </p>
-    <p>
-      There's an equivalent "tock" prefix to enforce "must be in always_comb", but both prefixes are completely
-      optional. They come in particularly useful when porting existing Verilog code to Metron - you may want to do
-      this if you're trying to interface Metron code with an existing codebase. Translate "always_comb" blocks into
-      functions that start with "tock", "always_ff" blocks into functions that start with "tick", and stuff any loose
-      "assign wire = value" statements into new always_comb blocks - Metron will usually tell you if you get something
-      wrong (and it's almost always related to declaration order, see the section below).
-    </p>
-    <p>
+      FIXME FIXME OBSOLETE
       Internally, Metron categorizes all member functions into "tick-type" and "tock-type" groups much like it does with
       member variables, plus a few additional categories ("init-type" for constructors and "func-type" for pure
       functions).
@@ -378,97 +364,6 @@ int main(int argc, char** argv) {
     </ul>
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-    <div class="divider">Declaration Order Matters</div>
-    <p>
-      Metron traces through your code to verify that the rules regarding register read-before-writes and signal
-      write-before-reads are followed. To do so, it needs to know what the "entry points" are to your module and in
-      what order they should be called.
-    </p>
-    <p>
-      The rule that Metron uses to determine entry points is "All public methods that aren't called elsewhere in the
-      module are entry points", but the declaration order of those entry points <b>is significant</b>:
-    </p>
-
-    <div class="live_code" id="./examples/tutorial/declaration_order.h">
-      <div class="source_panel" id="c_panel">
-        <div class="header_bar">
-          <div class="filename" contenteditable="true"></div>
-        </div>
-        <div class="code_jar language-cpp"></div>
-      </div>
-      <div class="source_panel" id="v_panel">
-        <div class="header_bar">
-          <div class="filename"></div>
-        </div>
-        <div class="code_jar language-verilog"></div>
-      </div>
-    </div>
-
-    <p>
-      Unlike earlier examples, these modules <b>do not do the same thing</b>.
-    </p>
-    <p>
-      In the commented-out Module1, the code "a = b + 1; b = a + 1;" reads from "b" before it's written and writes to
-      "a" before it's read. This means "b" must be a register and "a" must be a signal - but registers can only be
-      written in "always_ff" and signals can only be written in "always_comb", so we've broken a rule and the code won't
-      convert.
-    </p>
-    <p>
-      In Module2 and Module3 we've split update() up into two pieces - the only difference is the declaration order of
-      "update_a" and "update_b". Metron must choose _some_ order in which to trace the entry points, and the only order
-      that doesn't require special annotations is the declaration order. So in Module2 Metron sees "a" being
-      written first and makes it a signal, whereas in Module3 Metron sees "a" being read first and makes it a register.
-      Module4 works around this by adding temporary variables, which makes Metron see that both "a" and "b" are read
-      before being written.
-    </p>
-    <p>
-      If we were writing this directly in Verilog this issue would be irrelevant, as we can choose whether to use
-      "&lt;=" or "=" assignments as needed - because "&lt;=" assignments are "delayed", this has the same effect as
-      Module4 above.
-    </p>
-    <div class="code_box">
-      <pre class="code_jar">
-module Module4 (
-  // global clock
-  input logic clock,
-  // output registers
-  output int a,
-  output int b
-);
-/*public:*/
-
-  always_ff @(posedge clock) begin : update
-    a &lt;= b + 1;
-    b &lt;= a + 1;
-  end
-endmodule
-</pre>
-    </div>
-    <p>
-      Unfortunately in C we only have the one assignment operator, so there's no way for us to know that the programmer
-      meant "non-blocking" assignment. Instead we have to infer which Verilog assignment operator to use based on
-      context, and our context is intimately tied to declaration order. Metron could in theory support "reg_" and "sig_"
-      prefixes on variables like it supports "tick_" and "tock_" on methods, but in practice I found the resulting code
-      style annoying and didn't finish implementing it. Maybe it'll go on the feature request list.
-    </p>
-    <p>
-      Because Metron uses declaration order to determine how to trace your module's methods, it is <b>highly
-        recommended</b> that you place all your public tock-type methods together at the top of the class declaration,
-      followed by all your public tick-type methods. Private methods can go in any order at the bottom of the class
-      declaration.
-    </p>
 
 
 

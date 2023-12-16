@@ -335,17 +335,19 @@ int main_new(Options opts) {
     }
   }
 
-  CNodeClass* top = nullptr;
+  std::vector<CNodeClass*> tops;
+
   for (auto file : repo.source_files) {
     for (auto c : file->all_classes) {
       if (c->refcount == 0) {
-        assert(top == nullptr);
-        top = c;
+        tops.push_back(c);
       }
     }
   }
 
-  if (top) LOG_Y("Top module is %s\n", top->name.c_str());
+  for (auto top : tops) {
+    LOG_Y("Top module is %s\n", top->name.c_str());
+  }
 
   //----------------------------------------
 
@@ -474,8 +476,8 @@ int main_new(Options opts) {
 
   //----------------------------------------
 
-  if (top) {
-    LOG_B("Assign method types\n");
+  for (auto top : tops) {
+    LOG_B("Assign method types to %s\n", top->name.c_str());
     LOG_INDENT_SCOPE();
     assign_method_types(top);
   }

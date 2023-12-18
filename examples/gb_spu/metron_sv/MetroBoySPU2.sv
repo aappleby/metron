@@ -4,7 +4,8 @@
 
 //------------------------------------------------------------------------------
 
-module MetroBoySPU2 (
+module MetroBoySPU2
+(
   // global clock
   input logic clock,
   // output signals

@@ -2,7 +2,8 @@
 
 // Logics can be casted to various sizes via bN() or bx<N>()
 
-module Module (
+module Module
+(
   // test_bN() ports
   output int test_bN_ret,
   // test_bx_const() ports

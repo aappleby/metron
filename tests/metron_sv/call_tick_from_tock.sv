@@ -3,7 +3,8 @@
 // Calling tick() from tock() in the same module should work and should
 // generate bindings for the tick() call.
 
-module Module (
+module Module
+(
   // global clock
   input logic clock,
   // tock() ports

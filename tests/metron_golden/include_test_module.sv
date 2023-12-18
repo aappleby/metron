@@ -2,7 +2,8 @@
 
 `include "include_test_submod.sv"
 
-module Module (
+module Module
+(
   // global clock
   input logic clock,
   // tick() ports

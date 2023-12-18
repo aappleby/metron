@@ -4,7 +4,13 @@
 
 //----------------------------------------
 
-module Module (
+module Module
+#(
+  parameter data_len = 1024,
+  parameter blarp = 0,
+  parameter /*const char**/ filename = ""
+)
+(
   // global clock
   input logic clock,
   // tock() ports
@@ -12,11 +18,8 @@ module Module (
   // get_data() ports
   output logic[7:0] get_data_ret
 );
-  parameter data_len = 1024;
-  parameter blarp = 0;
 /*public:*/
 
-  parameter /*const char**/ filename = "";
   initial begin
     if (filename) $readmemh(filename, data_);
   end
@@ -42,7 +45,8 @@ endmodule
 
 //----------------------------------------
 
-module Top (
+module Top
+(
   // global clock
   input logic clock,
   // tock() ports

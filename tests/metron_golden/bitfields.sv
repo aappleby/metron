@@ -64,7 +64,8 @@ typedef union packed {
   rv32_jtype j;
 } rv32_insn;
 
-module Module (
+module Module
+(
   // output signals
   output rv32_insn blah,
   // tock() ports

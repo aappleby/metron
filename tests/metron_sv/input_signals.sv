@@ -6,7 +6,8 @@
 // this is broken in the new parser because we're not distinguishing
 // between input and output signals in submodules...
 
-module Submod (
+module Submod
+(
   // global clock
   input logic clock,
   // input signals
@@ -35,7 +36,8 @@ module Submod (
   end
 endmodule
 
-module Module (
+module Module
+(
   // global clock
   input logic clock,
   // output registers

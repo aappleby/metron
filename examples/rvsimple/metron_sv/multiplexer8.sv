@@ -10,7 +10,11 @@
 `include "constants.sv"
 `include "metron/metron_tools.sv"
 
-module multiplexer8 (
+module multiplexer8
+#(
+  parameter WIDTH = 32
+)
+(
   // input signals
   input logic[WIDTH-1:0] in0,
   input logic[WIDTH-1:0] in1,
@@ -24,7 +28,6 @@ module multiplexer8 (
   // output signals
   output logic[WIDTH-1:0] out
 );
-  parameter WIDTH = 32;
  /*public:*/
 
   always_comb begin : tock

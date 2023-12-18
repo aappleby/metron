@@ -11,7 +11,11 @@
 `include "example_data_memory.sv"
 `include "metron/metron_tools.sv"
 
-module example_data_memory_bus (
+module example_data_memory_bus
+#(
+  parameter /*const char**/ filename = ""
+)
+(
   // global clock
   input logic clock,
   // input signals
@@ -31,7 +35,6 @@ module example_data_memory_bus (
     // in
    // in
 
-  parameter /*const char**/ filename = "";
   initial begin
   end
 

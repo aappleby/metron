@@ -13,7 +13,8 @@
 `include "metron/metron_tools.sv"
 `include "singlecycle_control.sv"
 
-module singlecycle_ctlpath (
+module singlecycle_ctlpath
+(
   // input signals
   input logic[6:0] inst_opcode,
   input logic[2:0] inst_funct3,

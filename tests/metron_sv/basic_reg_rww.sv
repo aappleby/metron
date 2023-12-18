@@ -2,7 +2,8 @@
 
 // Writing a register multiple times in the same function is OK.
 
-module Module (
+module Module
+(
   // global clock
   input logic clock,
   // output registers

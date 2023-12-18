@@ -108,7 +108,7 @@ struct Emitter {
   Err emit_splice(CNode* n);
   Err emit_splice2(CNode* n);
 
-  Err emit_template_parameter_list(CNodeClass* node);
+  Err emit_parameter_list(CNodeClass* node);
   Err emit_block(CNodeCompound* node, std::string ldelim, std::string rdelim);
   Err emit_bit_extract(CNodeCall* node);
   Err emit_hoisted_decls(CNodeCompound* node);

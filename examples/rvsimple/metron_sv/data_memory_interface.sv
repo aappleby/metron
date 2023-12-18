@@ -10,7 +10,8 @@
 `include "constants.sv"
 `include "metron/metron_tools.sv"
 
-module data_memory_interface (
+module data_memory_interface
+(
   // input signals
   input logic read_enable,
   input logic write_enable,

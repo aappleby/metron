@@ -12,7 +12,8 @@ typedef struct packed {
   InnerStruct z;
 } OuterStruct;
 
-module Module (
+module Module
+(
   // global clock
   input logic clock,
   // output signals

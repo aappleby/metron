@@ -2,7 +2,8 @@
 
 // We can instantiated templated classes as submodules.
 
-module Submod (
+module Submod
+(
   // global clock
   input logic clock,
   // output registers
@@ -23,7 +24,8 @@ module Submod (
 
 endmodule
 
-module Module (
+module Module
+(
   // global clock
   input logic clock,
   // get_submodreg() ports

@@ -2,11 +2,14 @@
 
 // Template parameters become SV module parameters.
 
-module Module (
+module Module
+#(
+  parameter SOME_CONSTANT = 7
+)
+(
   // global clock
   input logic clock
 );
-  parameter SOME_CONSTANT = 7;
 /*public:*/
 
   always_ff @(posedge clock) begin : tock

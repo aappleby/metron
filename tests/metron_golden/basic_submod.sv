@@ -2,7 +2,8 @@
 
 // Modules can contain other modules.
 
-module Submod (
+module Submod
+(
   // global clock
   input logic clock,
   // tock() ports
@@ -23,7 +24,8 @@ module Submod (
   logic[7:0] sub_reg_;
 endmodule
 
-module Module (
+module Module
+(
   // global clock
   input logic clock,
   // tock() ports

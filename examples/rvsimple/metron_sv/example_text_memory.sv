@@ -10,14 +10,17 @@
 `include "constants.sv"
 `include "metron/metron_tools.sv"
 
-module example_text_memory (
+module example_text_memory
+#(
+  parameter /*const char**/ filename = ""
+)
+(
   // input signals
   input logic[(rv_config::TEXT_BITS - 2)-1:0] address,
   // output signals
   output logic[31:0] q
 );
  /*public:*/
-  parameter /*const char**/ filename = "";
   initial begin
     if (filename) $readmemh(filename, mem_);
   end

@@ -1,6 +1,7 @@
 `include "metron/metron_tools.sv"
 
-module DPRam (
+module DPRam
+(
   // global clock
   input logic clock,
   // output registers

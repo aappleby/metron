@@ -10,7 +10,11 @@
 `include "constants.sv"
 `include "metron/metron_tools.sv"
 
-module example_data_memory (
+module example_data_memory
+#(
+  parameter /*const char**/ filename = ""
+)
+(
   // global clock
   input logic clock,
   // input signals
@@ -49,7 +53,6 @@ module example_data_memory (
   end
 
  /*public:*/
-  parameter /*const char**/ filename = "";
   initial begin
     if (filename) $readmemh(filename, mem_);
   end

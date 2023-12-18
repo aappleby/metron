@@ -1,6 +1,7 @@
 `include "metron/metron_tools.sv"
 
-module Module (
+module Module
+(
   // loop1() ports
   output int loop1_ret,
   // loop2() ports

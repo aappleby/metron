@@ -3,7 +3,8 @@
 // Number literals
 // don't forget the ' spacers
 
-module Module (
+module Module
+(
   // test1() ports
   output int test1_ret,
   // test2() ports

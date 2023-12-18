@@ -2,7 +2,8 @@
 
 // I don't know why you would want to do this, but it should work.
 
-module Module (
+module Module
+(
   // global clock
   input logic clock
 );

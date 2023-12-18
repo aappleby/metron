@@ -3,7 +3,8 @@
 // Using slice<>() to write to sub-sections of a variable should work.
 // FIXME This can break tracing....
 
-module test_slice (
+module test_slice
+(
   // global clock
   input logic clock,
   // tick() ports

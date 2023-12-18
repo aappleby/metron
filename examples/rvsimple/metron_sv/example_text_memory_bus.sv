@@ -11,7 +11,11 @@
 `include "example_text_memory.sv"
 `include "metron/metron_tools.sv"
 
-module example_text_memory_bus (
+module example_text_memory_bus
+#(
+  parameter /*const char**/ filename = ""
+)
+(
   // input signals
   input logic[31:0] address,
   // output signals
@@ -19,7 +23,6 @@ module example_text_memory_bus (
 );
  /*public:*/
 
-  parameter /*const char**/ filename = "";
   initial begin
   end
 

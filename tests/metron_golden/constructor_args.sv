@@ -2,7 +2,13 @@
 
 // We should be able to handle constructor args.
 
-module Module (
+module Module
+#(
+  parameter data_len = 1024,
+  parameter blarp = 7,
+  parameter /*const char**/ filename = "examples/uart/message.hex"
+)
+(
   // global clock
   input logic clock,
   // tock() ports
@@ -10,11 +16,8 @@ module Module (
   // get_data() ports
   output logic[7:0] get_data_ret
 );
-  parameter data_len = 1024;
-  parameter blarp = 7;
 /*public:*/
 
-  parameter /*const char**/ filename = "examples/uart/message.hex";
   initial begin
     $readmemh(filename, data_);
   end

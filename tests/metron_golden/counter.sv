@@ -4,7 +4,8 @@
 // Members without trailing underscores are signals.
 // We should not require any other special annotations on our modules.
 
-module Module (
+module Module
+(
   // global clock
   input logic clock,
   // get_even() ports

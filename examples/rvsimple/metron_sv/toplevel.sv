@@ -13,7 +13,12 @@
 `include "metron/metron_tools.sv"
 `include "riscv_core.sv"
 
-module toplevel (
+module toplevel
+#(
+  parameter /*const char**/ text_filename = "",
+  parameter /*const char**/ data_filename = ""
+)
+(
   // global clock
   input logic clock,
   // input signals
@@ -33,8 +38,6 @@ module toplevel (
  /*public:*/
 
 
-  parameter /*const char**/ text_filename = "";
-  parameter /*const char**/ data_filename = "";
   initial begin
   end
 

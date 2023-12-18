@@ -3,7 +3,8 @@
 `ifndef INCLUDE_GUARDS_H
 `define INCLUDE_GUARDS_H
 
-module Module (
+module Module
+(
   // blah() ports
   output int blah_ret
 );

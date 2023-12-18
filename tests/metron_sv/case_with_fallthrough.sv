@@ -3,7 +3,8 @@
 // Case statements are allowed to have fallthrough, though the SV syntax is
 // a bit different.
 
-module Module (
+module Module
+(
   // global clock
   input logic clock,
   // output signals

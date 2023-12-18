@@ -7,7 +7,8 @@
 `define MY_CONSTANT2 20
 `define MY_OTHER_CONSTANT (`MY_CONSTANT1 + `MY_CONSTANT2 + 7)
 
-module Module (
+module Module
+(
   // test() ports
   output logic[7:0] test_ret
 );

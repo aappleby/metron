@@ -10,7 +10,8 @@
 `include "constants.sv"
 `include "metron/metron_tools.sv"
 
-module immediate_generator (
+module immediate_generator
+(
   // input signals
   input logic[31:0] inst,
   // output signals

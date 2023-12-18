@@ -2,7 +2,8 @@
 
 `include "metron/metron_tools.sv"
 
-module Submod (
+module Submod
+(
   // global clock
   input logic clock,
   // tick() ports

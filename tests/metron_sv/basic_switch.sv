@@ -2,7 +2,8 @@
 
 // Simple switch statements are OK.
 
-module Module (
+module Module
+(
   // global clock
   input logic clock,
   // tock() ports

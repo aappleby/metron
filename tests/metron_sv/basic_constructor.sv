@@ -2,7 +2,8 @@
 
 // Modules can use constructors to initialize state
 
-module Module (
+module Module
+(
   // get_reg() ports
   output logic[7:0] get_reg_ret
 );

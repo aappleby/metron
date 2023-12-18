@@ -2,11 +2,14 @@
 
 // We can instantiated templated classes as submodules.
 
-module Submod (
+module Submod
+#(
+  parameter SOME_CONSTANT = 6
+)
+(
   // global clock
   input logic clock
 );
-  parameter SOME_CONSTANT = 6;
 /*public:*/
 
   always_ff @(posedge clock) begin : tock
@@ -22,7 +25,8 @@ module Submod (
   logic[7:0] sub_reg_;
 endmodule
 
-module Module (
+module Module
+(
   // global clock
   input logic clock
 );

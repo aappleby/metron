@@ -2,7 +2,12 @@
 
 // Templates can be used for module parameters
 
-module Submod (
+module Submod
+#(
+  parameter WIDTH = 123,
+  parameter HEIGHT = 456
+)
+(
   // output signals
   output logic[WIDTH-1:0] my_width,
   output logic[HEIGHT-1:0] my_height,
@@ -10,8 +15,6 @@ module Submod (
   input logic[WIDTH-1:0] tock_dx,
   input logic[HEIGHT-1:0] tock_dy
 );
-  parameter WIDTH = 123;
-  parameter HEIGHT = 456;
 /*public:*/
 
   always_comb begin : tock
@@ -21,7 +24,8 @@ module Submod (
 
 endmodule
 
-module Module (
+module Module
+(
   // output signals
   output logic[19:0] tock_ret
 );

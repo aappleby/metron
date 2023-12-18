@@ -19,7 +19,8 @@
 `include "regfile.sv"
 `include "register.sv"
 
-module singlecycle_datapath (
+module singlecycle_datapath
+(
   // global clock
   input logic clock,
   // input signals

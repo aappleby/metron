@@ -2,7 +2,8 @@
 
 // Tocks should be able to call private tasks and functions
 
-module Module (
+module Module
+(
   // output signals
   output logic[7:0] my_signal,
   output int tock_ret

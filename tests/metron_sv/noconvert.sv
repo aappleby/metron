@@ -1,6 +1,7 @@
 `include "metron/metron_tools.sv"
 
-module Module (
+module Module
+(
   // foo() ports
   output logic foo_ret
 );

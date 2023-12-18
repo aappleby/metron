@@ -1,4 +1,5 @@
-module Metron (
+module Metron
+(
   // global clock
   input logic clock,
   // output signals

@@ -5,7 +5,11 @@
 
 //==============================================================================
 
-module uart_rx (
+module uart_rx
+#(
+  parameter cycles_per_bit = 4
+)
+(
   // global clock
   input logic clock,
   // get_valid() ports
@@ -18,7 +22,6 @@ module uart_rx (
   input logic tick_reset,
   input logic tick_serial
 );
-  parameter cycles_per_bit = 4;
 /*public:*/
 
   initial begin

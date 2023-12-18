@@ -891,6 +891,10 @@ Err Emitter::emit(CNodeClass* node) {
 
   err << emit_replacement2(node->node_kwclass, "module");
   err << emit_dispatch2(node->node_name);
+  err << cursor.emit_print("\n");
+
+  err << emit_parameter_list(node);
+
 
   err << cursor.emit_print("(");
   cursor.indent_level++;
@@ -908,7 +912,6 @@ Err Emitter::emit(CNodeClass* node) {
 
     if (child->get_text() == "{") {
       cursor.indent_level++;
-      err << emit_template_parameter_list(node);
       err << skip_over(child);
       err << emit_gap(child);
     } else if (child->get_text() == "}") {
@@ -1544,32 +1547,89 @@ Err Emitter::emit(CNodeUsing* node) {
 
 //------------------------------------------------------------------------------
 
-Err Emitter::emit_template_parameter_list(CNodeClass* node) {
+Err Emitter::emit_parameter_list(CNodeClass* node) {
   Err err;
 
+  int param_count = 0;
+
   auto node_template = node->ancestor<CNodeTemplate>();
-  if (!node_template) return err;
+  if (node_template) param_count += node_template->params.size();
+
+  auto node_constructor = node->constructor ? node->constructor : nullptr;
+  if (node_constructor) param_count += node_constructor->node_params->items.size();
+
+  if (param_count == 0) return err;
 
   auto old_cursor = cursor.tok_cursor;
 
-  for (auto param : node_template->params) {
-    err << cursor.start_line();
-    err << cursor.emit_print("parameter ");
+  err << cursor.emit_print("#(\n");
 
-    if (param->node_value == nullptr) {
-      return ERR("Template parameter has no default vaule!\n");
+  int param_index = 0;
+
+  if (node_template) {
+    for (auto param : node_template->params) {
+      err << cursor.start_line();
+      err << cursor.emit_print("  parameter ");
+
+      if (param->node_value == nullptr) {
+        return ERR("Template parameter has no default vaule!\n");
+      }
+
+
+      cursor.tok_cursor = param->node_name->tok_begin();
+      err << emit_dispatch2(param->node_name);
+      err << emit_dispatch2(param->node_array);
+      err << emit_dispatch2(param->node_eq);
+      err << emit_dispatch(param->node_value);
+
+      if (param_index != param_count - 1) err << cursor.emit_print(",\n");
+      param_index++;
     }
-
-
-    cursor.tok_cursor = param->node_name->tok_begin();
-    err << emit_dispatch2(param->node_name);
-    err << emit_dispatch2(param->node_array);
-    err << emit_dispatch2(param->node_eq);
-    err << emit_dispatch(param->node_value);
-    err << cursor.emit_print(";");
   }
 
-  err << cursor.emit_print("\n");
+
+  if (node_constructor) {
+    for (auto param : node_constructor->node_params) {
+      auto decl = param->as<CNodeDeclaration>();
+      if (!decl) continue;
+
+      auto old_cursor = cursor.tok_cursor;
+      cursor.tok_cursor = decl->node_type->tok_begin();
+
+      err << cursor.start_line();
+      err << cursor.emit_print("  parameter ");
+      err << comment_out2  (decl->node_type);
+      err << emit_dispatch2(decl->node_name);
+      err << emit_dispatch2(decl->node_eq);
+      err << emit_dispatch2(decl->node_value);
+      if (param_index != param_count - 1) err << cursor.emit_print(",\n");
+      param_index++;
+
+      cursor.tok_cursor = old_cursor;
+    }
+  }
+  /*
+  for (auto param : node->node_params) {
+    auto decl = param->as<CNodeDeclaration>();
+    if (!decl) continue;
+
+    auto old_cursor = cursor.tok_cursor;
+    cursor.tok_cursor = decl->node_type->tok_begin();
+
+    err << cursor.start_line();
+    err << cursor.emit_print("parameter ");
+    err << comment_out2  (decl->node_type);
+    err << emit_dispatch2(decl->node_name);
+    err << emit_dispatch2(decl->node_eq);
+    err << emit_dispatch2(decl->node_value);
+    err << cursor.emit_print(";");
+
+    cursor.tok_cursor = old_cursor;
+  }
+  */
+
+
+  err << cursor.emit_print("\n)\n");
 
   cursor.tok_cursor = old_cursor;
 
@@ -2374,24 +2434,6 @@ Err Emitter::emit_field_ports(CNodeField* f, bool is_output) {
 
 Err Emitter::emit_init(CNodeFunction* node) {
   Err err;
-
-  for (auto param : node->node_params) {
-    auto decl = param->as<CNodeDeclaration>();
-    if (!decl) continue;
-
-    auto old_cursor = cursor.tok_cursor;
-    cursor.tok_cursor = decl->node_type->tok_begin();
-
-    err << cursor.start_line();
-    err << cursor.emit_print("parameter ");
-    err << comment_out2  (decl->node_type);
-    err << emit_dispatch2(decl->node_name);
-    err << emit_dispatch2(decl->node_eq);
-    err << emit_dispatch2(decl->node_value);
-    err << cursor.emit_print(";");
-
-    cursor.tok_cursor = old_cursor;
-  }
 
   err << cursor.start_line();
   err << cursor.emit_print("initial ");

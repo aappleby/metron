@@ -2,7 +2,8 @@
 
 // Methods that don't write anything should become functions.
 
-module Module (
+module Module
+(
   // global clock
   input logic clock,
   // output registers

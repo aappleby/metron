@@ -1,7 +1,8 @@
 `include "metron/metron_tools.sv"
 `include "dpram.sv"
 
-module J1 (
+module J1
+(
   // global clock
   input logic clock,
   // input signals

@@ -19,7 +19,8 @@ VSync       [490-491]
 Back porch  [492-524]
 */
 
-module Pong (
+module Pong
+(
   // global clock
   input logic clock,
   // output signals

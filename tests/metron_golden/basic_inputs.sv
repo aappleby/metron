@@ -3,7 +3,8 @@
 // Tick inputs should become input ports.
 
 // clang-format off
-module Module (
+module Module
+(
   // global clock
   input logic clock,
   // tock() ports

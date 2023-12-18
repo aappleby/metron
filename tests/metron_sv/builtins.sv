@@ -2,7 +2,8 @@
 
 // Make sure our built-in functions translate.
 
-module Module (
+module Module
+(
   // output signals
   output int sig
 );

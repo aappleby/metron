@@ -12,7 +12,8 @@ typedef union packed {
   logic[7:0] b;
 } MyUnion1;
 
-module Module (
+module Module
+(
   // global clock
   input logic clock
 );

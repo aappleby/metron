@@ -10,7 +10,12 @@
 `include "constants.sv"
 `include "metron/metron_tools.sv"
 
-module single_register (
+module single_register
+#(
+  parameter WIDTH = 32,
+  parameter INITIAL = 0
+)
+(
   // global clock
   input logic clock,
   // input signals
@@ -20,8 +25,6 @@ module single_register (
   // output registers
   output logic[WIDTH-1:0] value_
 );
-  parameter WIDTH = 32;
-  parameter INITIAL = 0;
  /*public:*/
 
   initial begin value_ = INITIAL; end

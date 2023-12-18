@@ -27,7 +27,8 @@ typedef struct packed {
 
 //------------------------------------------------------------------------------
 
-module TilelinkDevice (
+module TilelinkDevice
+(
   // global clock
   input logic clock,
   // input signals
@@ -80,7 +81,8 @@ endmodule
 
 //------------------------------------------------------------------------------
 
-module TilelinkCPU (
+module TilelinkCPU
+(
   // global clock
   input logic clock,
   // input signals
@@ -125,7 +127,8 @@ endmodule
 
 //------------------------------------------------------------------------------
 
-module Top (
+module Top
+(
   // global clock
   input logic clock
 );

@@ -10,7 +10,8 @@
 `include "constants.sv"
 `include "metron/metron_tools.sv"
 
-module alu (
+module alu
+(
   // input signals
   input logic[4:0] alu_function,
   input logic[31:0] operand_a,

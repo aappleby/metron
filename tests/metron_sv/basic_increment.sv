@@ -3,7 +3,8 @@
 // Increment/decrement should be translated into equivalent Verilog, but they
 // do _not_ return the old/new value.
 
-module Module (
+module Module
+(
   // global clock
   input logic clock,
   // output registers

@@ -7,7 +7,8 @@ package MyPackage;
   parameter /*static*/ /*const*/ int foo = 3;
 endpackage
 
-module Module (
+module Module
+(
   // global clock
   input logic clock,
   // output signals

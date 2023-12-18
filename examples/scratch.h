@@ -1,19 +1,27 @@
-// If "sum" does not have an underscore suffix, it is a signal and "add" will
-// be converted to an always_comb block.
-class Adder1 {
-public:
-  int sum;
-  void add(int a, int b) {
-    sum = a + b;
-  }
+#include "metron/metron_tools.h"
+
+// Structs exist in both C++ and Verilog
+
+struct MyStruct1 {
+  logic<8> a;
 };
 
-// If "sum" does have an underscore suffix, it is a register and "add" will
-// be converted to an always_ff block.
-class Adder2 {
+union MyUnion1 {
+  logic<8> a;
+  logic<8> b;
+};
+
+class Module {
 public:
-  int sum_;
-  void add(int a, int b) {
-    sum_ = a + b;
+
+  void tick() {
+    my_struct_.a += 1;
+    my_union_.a = my_union_.b + 1;
   }
+
+private:
+
+  MyStruct1 my_struct_;
+  MyUnion1 my_union_;
+
 };

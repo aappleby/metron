@@ -187,7 +187,9 @@ bool class_needs_tock(CNodeClass* node_class) {
 
 CNodeField* resolve_field(CNodeStruct* node_struct, CNode* node_name);
 CNodeField* resolve_field(CNodeClass* node_class, CNode* node_name);
+CNodeField* resolve_field(CNodeUnion* node_union, CNode* node_name);
 CNodeField* resolve_field(CNodeStruct* node_struct, std::vector<CNode*> path);
+CNodeField* resolve_field(CNodeUnion* node_struct, std::vector<CNode*> path);
 CNodeField* resolve_field(CNodeClass* node_class, std::vector<CNode*> path);
 
 //------------------------------------------------------------------------------
@@ -210,6 +212,39 @@ CNodeField* resolve_field(CNodeStruct* node_struct, std::vector<CNode*> path) {
 
   if (auto s1 = repo->get_struct(f1->node_decl->node_type->name)) {
     return resolve_field(s1, path);
+  }
+
+  if (auto u1 = repo->get_union(f1->node_decl->node_type->name)) {
+    return resolve_field(u1, path);
+  }
+
+  return nullptr;
+}
+
+//------------------------------------------------------------------------------
+
+CNodeField* resolve_field(CNodeUnion* node_union, std::vector<CNode*> path) {
+  auto repo = node_union->get_repo();
+
+  auto front = path[0];
+  path.erase(path.begin());
+
+  auto f1 = resolve_field(node_union, front);
+
+  if (path.empty()) {
+    return f1;
+  }
+
+  if (auto c1 = repo->get_class(f1->node_decl->node_type->name)) {
+    return resolve_field(c1, path);
+  }
+
+  if (auto s1 = repo->get_struct(f1->node_decl->node_type->name)) {
+    return resolve_field(s1, path);
+  }
+
+  if (auto u1 = repo->get_union(f1->node_decl->node_type->name)) {
+    return resolve_field(u1, path);
   }
 
   return nullptr;
@@ -235,6 +270,10 @@ CNodeField* resolve_field(CNodeClass* node_class, std::vector<CNode*> path) {
 
   if (auto s1 = repo->get_struct(f1->node_decl->node_type->name)) {
     return resolve_field(s1, path);
+  }
+
+  if (auto u1 = repo->get_union(f1->node_decl->node_type->name)) {
+    return resolve_field(u1, path);
   }
 
   return nullptr;
@@ -265,6 +304,43 @@ CNodeField* resolve_field(CNodeStruct* node_struct, CNode* node_name) {
 
   if (auto node_suffix = node_name->as<CNodeSuffixExp>()) {
     return resolve_field(node_struct, node_suffix->node_lhs);
+  }
+
+  dump_parse_tree(node_name);
+
+  LOG_R("----------------------------------------\n");
+  LOG_R("Don't know how to get field for %s\n", node_name->get_textstr().c_str());
+  LOG_R("----------------------------------------\n");
+
+  assert(false);
+  return nullptr;
+}
+
+//------------------------------------------------------------------------------
+
+CNodeField* resolve_field(CNodeUnion* node_union, CNode* node_name) {
+  if (node_name == nullptr) return nullptr;
+
+  auto repo = node_union->get_repo();
+
+  if (auto node_id = node_name->as<CNodeIdentifier>()) {
+    return node_union->get_field(node_id->get_text());
+  }
+
+  if (auto node_lvalue = node_name->as<CNodeLValue>()) {
+    return resolve_field(node_union, node_lvalue->node_name);
+  }
+
+  if (auto node_field = node_name->as<CNodeFieldExpression>()) {
+    return resolve_field(node_union, node_field->items);
+  }
+
+  if (auto node_prefix = node_name->as<CNodePrefixExp>()) {
+    return resolve_field(node_union, node_prefix->node_rhs);
+  }
+
+  if (auto node_suffix = node_name->as<CNodeSuffixExp>()) {
+    return resolve_field(node_union, node_suffix->node_lhs);
   }
 
   dump_parse_tree(node_name);
@@ -542,6 +618,9 @@ bool in_constructor(CNode* node) {
 
 Err Emitter::emit(CNodeAssignment* node) {
   Err err = check_at(node);
+
+  dump_parse_tree(node);
+
   auto node_field = resolve_field(node->node_lhs);
 
   // If we're in a tick, turn = into <=

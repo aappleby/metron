@@ -4,6 +4,7 @@
 
 typedef struct packed {
   logic[7:0] a;
+  logic[7:0] b;
 } MyStruct1;
 
 typedef union packed {
@@ -18,7 +19,7 @@ module Module (
 /*public:*/
 
   always_ff @(posedge clock) begin : tick
-    my_struct_.a <= my_struct_.a + 1;
+    my_struct_.a <= my_struct_.b + 1;
     my_union_.a <= my_union_.b + 1;
   end
 

@@ -253,13 +253,13 @@ def build_metron_ems():
 
     # Not including a -O2 or -Os causes Emscripten's memory use to blow up :/
 
-    all_test_headers = sorted_glob("tests/**/*.h", recursive=True)
+    all_test_headers = sorted_glob("tests/metron/**/*.h", recursive=True)
     all_example_headers = sorted_glob("examples/**/*.h", recursive=True)
 
     ninja.build(outputs = ["docs/demo/examples.data"],
                 rule="run_command",
                 inputs=all_test_headers + all_example_headers,
-                command=f"python3 ${packager} docs/demo/examples.data --no-node --js-output=docs/demo/examples.js --preload examples tests/metron_good tests/metron_bad --exclude *.cpp *.sv *.MD *.hex *.pcf *.v *.txt");
+                command=f"python3 ${packager} docs/demo/examples.data --no-node --js-output=docs/demo/examples.js --preload examples tests/metron/pass tests/metron/fail --exclude *.cpp *.sv *.MD *.hex *.pcf *.v *.txt");
 
 
     ninja.build(outputs = ["docs/tutorial/tutorial_src.data"],
@@ -306,7 +306,7 @@ def build_metron_ems():
 
 def build_metron_test():
     cpp_binary(
-        bin_name="bin/tests/metron_test",
+        bin_name="bin/tests/utils/test_logic",
         src_files=[
             "tests/utils/test_logic.cpp",
         ],

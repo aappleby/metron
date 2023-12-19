@@ -25,7 +25,10 @@ options = parser.parse_args()
 
 
 def sorted_glob(*args, **kwargs):
-    return sorted(glob.glob(*args, **kwargs))
+    result = sorted(glob.glob(*args, **kwargs))
+    if result is None:
+        result = []
+    return result
 
 
 ################################################################################
@@ -63,44 +66,44 @@ def main():
     ############################################################
 
 
-    print_b("Wiping tests/metron_sv/*")
-    os.system("rm tests/metron_sv/*")
+    print_b("Wiping tests/metron/generated/*")
+    os.system("rm tests/metron/generated/*")
 
-    metron_good = sorted(sorted_glob("tests/metron_good/*.h"))
-    metron_bad = sorted(sorted_glob("tests/metron_bad/*.h"))
+    metron_pass = sorted(sorted_glob("tests/metron/pass/*.h"))
+    metron_fail = sorted(sorted_glob("tests/metron/fail/*.h"))
 
-    print_b("Checking that all headers in tests/metron_good compile")
+    print_b("Checking that all headers in tests/metron/pass compile")
     errors += check_commands_good(
         [
             f"g++ -I. --std=gnu++2a -fsyntax-only -c {filename}"
-            for filename in metron_good
+            for filename in metron_pass
         ]
     )
     print()
 
-    print_b("Checking that all headers in tests/metron_bad compile")
+    print_b("Checking that all headers in tests/metron/fail compile")
     errors += check_commands_good(
         [
             f"g++ -I. --std=gnu++2a -fsyntax-only -c {filename}"
-            for filename in metron_bad
+            for filename in metron_fail
         ]
     )
     print()
 
-    print_b("Checking that all test cases in metron_good convert to SV cleanly")
+    print_b("Checking that all test cases in tests/metron/pass convert to SV cleanly")
     errors += check_commands_good(
         [
-            f"bin/metron -c {filename} -o {filename.replace('_good', '_sv').replace('.h', '.sv')}"
-            for filename in metron_good
+            f"bin/metron -c {filename} -o {filename.replace('/pass/', '/generated/').replace('.h', '.sv')}"
+            for filename in metron_pass
         ]
     )
     print()
 
-    print_b("Checking that all test cases in metron_bad fail conversion")
+    print_b("Checking that all test cases in metron_fail fail conversion")
     errors += check_commands_bad(
         [
-            f"bin/metron -c {filename} -o {filename.replace('_bad', '_sv').replace('.h', '.sv')}"
-            for filename in metron_bad
+            f"bin/metron -c {filename} -o {filename.replace('/fail/', '/generated/').replace('.h', '.sv')}"
+            for filename in metron_fail
         ]
     )
     print()
@@ -115,12 +118,12 @@ def main():
     )
     print()
 
-    metron_sv = sorted(sorted_glob("tests/metron_sv/*.sv"))
+    metron_sv = sorted(sorted_glob("tests/metron/generated/*.sv"))
 
     print_b("Checking that all converted files match their golden version, if present")
     errors += check_commands_good(
         [
-            f"diff {filename} {filename.replace('_sv', '_golden')}"
+            f"diff {filename} {filename.replace('/generated/', '/golden/')}"
             for filename in metron_sv
         ]
     )
@@ -130,10 +133,11 @@ def main():
     # These tests are skipped in basic mode
 
     if not options.basic:
+        includes = "-I. -Itests/metron/generated"
         print_b("Checking that all converted files can be parsed by Verilator")
         errors += check_commands_good(
             [
-                f"verilator -Wno-width -I. -Itests/metron_sv --lint-only {filename}"
+                f"verilator -Wno-width {includes} --lint-only {filename}"
                 for filename in metron_sv
             ]
         )
@@ -143,7 +147,7 @@ def main():
             print_b("Checking that all converted files can be synthesized by Yosys")
             errors += check_commands_good(
                 [
-                    f"yosys -q -p 'read_verilog -I. -Itests/metron_sv -sv {filename}; dump; synth_ice40 -json /dev/null'"
+                    f"yosys -q -p 'read_verilog {includes} -sv {filename}; dump; synth_ice40 -json /dev/null'"
                     for filename in metron_sv
                 ]
             )
@@ -151,7 +155,7 @@ def main():
             print_b("Checking that all converted files can be parsed by Yosys")
             errors += check_commands_good(
                 [
-                    f"yosys -q -p 'read_verilog -I. -Itests/metron_sv -sv {filename};'"
+                    f"yosys -q -p 'read_verilog {includes} -sv {filename};'"
                     for filename in metron_sv
                 ]
             )
@@ -160,7 +164,7 @@ def main():
         print_b("Checking that all converted files can be parsed by Icarus")
         errors += check_commands_good(
             [
-                f"iverilog -g2012 -Wall -I. -Itests/metron_sv -o /dev/null {filename}"
+                f"iverilog -g2012 -Wall {includes} -o /dev/null {filename}"
                 for filename in metron_sv
             ]
         )
@@ -178,7 +182,7 @@ def main():
         print_b("Running standalone tests")
         errors += check_commands_good(
             [
-                "bin/tests/metron_test",
+                "bin/tests/utils/test_logic",
                 "bin/examples/uart",
                 "bin/examples/uart_vl",
                 "bin/examples/uart_iv",
@@ -197,19 +201,19 @@ def main():
         # Various tests to isolate quirks/bugs in Verilator/Yosys/Icarus
 
         print_b("Checking Verilator quirks")
-        errors += check_verilator_pass(sorted_glob("tests/tools/good/*.sv"))
+        errors += check_verilator_pass(sorted_glob("tests/tools/pass/*.sv"))
         errors += check_verilator_pass(sorted_glob("tests/tools/verilator/pass/*.sv"))
         errors += check_verilator_fail(sorted_glob("tests/tools/verilator/fail/*.sv"))
         print()
 
         print_b("Checking Yosys quirks")
-        errors += check_yosys_pass(sorted_glob("tests/tools/good/*.sv"))
+        errors += check_yosys_pass(sorted_glob("tests/tools/pass/*.sv"))
         errors += check_yosys_pass(sorted_glob("tests/tools/yosys/pass/*.sv"))
         errors += check_yosys_fail(sorted_glob("tests/tools/yosys/fail/*.sv"))
         print()
 
         print_b("Checking Icarus quirks")
-        errors += check_icarus_pass(sorted_glob("tests/tools/good/*.sv"))
+        errors += check_icarus_pass(sorted_glob("tests/tools/pass/*.sv"))
         errors += check_icarus_pass(sorted_glob("tests/tools/icarus/pass/*.sv"))
         errors += check_icarus_fail(sorted_glob("tests/tools/icarus/fail/*.sv"))
         print()
@@ -376,8 +380,7 @@ def check_yosys_pass(filenames):
             print(f"Printed 'warning' or 'error' for {filename}")
             print(cmd_result.stderr)
             return 1
-        else:
-            return 0
+    return 0
 
 
 def check_yosys_fail(filenames):
@@ -396,10 +399,11 @@ def check_yosys_fail(filenames):
         )
         err = cmd_result.stderr.lower()
         if "warning" in err or "error" in err:
-            return 0
+            pass
         else:
             print(f"Did not print 'warning' or 'error' for {filename}")
             return 1
+    return 0
 
 
 def check_icarus_pass(filenames):
@@ -422,7 +426,7 @@ def check_icarus_fail(filenames):
 def check_bad_expected_errors(filename):
     lines = open(filename).readlines()
     expected_errors = [line[4:].strip() for line in lines if line.startswith("// X ")]
-    cmd = f"bin/metron -c {filename} -o {filename.replace('_good', '_sv').replace('.h', '.sv')}"
+    cmd = f"bin/metron -c {filename} -o {filename.replace('/pass/', '/generated/').replace('.h', '.sv')}"
     return check_cmd_bad(cmd, expected_errors, [])
 
 
@@ -434,9 +438,9 @@ def build_lockstep(filename):
 
     # Test source is the same for all lockstep tests, we just change the
     # included files.
-    test_src = f"tests/test_lockstep.cpp"
+    test_src = f"tests/lockstep/test_lockstep.cpp"
 
-    mt_root = f"tests/metron_lockstep"
+    mt_root = f"tests/lockstep"
     sv_root = f"gen/{mt_root}/metron_sv"
     vl_root = f"gen/{mt_root}/metron_vl"
 
@@ -485,22 +489,22 @@ def test_lockstep():
         "timeout_bad.h",
     ]
 
-    os.system(f"mkdir -p gen/tests/metron_lockstep")
-    os.system(f"mkdir -p obj/tests/metron_lockstep")
-    os.system(f"mkdir -p bin/tests/metron_lockstep")
+    os.system(f"mkdir -p gen/tests/lockstep")
+    os.system(f"mkdir -p obj/tests/lockstep")
+    os.system(f"mkdir -p bin/tests/lockstep")
 
     # Build all the lockstep tests
     errors = 0
     errors += sum(get_pool().map(build_lockstep, tests))
 
     # These lockstep tests should pass
-    errors += check_cmd_good("bin/tests/metron_lockstep/counter")
-    errors += check_cmd_good("bin/tests/metron_lockstep/lfsr")
-    errors += check_cmd_good("bin/tests/metron_lockstep/funcs_and_tasks")
+    errors += check_cmd_good("bin/tests/lockstep/counter")
+    errors += check_cmd_good("bin/tests/lockstep/lfsr")
+    errors += check_cmd_good("bin/tests/lockstep/funcs_and_tasks")
 
     # These two are expected to fail to test the lockstep test system
-    errors += check_cmd_bad("bin/tests/metron_lockstep/lockstep_bad")
-    errors += check_cmd_bad("bin/tests/metron_lockstep/timeout_bad")
+    errors += check_cmd_bad("bin/tests/lockstep/lockstep_bad")
+    errors += check_cmd_bad("bin/tests/lockstep/timeout_bad")
 
     return errors
 

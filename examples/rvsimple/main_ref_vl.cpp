@@ -27,8 +27,8 @@ TestResults test_instruction(const char* test_name, const int reps,
 
   char buf1[256];
   char buf2[256];
-  sprintf(buf1, "+text_file=tests/rv_tests/%s.code.vh", test_name);
-  sprintf(buf2, "+data_file=tests/rv_tests/%s.data.vh", test_name);
+  sprintf(buf1, "+text_file=tests/risc-v/instructions/%s.code.vh", test_name);
+  sprintf(buf2, "+data_file=tests/risc-v/instructions/%s.data.vh", test_name);
   const char* argv2[2] = {buf1, buf2};
 
   Verilated::commandArgs(2, argv2);

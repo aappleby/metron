@@ -1,6 +1,5 @@
 #include "metrolib/core/Tests.h"
 #include "metron/metron_tools.h"
-#include "tests/test_utils.h"
 
 //------------------------------------------------------------------------------
 
@@ -104,8 +103,8 @@ TestResults test_logic_dup() {
 
 //------------------------------------------------------------------------------
 
-TestResults test_logic() {
-  TEST_INIT("Test logic<> behavior and translation");
+int main(int argc, char** argv) {
+  TestResults results;
 
   results << test_logic_truncate();
   results << test_logic_add();
@@ -113,7 +112,7 @@ TestResults test_logic() {
   results << test_logic_slice();
   results << test_logic_dup();
 
-  TEST_DONE();
+  return results.show_result();
 }
 
 //------------------------------------------------------------------------------

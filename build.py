@@ -3,7 +3,7 @@
 #iwyu -std=c++20 -I. -Isymlinks metron/nodes/CNodeField.cpp
 
 import glob
-import ninja_syntax
+import tools.ninja_syntax as ninja_syntax
 import sys
 from os import path
 
@@ -308,9 +308,7 @@ def build_metron_test():
     cpp_binary(
         bin_name="bin/tests/metron_test",
         src_files=[
-            "tests/test_main.cpp",
-            "tests/test_logic.cpp",
-            "tests/test_utils.cpp",
+            "tests/utils/test_logic.cpp",
         ],
         includes=["${base_includes}"],
         link_deps=["bin/libmetron.a"],
@@ -416,12 +414,12 @@ def build_uart():
 # Test binaries for the RISC-V cores.
 
 def build_rvtests():
-    src_files = sorted_glob("tests/rv_tests/*.S")
+    src_files = sorted_glob("tests/risc-v/instructions/*.S")
     dst_text = [swap_ext(f, ".code.vh") for f in src_files]
     dst_data = [swap_ext(f, ".data.vh") for f in src_files]
 
     ninja.build(rule="make",
-                inputs="tests/rv_tests/makefile",
+                inputs="tests/risc-v/instructions/makefile",
                 implicit=src_files,
                 outputs=dst_text + dst_data)
 

@@ -619,8 +619,6 @@ bool in_constructor(CNode* node) {
 Err Emitter::emit(CNodeAssignment* node) {
   Err err = check_at(node);
 
-  dump_parse_tree(node);
-
   auto node_field = resolve_field(node->node_lhs);
 
   // If we're in a tick, turn = into <=
@@ -2076,9 +2074,9 @@ Err Emitter::emit_component(CNodeField* node) {
 
       int param_count = component_template->params.size();
       int arg_count = args->items.size();
-      assert(param_count == arg_count);
+      assert(param_count >= arg_count);
 
-      for (int i = 0; i < param_count; i++) {
+      for (int i = 0; i < arg_count; i++) {
         auto param = component_template->params[i];
         auto arg = args->items[i];
 
@@ -2245,9 +2243,9 @@ Err Emitter::emit_component(CNodeField* node) {
 
     int param_count = component_template->params.size();
     int arg_count = args->items.size();
-    assert(param_count == arg_count);
+    assert(param_count >= arg_count);
 
-    for (int i = 0; i < param_count; i++) {
+    for (int i = 0; i < arg_count; i++) {
       auto param = component_template->params[i];
       auto arg = args->items[i];
 

@@ -196,24 +196,22 @@ def main():
 
         # Various tests to isolate quirks/bugs in Verilator/Yosys/Icarus
 
-        tools_good = sorted_glob("tests/tools/good/*.sv")
-        verilator_bad = sorted_glob("tests/tools/verilator/*.sv")
-        yosys_bad = sorted_glob("tests/tools/yosys_fail/*.sv")
-        icarus_bad = sorted_glob("tests/tools/icarus/*.sv")
-
         print_b("Checking Verilator quirks")
-        errors += check_verilator_good(tools_good)
-        errors += check_verilator_bad(verilator_bad)
+        errors += check_verilator_pass(sorted_glob("tests/tools/good/*.sv"))
+        errors += check_verilator_pass(sorted_glob("tests/tools/verilator/pass/*.sv"))
+        errors += check_verilator_fail(sorted_glob("tests/tools/verilator/fail/*.sv"))
         print()
 
         print_b("Checking Yosys quirks")
-        errors += check_yosys_good(tools_good)
-        errors += check_yosys_bad(yosys_bad)
+        errors += check_yosys_pass(sorted_glob("tests/tools/good/*.sv"))
+        errors += check_yosys_pass(sorted_glob("tests/tools/yosys/pass/*.sv"))
+        errors += check_yosys_fail(sorted_glob("tests/tools/yosys/fail/*.sv"))
         print()
 
         print_b("Checking Icarus quirks")
-        errors += check_icarus_good(tools_good)
-        errors += check_icarus_bad(icarus_bad)
+        errors += check_icarus_pass(sorted_glob("tests/tools/good/*.sv"))
+        errors += check_icarus_pass(sorted_glob("tests/tools/icarus/pass/*.sv"))
+        errors += check_icarus_fail(sorted_glob("tests/tools/icarus/fail/*.sv"))
         print()
 
     ############################################################
@@ -347,19 +345,19 @@ def check_commands_bad(commands):
 ###############################################################################
 
 
-def check_verilator_good(filenames):
+def check_verilator_pass(filenames):
     return check_commands_good(
         [f"verilator -Wno-width -I. --lint-only {filename}" for filename in filenames]
     )
 
 
-def check_verilator_bad(filenames):
+def check_verilator_fail(filenames):
     return check_commands_bad(
         [f"verilator -Wno-width -I. --lint-only {filename}" for filename in filenames]
     )
 
 
-def check_yosys_good(filenames):
+def check_yosys_pass(filenames):
     for filename in filenames:
         cmd = f"yosys -q -p 'read_verilog -I. -sv {filename};  dump; synth_ice40 -json /dev/null'"
         if options.verbose:
@@ -382,7 +380,7 @@ def check_yosys_good(filenames):
             return 0
 
 
-def check_yosys_bad(filenames):
+def check_yosys_fail(filenames):
     for filename in filenames:
         cmd = f"yosys -q -p 'read_verilog -I. -sv {filename};  dump; synth_ice40 -json /dev/null'"
         if options.verbose:
@@ -404,13 +402,13 @@ def check_yosys_bad(filenames):
             return 1
 
 
-def check_icarus_good(filenames):
+def check_icarus_pass(filenames):
     return check_commands_good(
         [f"iverilog -g2012 -Wall -I. -o /dev/null {filename}" for filename in filenames]
     )
 
 
-def check_icarus_bad(filenames):
+def check_icarus_fail(filenames):
     return check_commands_bad(
         [f"iverilog -g2012 -Wall -I. -o /dev/null {filename}" for filename in filenames]
     )

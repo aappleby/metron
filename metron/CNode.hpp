@@ -80,6 +80,10 @@ struct CNode : public parseroni::NodeBase<CNode, CToken> {
     return get_gap_prev().find("metron_internal") != std::string_view::npos;
   }
 
+  bool tag_noemit() const {
+    return get_gap_prev().find("metron_noemit") != std::string_view::npos;
+  }
+
   //----------------------------------------
 
   template <typename P>

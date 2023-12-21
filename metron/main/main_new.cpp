@@ -423,11 +423,6 @@ int main_new(Options opts) {
         if (node_class->self_writes.contains(inst)) continue;
         if (!inst->is_public()) continue;
 
-        if (!inst->is_public() && !inst->is_array()) {
-          LOG_Y("Private field %s is only read, never written!\n", inst->path.c_str());
-          //exit(-1);
-        }
-
         if (inst->is_reg() && !inst->is_array()) {
           LOG_Y("Register %s is only read, never written!\n", inst->path.c_str());
           //exit(-1);
@@ -457,11 +452,6 @@ int main_new(Options opts) {
         if (inst->get_owner() != node_class) continue;
         if (node_class->self_reads.contains(inst)) continue;
         if (!inst->is_public()) continue;
-
-        if (!inst->is_public()) {
-          LOG_Y("Private field %s is only written, never read!\n", inst->path.c_str());
-          //exit(-1);
-        }
 
         if (inst->is_sig()) {
           if (auto f = inst->get_root()->get_field()) node_class->output_sigs.insert(f);

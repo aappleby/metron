@@ -488,6 +488,7 @@ Err Emitter::emit_everything() {
 Err Emitter::emit_dispatch(CNode* node) {
   Err err = check_at(node);
   if (node->tag_noconvert()) return comment_out(node);
+  if (node->tag_noemit())    return comment_out(node);
 
   if (auto n = node->as<CNodeAccess>()) return comment_out(node);
 
@@ -2046,9 +2047,12 @@ Err Emitter::emit_component(CNodeField* node) {
 
   if (has_constructor_params) {
     CNodeList* args = nullptr;
-    for (auto init : parent_class->constructor->node_init->items) {
-      if (init->child("name")->get_text() == node->node_decl->node_name->get_text()) {
-        args = init->child("value")->as<CNodeList>();
+
+    if (parent_class->constructor) {
+      for (auto init : parent_class->constructor->node_init->items) {
+        if (init->child("name")->get_text() == node->node_decl->node_name->get_text()) {
+          args = init->child("value")->as<CNodeList>();
+        }
       }
     }
     // The field may have constructor args, but if they're defaulted we might

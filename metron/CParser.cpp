@@ -323,6 +323,18 @@ TokenSpan cap_preproc(CContext& ctx, TokenSpan body) {
     >
   >;
 
+  using ifdef_pattern =
+  Tag<
+    "preproc_ifdef",
+    CaptureAnon<
+      Seq<
+        Tag<"ifdef",   cap_literal<"#ifdef">>,
+        Tag<"name",    cap_identifier>
+      >,
+      CNodePreproc
+    >
+  >;
+
   using ifndef_pattern =
   Tag<
     "preproc_ifndef",
@@ -334,6 +346,16 @@ TokenSpan cap_preproc(CContext& ctx, TokenSpan body) {
       CNodePreproc
     >
   >;
+
+  using else_pattern =
+  Tag<
+    "preproc_else",
+    CaptureAnon<
+      Tag<"else",  cap_literal<"#else">>,
+      CNodePreproc
+    >
+  >;
+
 
   using endif_pattern =
   Tag<
@@ -350,7 +372,9 @@ TokenSpan cap_preproc(CContext& ctx, TokenSpan body) {
       pragma_pattern,
       include_pattern,
       define_pattern,
+      ifdef_pattern,
       ifndef_pattern,
+      else_pattern,
       endif_pattern
     >,
     Ref<&CContext::handle_preproc>

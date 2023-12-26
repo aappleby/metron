@@ -1,27 +1,31 @@
 #include "metron/metron_tools.h"
 
-// Structs exist in both C++ and Verilog
+// We need to support very basic preprocessor macros or else dealing with mixed
+// languages will be a huge pain in the butt.
 
-struct MyStruct1 {
-  logic<8> a;
-};
+#ifdef METRON_SV
 
-union MyUnion1 {
-  logic<8> a;
-  logic<8> b;
-};
+//module Submod();
+//endmodule
 
-class Module {
-public:
+#else
 
-  void tick() {
-    my_struct_.a += 1;
-    my_union_.a = my_union_.b + 1;
-  }
+#endif
 
-private:
+/*
+#endif
 
-  MyStruct1 my_struct_;
-  MyUnion1 my_union_;
 
-};
+#ifndef METRON_SV
+
+#else
+
+#endif
+
+
+#ifdef METRON_CPP
+
+#else
+
+#endif
+*/

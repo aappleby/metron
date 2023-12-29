@@ -292,7 +292,31 @@ Err log_action(CInstance* inst, CNode* node, TraceAction action) {
     return log_action2(inst, node, action);
 }
 
-//------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//==============================================================================
+//==============================================================================
+//==============================================================================
+//==============================================================================
 
 int main_new(Options opts) {
   LOG_G("New parser!\n");
@@ -308,6 +332,8 @@ int main_new(Options opts) {
 
   CSourceFile* root_file = nullptr;
   err << repo.load_source(opts.src_name, &root_file);
+
+  //exit(-1);
 
   if (!root_file) {
     LOG_R("Could not load %s\n", opts.src_name.c_str());

@@ -36,7 +36,7 @@ TextSpan  match_eof        (TextMatchContext& ctx, TextSpan body);
 //------------------------------------------------------------------------------
 
 bool CLexer::lex(const std::string& source, std::vector<Lexeme>& out_lexemes) {
-  TextSpan source_span = utils::to_span(source);
+  source_span = utils::to_span(source);
 
   out_lexemes.clear();
   out_lexemes.reserve(65536);
@@ -48,7 +48,7 @@ bool CLexer::lex(const std::string& source, std::vector<Lexeme>& out_lexemes) {
 
   TextMatchContext ctx;
   while (source_span.is_valid()) {
-    auto lex = next_lexeme(ctx, source_span);
+    auto lex = next_lexeme(ctx);
     lex.row = current_row;
     lex.col = current_col;
     lex.indent = current_indent;
@@ -86,34 +86,110 @@ bool CLexer::lex(const std::string& source, std::vector<Lexeme>& out_lexemes) {
 
 //------------------------------------------------------------------------------
 
-Lexeme CLexer::next_lexeme(TextMatchContext& ctx, TextSpan body) {
-  if (auto tail = match_space(ctx, body)  ) return Lexeme(LEX_SPACE,   body.begin, tail.begin);
-  if (auto tail = match_newline(ctx, body)) return Lexeme(LEX_NEWLINE, body.begin, tail.begin);
-  if (auto tail = match_string(ctx, body) ) return Lexeme(LEX_STRING,  body.begin, tail.begin);
+bool CLexer::lex2(const std::string& source, std::vector<Chunk>& out_chunks) {
 
-  // Match char needs to come before match identifier because of its possible
-  // L'_' prefix...
-  if (auto tail = match_char(ctx, body)   ) return Lexeme(LEX_CHAR, body.begin, tail.begin);
+  chunk_root = new Chunk();
+  auto cursor = chunk_root;
 
-  if (auto tail = match_identifier(ctx, body)) {
-    if (SST<c_keywords>::match(body.begin, tail.begin)) {
-      return Lexeme(LEX_KEYWORD, body.begin, tail.begin);
-    } else {
-      return Lexeme(LEX_IDENTIFIER, body.begin, tail.begin);
+  source_span = utils::to_span(source);
+
+  TextMatchContext ctx;
+  while (source_span.is_valid()) {
+    auto lex = next_lexeme(ctx);
+    lex.row = current_row;
+    lex.col = current_col;
+    lex.indent = current_indent;
+
+    if (lex.type == LEX_PREPROC) {
+      Chunk* c = new Chunk();
+      c->preproc = lex;
+      c->parent = cursor;
+
+      //auto span_space = match_space(ctx, body);
+
+      if (c->preproc.get_text().starts_with("#if ")) {
+      }
+      else if (c->preproc.get_text().starts_with("#ifdef ")) {
+      }
+      else if (c->preproc.get_text().starts_with("#ifndef ")) {
+      }
+      else if (c->preproc.get_text().starts_with("#else ")) {
+      }
+      else if (c->preproc.get_text().starts_with("#elif ")) {
+      }
+      else if (c->preproc.get_text().starts_with("#endif")) {
+      }
+    }
+    else {
+    }
+
+    /*
+    chunk->lexemes.push_back(lex);
+    if (lex.type == LEX_INVALID) {
+      return false;
+    }
+    if (lex.type == LEX_EOF) break;
+    */
+
+    //----------
+    // Update source location
+
+    while(source_span.begin < lex.text_end) {
+      if (*source_span.begin == '\n') {
+        current_indent = 0;
+        current_col = 0;
+        current_row++;
+        in_indent = true;
+      }
+      else {
+        if (in_indent) {
+          if (*source_span.begin == ' ') {
+            current_indent++;
+          }
+          else {
+            in_indent = false;
+          }
+        }
+        current_col++;
+      }
+
+      source_span.begin++;
     }
   }
 
-  if (auto tail = match_comment(ctx, body) ) return Lexeme(LEX_COMMENT,  body.begin, tail.begin);
-  if (auto tail = match_preproc(ctx, body) ) return Lexeme(LEX_PREPROC,  body.begin, tail.begin);
-  if (auto tail = match_float(ctx, body)   ) return Lexeme(LEX_FLOAT,    body.begin, tail.begin);
-  if (auto tail = match_int(ctx, body)     ) return Lexeme(LEX_INT,      body.begin, tail.begin);
-  if (auto tail = match_punct(ctx, body)   ) return Lexeme(LEX_PUNCT,    body.begin, tail.begin);
-  if (auto tail = match_splice(ctx, body)  ) return Lexeme(LEX_SPLICE,   body.begin, tail.begin);
-  if (auto tail = match_formfeed(ctx, body)) return Lexeme(LEX_FORMFEED, body.begin, tail.begin);
-  if (auto tail = match_eof(ctx, body)     ) return Lexeme(LEX_EOF,      body.begin, tail.begin);
-  if (auto tail = match_string(ctx, body)  ) return Lexeme(LEX_STRING,   body.begin, tail.begin);
+  return true;
+}
 
-  return Lexeme(LEX_INVALID, nullptr, body.begin);
+//------------------------------------------------------------------------------
+
+Lexeme CLexer::next_lexeme(TextMatchContext& ctx) {
+  if (auto tail = match_space(ctx, source_span)  ) return Lexeme(LEX_SPACE,   source_span.begin, tail.begin);
+  if (auto tail = match_newline(ctx, source_span)) return Lexeme(LEX_NEWLINE, source_span.begin, tail.begin);
+  if (auto tail = match_string(ctx, source_span) ) return Lexeme(LEX_STRING,  source_span.begin, tail.begin);
+
+  // Match char needs to come before match identifier because of its possible
+  // L'_' prefix...
+  if (auto tail = match_char(ctx, source_span)   ) return Lexeme(LEX_CHAR, source_span.begin, tail.begin);
+
+  if (auto tail = match_identifier(ctx, source_span)) {
+    if (SST<c_keywords>::match(source_span.begin, tail.begin)) {
+      return Lexeme(LEX_KEYWORD, source_span.begin, tail.begin);
+    } else {
+      return Lexeme(LEX_IDENTIFIER, source_span.begin, tail.begin);
+    }
+  }
+
+  if (auto tail = match_comment(ctx, source_span) ) return Lexeme(LEX_COMMENT,  source_span.begin, tail.begin);
+  if (auto tail = match_preproc(ctx, source_span) ) return Lexeme(LEX_PREPROC,  source_span.begin, tail.begin);
+  if (auto tail = match_float(ctx, source_span)   ) return Lexeme(LEX_FLOAT,    source_span.begin, tail.begin);
+  if (auto tail = match_int(ctx, source_span)     ) return Lexeme(LEX_INT,      source_span.begin, tail.begin);
+  if (auto tail = match_punct(ctx, source_span)   ) return Lexeme(LEX_PUNCT,    source_span.begin, tail.begin);
+  if (auto tail = match_splice(ctx, source_span)  ) return Lexeme(LEX_SPLICE,   source_span.begin, tail.begin);
+  if (auto tail = match_formfeed(ctx, source_span)) return Lexeme(LEX_FORMFEED, source_span.begin, tail.begin);
+  if (auto tail = match_eof(ctx, source_span)     ) return Lexeme(LEX_EOF,      source_span.begin, tail.begin);
+  if (auto tail = match_string(ctx, source_span)  ) return Lexeme(LEX_STRING,   source_span.begin, tail.begin);
+
+  return Lexeme(LEX_INVALID, nullptr, source_span.begin);
 }
 
 //------------------------------------------------------------------------------

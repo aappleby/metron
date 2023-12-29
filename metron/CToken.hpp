@@ -33,6 +33,15 @@ enum LexemeType {
 //------------------------------------------------------------------------------
 
 struct Lexeme {
+  Lexeme() {
+    this->type = LEX_INVALID;
+    this->text_begin = nullptr;
+    this->text_end = nullptr;
+    this->row = -1;
+    this->col = -1;
+    this->indent = -1;
+  }
+
   Lexeme(LexemeType type, const char* text_begin, const char* text_end) {
     this->type = type;
     this->text_begin = text_begin;

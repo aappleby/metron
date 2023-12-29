@@ -1,1 +1,1 @@
-cp tests/metron_sv/*.sv tests/metron_golden
+cp tests/metron/generated/*.sv tests/metron/golden

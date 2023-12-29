@@ -296,6 +296,22 @@ void dump_lexeme(Lexeme& l) {
   LOG("%s", dump.c_str());
 }
 
+//------------------------------------------------------------------------------
+
+/*
+struct Chunk {
+  std::string condition;
+  std::vector<Lexeme> lexemes;
+
+  Chunk* parent = nullptr;
+  std::vector<Chunk*> children;
+};
+*/
+
+void dump_chunk_tree(Chunk* chunk) {
+  //LOG("Chunk condition %s\n", chunk->condition.c_str());
+  //LOG_INDENT_SCOPE();
+}
 
 //------------------------------------------------------------------------------
 

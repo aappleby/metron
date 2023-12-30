@@ -8,6 +8,7 @@
 #include "matcheroni/Utilities.hpp"
 #include "metrolib/core/Log.h"
 #include "metron/CToken.hpp"
+#include "metron/Dumper.hpp"
 #include "metron/SST.hpp"
 
 using namespace matcheroni;
@@ -30,12 +31,80 @@ TextSpan  match_punct      (TextMatchContext& ctx, TextSpan body);
 TextSpan  match_splice     (TextMatchContext& ctx, TextSpan body);
 TextSpan  match_formfeed   (TextMatchContext& ctx, TextSpan body);
 TextSpan  match_eof        (TextMatchContext& ctx, TextSpan body);
+TextSpan  match_line       (TextMatchContext& ctx, TextSpan body);
 // clang-format on
+
+template<typename pattern>
+std::string_view take(TextMatchContext& ctx, TextSpan& body) {
+  if (auto tail = pattern::match(ctx, body)) {
+    std::string_view result(body.begin, tail.begin);
+    body = tail;
+    return result;
+  }
+
+  return std::string_view();
+}
+
+template<typename pattern>
+void skip(TextMatchContext& ctx, TextSpan& body) {
+  while (auto tail = pattern::match(ctx, body)) {
+    body = tail;
+  }
+}
+
+
 
 //------------------------------------------------------------------------------
 
 bool CLexer::lex(const std::string& source, std::vector<Lexeme>& out_lexemes) {
   source_span = utils::to_span(source);
+
+#if 0
+  {
+    std::vector<Line> lines;
+
+    TextSpan span2 = source_span;
+    while (auto match = match_line(ctx, span2)) {
+      auto line = Line(span2.begin, match.begin);
+
+      auto pp = take<Ref<match_preproc>>(ctx, line);
+      if (!pp.empty()) {
+
+        if (pp == "#define") {
+        }
+        else if (pp == "#ifdef") {
+        }
+        else {
+          printf("%.*s\n", int(pp.size()), pp.begin());
+        }
+
+        skip<Ref<match_space>>(ctx, line);
+
+      }
+
+
+      /*
+      if (auto pp = match_preproc(ctx, line)) {
+        auto pp_head = TextSpan(line.begin, pp.begin);
+        printf("%s\n", matcheroni::utils::to_string(pp_head).c_str());
+
+        skip_match<Oneof<Ref<match_space>, Ref<match_newline>>>(ctx, pp);
+        lines.push_back(pp);
+      }
+      */
+
+      span2 = match;
+    }
+
+    for (auto l : lines) {
+      auto s = escape(l.begin, l.end);
+      printf("%s\n", s.c_str());
+
+    }
+
+    exit(-1);
+  }
+#endif
 
   out_lexemes.clear();
   out_lexemes.reserve(65536);
@@ -45,39 +114,13 @@ bool CLexer::lex(const std::string& source, std::vector<Lexeme>& out_lexemes) {
   current_col = 0;
   in_indent = true;
 
-  TextMatchContext ctx;
   while (source_span.is_valid()) {
     auto lex = next_lexeme();
-    lex.row = current_row;
-    lex.col = current_col;
-    lex.indent = current_indent;
     out_lexemes.push_back(lex);
     if (lex.type == LEX_INVALID) {
       return false;
     }
     if (lex.type == LEX_EOF) break;
-
-    while(source_span.begin < lex.text_end) {
-      if (*source_span.begin == '\n') {
-        current_indent = 0;
-        current_col = 0;
-        current_row++;
-        in_indent = true;
-      }
-      else {
-        if (in_indent) {
-          if (*source_span.begin == ' ') {
-            current_indent++;
-          }
-          else {
-            in_indent = false;
-          }
-        }
-        current_col++;
-      }
-
-      source_span.begin++;
-    }
   }
 
   return true;
@@ -87,6 +130,7 @@ bool CLexer::lex(const std::string& source, std::vector<Lexeme>& out_lexemes) {
 
 bool CLexer::lex2(const std::string& source, std::vector<Chunk>& out_chunks) {
 
+#if 0
   chunk_root = new Chunk();
   auto cursor = chunk_root;
 
@@ -155,13 +199,14 @@ bool CLexer::lex2(const std::string& source, std::vector<Chunk>& out_chunks) {
       source_span.begin++;
     }
   }
+#endif
 
   return true;
 }
 
 //------------------------------------------------------------------------------
 
-Lexeme CLexer::next_lexeme() {
+Lexeme CLexer::next_lexeme2() {
   if (auto tail = match_space(ctx, source_span)  ) return Lexeme(LEX_SPACE,   source_span.begin, tail.begin);
   if (auto tail = match_newline(ctx, source_span)) return Lexeme(LEX_NEWLINE, source_span.begin, tail.begin);
   if (auto tail = match_string(ctx, source_span) ) return Lexeme(LEX_STRING,  source_span.begin, tail.begin);
@@ -189,6 +234,39 @@ Lexeme CLexer::next_lexeme() {
   if (auto tail = match_string(ctx, source_span)  ) return Lexeme(LEX_STRING,   source_span.begin, tail.begin);
 
   return Lexeme(LEX_INVALID, nullptr, source_span.begin);
+}
+
+//------------------------------------------------------------------------------
+
+Lexeme CLexer::next_lexeme() {
+  Lexeme lex = next_lexeme2();
+  lex.row = current_row;
+  lex.col = current_col;
+  lex.indent = current_indent;
+
+  while(source_span.begin < lex.text_end) {
+    if (*source_span.begin == '\n') {
+      current_indent = 0;
+      current_col = 0;
+      current_row++;
+      in_indent = true;
+    }
+    else {
+      if (in_indent) {
+        if (*source_span.begin == ' ') {
+          current_indent++;
+        }
+        else {
+          in_indent = false;
+        }
+      }
+      current_col++;
+    }
+
+    source_span.begin++;
+  }
+
+  return lex;
 }
 
 //------------------------------------------------------------------------------
@@ -664,6 +742,16 @@ TextSpan match_preproc(TextMatchContext& ctx, TextSpan body) {
     Some<Ranges<'a','z','A','Z'>>
   >;
   // clang-format on
+  return pattern::match(ctx, body);
+}
+
+//------------------------------------------------------------------------------
+
+TextSpan match_line(TextMatchContext& ctx, TextSpan body) {
+  using pattern = Seq<
+    Any<Ref<match_splice>, NotAtom<'\n'>>,
+    Atom<'\n'>
+  >;
   return pattern::match(ctx, body);
 }
 

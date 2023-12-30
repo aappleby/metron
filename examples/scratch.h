@@ -1,7 +1,14 @@
 #include "metron/metron_tools.h"
 
+#define foo bar baz \
+  blep jarpfj lgoal
+
+
+
 // We need to support very basic preprocessor macros or else dealing with mixed
 // languages will be a huge pain in the butt.
+
+
 
 #ifdef METRON_SV
 

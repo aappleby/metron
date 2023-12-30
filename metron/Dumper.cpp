@@ -26,7 +26,7 @@ void dump_dispatch(CNode* node) {
 //------------------------------------------------------------------------------
 // Node debugging
 
-static std::string escape(const char* a, const char* b) {
+std::string escape(const char* a, const char* b) {
   std::string result;
   result.push_back('"');
   for (; a < b; a++) {

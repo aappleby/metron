@@ -18,6 +18,8 @@ chunk = (chunk fork chunk fork chunk fork)
 
 */
 
+using Line = matcheroni::TextSpan;
+
 struct Chunk {
   Lexeme preproc;
   std::vector<Lexeme> lexemes;
@@ -36,6 +38,7 @@ struct CLexer {
   bool lex2(const std::string& source, std::vector<Chunk>& out_chunks);
 
   Lexeme next_lexeme();
+  Lexeme next_lexeme2();
 
   Chunk* chunk_root = nullptr;
 

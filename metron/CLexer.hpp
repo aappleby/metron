@@ -29,18 +29,20 @@ struct Chunk {
 //------------------------------------------------------------------------------
 
 struct CLexer {
-  using TextSpan = matcheroni::TextSpan;
+  using Span = matcheroni::TextSpan;
+  using Context = matcheroni::TextMatchContext;
 
   bool lex(const std::string& source, std::vector<Lexeme>& out_lexemes);
   bool lex2(const std::string& source, std::vector<Chunk>& out_chunks);
 
-  Lexeme next_lexeme(matcheroni::TextMatchContext& ctx);
+  Lexeme next_lexeme();
 
   Chunk* chunk_root = nullptr;
 
+  Context ctx;
   std::map<std::string, std::string> defines;
 
-  TextSpan source_span;
+  Span source_span;
 
   int current_row = 0;
   int current_col = 0;

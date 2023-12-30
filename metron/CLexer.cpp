@@ -16,7 +16,6 @@ template <typename M>
 using ticked = Seq<Opt<Atom<'\''>>, M>;
 
 // clang-format off
-CToken    next_lexeme      (TextMatchContext& ctx, TextSpan body);
 TextSpan  match_space      (TextMatchContext& ctx, TextSpan body);
 TextSpan  match_newline    (TextMatchContext& ctx, TextSpan body);
 TextSpan  match_string     (TextMatchContext& ctx, TextSpan body);
@@ -48,7 +47,7 @@ bool CLexer::lex(const std::string& source, std::vector<Lexeme>& out_lexemes) {
 
   TextMatchContext ctx;
   while (source_span.is_valid()) {
-    auto lex = next_lexeme(ctx);
+    auto lex = next_lexeme();
     lex.row = current_row;
     lex.col = current_col;
     lex.indent = current_indent;
@@ -95,7 +94,7 @@ bool CLexer::lex2(const std::string& source, std::vector<Chunk>& out_chunks) {
 
   TextMatchContext ctx;
   while (source_span.is_valid()) {
-    auto lex = next_lexeme(ctx);
+    auto lex = next_lexeme();
     lex.row = current_row;
     lex.col = current_col;
     lex.indent = current_indent;
@@ -162,7 +161,7 @@ bool CLexer::lex2(const std::string& source, std::vector<Chunk>& out_chunks) {
 
 //------------------------------------------------------------------------------
 
-Lexeme CLexer::next_lexeme(TextMatchContext& ctx) {
+Lexeme CLexer::next_lexeme() {
   if (auto tail = match_space(ctx, source_span)  ) return Lexeme(LEX_SPACE,   source_span.begin, tail.begin);
   if (auto tail = match_newline(ctx, source_span)) return Lexeme(LEX_NEWLINE, source_span.begin, tail.begin);
   if (auto tail = match_string(ctx, source_span) ) return Lexeme(LEX_STRING,  source_span.begin, tail.begin);

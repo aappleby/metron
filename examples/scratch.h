@@ -1,42 +1,17 @@
 #include "metron/metron_tools.h"
 
-#define foo bar baz \
-  blep jarpfj lgoal
-
-
-
 // We need to support very basic preprocessor macros or else dealing with mixed
 // languages will be a huge pain in the butt.
 
-
-
-#ifdef METRON_SV
-
-//module Submod();
-//endmodule
-
-#else
-
-#endif
-
-#if 0
-
-struct Chunk {
-
-  ChunkType type;
-
-  Lexeme preproc;
-  std::vector<Lexeme>* lexemes;
-  Chunk* parent = nullptr;
-  std::vecetor<Chunk*> children;
+class Module {
 };
 
-#endif
-
 /*
+#ifdef METRON_SV
 
+  UNLEXABLE STUFF HERE
 
-#ifndef METRON_SV
+#else
 
   the quick brown fox
 
@@ -60,29 +35,5 @@ struct Chunk {
 
   the quick brown fox
 
-#else
-
-  UNLEXABLE STUFF HERE
-
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-#ifdef METRON_CPP
-
-#else
-
-#endif
-
-
-
 */

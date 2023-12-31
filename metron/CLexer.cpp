@@ -57,7 +57,21 @@ void skip(TextMatchContext& ctx, TextSpan& body) {
 //------------------------------------------------------------------------------
 
 bool CLexer::lex(const std::string& source, std::vector<Lexeme>& out_lexemes) {
+
+  /*
   source_span = utils::to_span(source);
+
+  std::vector<Line> lines;
+
+  TextSpan span2 = source_span;
+  while (auto match = match_line(ctx, span2)) {
+    auto line = Line(span2.begin, match.begin);
+    lines.push_back(line);
+    span2 = match;
+  }
+
+  printf("Line count %d\n", int(lines.size()));
+  */
 
 #if 0
   {
@@ -106,22 +120,53 @@ bool CLexer::lex(const std::string& source, std::vector<Lexeme>& out_lexemes) {
   }
 #endif
 
+  //----------
+
+  /*
+  std::vector<Lexeme> new_lexemes;
+
+  new_lexemes.clear();
+  new_lexemes.reserve(65536);
+  new_lexemes.push_back(Lexeme(LEX_BOF, source_span.begin, source_span.begin));
+
+  current_row = 0;
+  current_col = 0;
+  current_indent = 0;
+  in_indent = true;
+
+  for (auto line : lines) {
+    source_span = line;
+    while (source_span.is_valid()) {
+      auto lex = next_lexeme();
+      if (lex.type == LEX_EOF) break;
+      new_lexemes.push_back(lex);
+    }
+  }
+  */
+
+  //----------
+
+  source_span = utils::to_span(source);
+
+  current_row = 0;
+  current_col = 0;
+  current_indent = 0;
+  in_indent = true;
+
   out_lexemes.clear();
   out_lexemes.reserve(65536);
   out_lexemes.push_back(Lexeme(LEX_BOF, source_span.begin, source_span.begin));
 
-  current_row = 0;
-  current_col = 0;
-  in_indent = true;
-
   while (source_span.is_valid()) {
     auto lex = next_lexeme();
     out_lexemes.push_back(lex);
-    if (lex.type == LEX_INVALID) {
-      return false;
-    }
     if (lex.type == LEX_EOF) break;
   }
+
+  //----------
+
+  //printf("old lexemes %d\n", int(out_lexemes.size()));
+  //printf("new lexemes %d\n", int(new_lexemes.size()));
 
   return true;
 }

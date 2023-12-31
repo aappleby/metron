@@ -9,7 +9,11 @@ module Module
 endmodule
 
 /*
-#ifndef METRON_SV
+#ifdef METRON_SV
+
+  UNLEXABLE STUFF HERE
+
+#else
 
   the quick brown fox
 
@@ -32,10 +36,6 @@ endmodule
   #endif
 
   the quick brown fox
-
-#else
-
-  UNLEXABLE STUFF HERE
 
 #endif
 */

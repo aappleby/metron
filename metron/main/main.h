@@ -10,6 +10,7 @@ struct Options {
   bool echo = false;
   bool dump = false;
   bool monochrome = false;
+  bool newlex = false;
   std::string inc_path;
   std::string src_name;
   std::string dst_name;

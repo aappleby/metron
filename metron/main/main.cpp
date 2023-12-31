@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+int test_newlex(Options& opts);
+
 int main(int argc, char** argv) {
   const char* banner =
       "                                                        \n"
@@ -30,6 +32,7 @@ int main(int argc, char** argv) {
   auto echo_opt    = app.add_flag  ("-e,--echo",       opts.echo,         "Echo the converted source back to the terminal, with color-coding.");
   auto dump_opt    = app.add_flag  ("-d,--dump",       opts.dump,         "Dump the syntax tree of the source file(s) to the console.");
   auto mono_opt    = app.add_flag  ("-m,--monochrome", opts.monochrome,   "Monochrome mode, no color-coding");
+  auto newlex_opt  = app.add_flag  ("-n,--newlex",     opts.newlex,       "Test the new lexer.");
   auto inc_opt     = app.add_option("-i,--include",    opts.inc_path,     "Include path");
   auto src_opt     = app.add_option("-c,--convert",    opts.src_name,     "Full path to source file to translate from C++ to SystemVerilog");
   auto dst_opt     = app.add_option("-o,--output",     opts.dst_name,     "Output file path. If not specified, will only check the source for convertibility.");
@@ -57,6 +60,10 @@ int main(int argc, char** argv) {
   LOG_B("Monochrome %d\n", opts.monochrome);
   LOG_B("\n");
 
-  auto result_new = main_new(opts);
-  return result_new;
+  if (opts.newlex) {
+    return test_newlex(opts);
+  }
+  else {
+    return main_new(opts);
+  }
 }

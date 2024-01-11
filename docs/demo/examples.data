@@ -7427,40 +7427,22 @@ class toplevel {
 // We need to support very basic preprocessor macros or else dealing with mixed
 // languages will be a huge pain in the butt.
 
-class Module {
-};
-
-/*
 #ifdef METRON_SV
 
-  UNLEXABLE STUFF HERE
+module Module2(input logic clock);
+  logic[7:0] counter;
+
+  always @(posedge clock) begin
+    counter <= counter + 1;
+  end
+endmodule
 
 #else
 
-  the quick brown fox
-
-  #ifdef BLAH
-    the quick brown fox
-  #endif
-
-  the quick brown fox
-
-  #ifdef BLAH
-    the quick brown fox
-  #else
-    the quick brown fox
-  #endif
-
-  the quick brown fox
-
-  #ifndef BLAH
-    the quick brown fox
-  #endif
-
-  the quick brown fox
+class Module {
+};
 
 #endif
-*/
 examples/scratch.sv: examples/scratch.h
 class Adder {
 public:

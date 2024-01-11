@@ -99,7 +99,7 @@ def main():
     )
     print()
 
-    print_b("Checking that all test cases in metron_fail fail conversion")
+    print_b("Checking that all test cases in tests/metron/fail fail conversion")
     errors += check_commands_bad(
         [
             f"bin/metron -c {filename} -o {filename.replace('/fail/', '/generated/').replace('.h', '.sv')}"

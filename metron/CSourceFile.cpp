@@ -124,6 +124,9 @@ Err CSourceFile::init(CSourceRepo* _repo, const std::string& _filename,
     }
   }
 
+  context.span.begin = &context.tokens[0];
+  context.span.end   = context.span.begin + context.tokens.size();
+
   LOG("Parsing %s\n", filepath.c_str());
   LOG_INDENT();
   auto tail = context.parse();

@@ -103,6 +103,17 @@ class CContext : public parseroni::NodeContext<CNode> {
 
   //----------------------------------------
 
+  template<typename pattern>
+  SpanType take() {
+    auto tail = pattern::match(*this, span);
+    if (!tail) return tail;
+    SpanType head = { span.begin, tail.begin };
+    span.begin = tail.begin;
+    return head;
+  }
+
+  //----------------------------------------
+
   CSourceRepo* repo;
   CSourceFile* source_file = nullptr;
 
@@ -114,6 +125,8 @@ class CContext : public parseroni::NodeContext<CNode> {
   std::string source;
   std::vector<Lexeme> lexemes;
   std::vector<CToken> tokens;
+
+  TokenSpan span;
 
   std::set<std::string> define_names;
 };

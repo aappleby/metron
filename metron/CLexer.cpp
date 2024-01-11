@@ -327,11 +327,11 @@ TextSpan match_formfeed(TextMatchContext& ctx, TextSpan body) {
   return Atom<'\f'>::match(ctx, body);
 }
 
-TextSpan match_space(TextMatchContext& ctx, TextSpan body) {
-  using ws = Atoms<' ', '\t'>;
-  using pattern = Some<ws>;
-  return pattern::match(ctx, body);
-}
+  TextSpan match_space(TextMatchContext& ctx, TextSpan body) {
+    using ws = Atoms<' ', '\t'>;
+    using pattern = Some<ws>;
+    return pattern::match(ctx, body);
+  }
 
 TextSpan match_newline(TextMatchContext& ctx, TextSpan body) {
   using pattern = Seq<Opt<Atom<'\r'>>, Atom<'\n'>>;
@@ -665,10 +665,6 @@ TextSpan match_string(TextMatchContext& ctx, TextSpan body) {
 // 6.4.6 Punctuators
 
 TextSpan match_punct(TextMatchContext& ctx, TextSpan body) {
-  // This was a bad idea.......
-  // XXXX We're just gonna match these one punct at a time
-  // XXXX using punctuator = Charset<"-,;:!?.()[]{}*/&#%^+<=>|~">;
-  // XXXX return punctuator::match(ctx, body);
 
   using pattern = Oneof<
     Lit<"...">,

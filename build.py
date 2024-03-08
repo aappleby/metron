@@ -49,7 +49,6 @@ def divider(text):
 def main():
     global outfile
     print("Regenerating build.ninja...")
-    ninja.variable("toolchain", "x86_64-linux-gnu")
     ninja.include("symlinks/metrolib/ninja/rules.ninja")
     ninja.newline()
 

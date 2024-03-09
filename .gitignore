@@ -2,6 +2,7 @@ bin
 out
 obj
 gen
+wasm
 coverage
 .ninja_deps
 .ninja_log

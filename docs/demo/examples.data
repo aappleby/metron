@@ -7443,7 +7443,6 @@ class Module {
 };
 
 #endif
-examples/scratch.sv: examples/scratch.h
 class Adder {
 public:
   int add(int a, int b) {
@@ -8631,7 +8630,6 @@ private:
 
 
 };
-tests/metron/pass/all_func_types.sv: tests/metron/pass/all_func_types.h
 #include "metron/metron_tools.h"
 
 // Modules can use constructors to initialize state
@@ -8664,7 +8662,6 @@ module Test;
 endmodule
 `endif
 #*/
-tests/metron/pass/basic_constructor.sv: tests/metron/pass/basic_constructor.h
 #include "metron/metron_tools.h"
 
 // Methods that don't write anything should become functions.
@@ -8682,7 +8679,6 @@ public:
 
   logic<8> my_reg_;
 };
-tests/metron/pass/basic_function.sv: tests/metron/pass/basic_function.h
 #include "metron/metron_tools.h"
 
 // Increment/decrement should be translated into equivalent Verilog, but they
@@ -8703,7 +8699,6 @@ public:
   int my_reg3_;
   int my_reg4_;
 };
-tests/metron/pass/basic_increment.sv: tests/metron/pass/basic_increment.h
 #include "metron/metron_tools.h"
 
 // Tick inputs should become input ports.
@@ -8725,7 +8720,6 @@ class Module {
   logic<7> my_reg_;
 };
 // clang-format on
-tests/metron/pass/basic_inputs.sv: tests/metron/pass/basic_inputs.h
 #include "metron/metron_tools.h"
 
 // Number literals
@@ -8759,7 +8753,6 @@ public:
   }
 
 };
-tests/metron/pass/basic_literals.sv: tests/metron/pass/basic_literals.h
 #include "metron/metron_tools.h"
 
 // Static const members become SV localparams
@@ -8781,7 +8774,6 @@ private:
 
   logic<7> my_reg_;
 };
-tests/metron/pass/basic_localparam.sv: tests/metron/pass/basic_localparam.h
 #include "metron/metron_tools.h"
 
 // Getter methods should turn into outputs.
@@ -8806,7 +8798,6 @@ private:
 
   logic<7> my_reg_;
 };
-tests/metron/pass/basic_output.sv: tests/metron/pass/basic_output.h
 #include "metron/metron_tools.h"
 
 // Template parameters become SV module parameters.
@@ -8827,7 +8818,6 @@ private:
 
   logic<7> my_reg_;
 };
-tests/metron/pass/basic_param.sv: tests/metron/pass/basic_param.h
 #include "metron/metron_tools.h"
 
 // Public register member variables get moved to the output port list.
@@ -8841,7 +8831,6 @@ public:
 
   logic<1> my_reg_;
 };
-tests/metron/pass/basic_public_reg.sv: tests/metron/pass/basic_public_reg.h
 #include "metron/metron_tools.h"
 
 // Public signal member variables get moved to the output port list.
@@ -8855,7 +8844,6 @@ public:
 
   logic<1> my_sig;
 };
-tests/metron/pass/basic_public_sig.sv: tests/metron/pass/basic_public_sig.h
 #include "metron/metron_tools.h"
 
 // Writing a register multiple times in the same function is OK.
@@ -8871,7 +8859,6 @@ public:
 
   logic<1> my_reg_;
 };
-tests/metron/pass/basic_reg_rww.sv: tests/metron/pass/basic_reg_rww.h
 #include "metron/metron_tools.h"
 
 // Writing a register multiple times in the same function is OK.
@@ -8887,7 +8874,6 @@ public:
 
   logic<1> my_sig;
 };
-tests/metron/pass/basic_sig_wwr.sv: tests/metron/pass/basic_sig_wwr.h
 #include "metron/metron_tools.h"
 
 // Modules can contain other modules.
@@ -8917,7 +8903,6 @@ public:
 
   Submod submod;
 };
-tests/metron/pass/basic_submod.sv: tests/metron/pass/basic_submod.h
 #include "metron/metron_tools.h"
 
 // We can instantiated templated classes as submodules.
@@ -8948,7 +8933,6 @@ public:
 
   Submod<99> submod;
 };
-tests/metron/pass/basic_submod_param.sv: tests/metron/pass/basic_submod_param.h
 #include "metron/metron_tools.h"
 
 // We can instantiated templated classes as submodules.
@@ -8983,7 +8967,6 @@ public:
 
   Submod submod;
 };
-tests/metron/pass/basic_submod_public_reg.sv: tests/metron/pass/basic_submod_public_reg.h
 #include "metron/metron_tools.h"
 
 // Simple switch statements are OK.
@@ -9013,7 +8996,6 @@ private:
 
   logic<8> my_reg_;
 };
-tests/metron/pass/basic_switch.sv: tests/metron/pass/basic_switch.h
 #include "metron/metron_tools.h"
 
 // Private non-const methods should turn into SV tasks.
@@ -9039,7 +9021,6 @@ private:
   logic<8> my_reg_;
   logic<8> my_reg2_;
 };
-tests/metron/pass/basic_task.sv: tests/metron/pass/basic_task.h
 #include "metron/metron_tools.h"
 
 // Templates can be used for module parameters
@@ -9068,7 +9049,6 @@ public:
 
   Submod<10,11> submod;
 };
-tests/metron/pass/basic_template.sv: tests/metron/pass/basic_template.h
 #include "metron/metron_tools.h"
 
 // Logics can be casted to various sizes via bN() or bx<N>()
@@ -9278,7 +9258,6 @@ public:
 
 
 };
-tests/metron/pass/bit_casts.sv: tests/metron/pass/bit_casts.h
 #include "metron/metron_tools.h"
 
 // Concatenating logics should produce logics with correct <N>
@@ -9309,7 +9288,6 @@ public:
     sig2 = cat(b1(a), b2(b), b3(c));
   }
 };
-tests/metron/pass/bit_concat.sv: tests/metron/pass/bit_concat.h
 #include "metron/metron_tools.h"
 
 class Module {
@@ -9348,7 +9326,6 @@ public:
     return 0;
   }
 };
-tests/metron/pass/bit_dup.sv: tests/metron/pass/bit_dup.h
 #include "metron/metron_tools.h"
 
 // C structs with bit-size annotations become arrays of sized logic<>s.
@@ -9424,7 +9401,6 @@ class Module {
 
   rv32_insn blah;
 };
-tests/metron/pass/bitfields.sv: tests/metron/pass/bitfields.h
 #include "metron/metron_tools.h"
 
 // All the combos of tasks/funcs should work from ticks and tocks.
@@ -9468,7 +9444,6 @@ private:
   logic<8> my_reg1_;
   logic<8> my_reg2_;
 };
-tests/metron/pass/both_tock_and_tick_use_tasks_and_funcs.sv: tests/metron/pass/both_tock_and_tick_use_tasks_and_funcs.h
 #include "metron/metron_tools.h"
 
 // Make sure our built-in functions translate.
@@ -9489,7 +9464,6 @@ public:
   }
 
 };
-tests/metron/pass/builtins.sv: tests/metron/pass/builtins.h
 #include "metron/metron_tools.h"
 
 // Calling tick() from tock() in the same module should work and should
@@ -9511,7 +9485,6 @@ private:
   logic<8> my_reg_;
 
 };
-tests/metron/pass/call_tick_from_tock.sv: tests/metron/pass/call_tick_from_tock.h
 #include "metron/metron_tools.h"
 
 // Case statements are allowed to have fallthrough, though the SV syntax is
@@ -9548,7 +9521,6 @@ private:
 
   logic<8> my_reg_;
 };
-tests/metron/pass/case_with_fallthrough.sv: tests/metron/pass/case_with_fallthrough.h
 #include "metron/metron_tools.h"
 
 // We should be able to pass constructor arguments to submodules.
@@ -9602,7 +9574,6 @@ public:
 };
 
 //----------------------------------------
-tests/metron/pass/constructor_arg_passing.sv: tests/metron/pass/constructor_arg_passing.h
 #include "metron/metron_tools.h"
 
 // We should be able to handle constructor args.
@@ -9632,7 +9603,6 @@ private:
   logic<8> data_[data_len];
   logic<8> out_;
 };
-tests/metron/pass/constructor_args.sv: tests/metron/pass/constructor_args.h
 #include "metron/metron_tools.h"
 
 // Members whose names have trailing underscores are states.
@@ -9672,7 +9642,6 @@ private:
   logic<1>  is_even;
   logic<32> counter_;
 };
-tests/metron/pass/counter.sv: tests/metron/pass/counter.h
 #include "metron/metron_tools.h"
 
 // Basic #defines should work as long as their contents are simultaneously
@@ -9690,7 +9659,6 @@ public:
   }
 
 };
-tests/metron/pass/defines.sv: tests/metron/pass/defines.h
 #include "metron/metron_tools.h"
 
 // DONTCARE gets translated to 'x
@@ -9711,7 +9679,6 @@ public:
     return bx<8>(DONTCARE);
   }
 };
-tests/metron/pass/dontcare.sv: tests/metron/pass/dontcare.h
 #include "metron/metron_tools.h"
 
 // Most kinds of C++ enum declarations should work.
@@ -9765,7 +9732,6 @@ class Module {
   }
 };
 // clang-format on
-tests/metron/pass/enum_simple.sv: tests/metron/pass/enum_simple.h
 #include "metron/metron_tools.h"
 
 class Module {
@@ -9790,7 +9756,6 @@ class Module {
     return x;
   }
 };
-tests/metron/pass/for_loops.sv: tests/metron/pass/for_loops.h
 #include "metron/metron_tools.h"
 
 class Module {
@@ -9810,7 +9775,6 @@ private:
   logic<1> my_sig;
   logic<1> my_reg_;
 };
-tests/metron/pass/good_order.sv: tests/metron/pass/good_order.h
 #include "metron/metron_tools.h"
 
 // If statements whose sub-blocks contain submodule calls _must_ use {}.
@@ -9843,7 +9807,6 @@ public:
 
   Submod submod;
 };
-tests/metron/pass/if_with_compound.sv: tests/metron/pass/if_with_compound.h
 // Preprocessor macros generally won't work, but include guards should be OK.
 
 #ifndef INCLUDE_GUARDS_H
@@ -9857,7 +9820,6 @@ public:
 };
 
 #endif
-tests/metron/pass/include_guards.sv: tests/metron/pass/include_guards.h
 // Metron should be able to handle #included submodules.
 
 #include "include_test_submod.h"
@@ -9872,8 +9834,6 @@ public:
 private:
   Submod submod;
 };
-tests/metron/pass/include_test_module.sv: tests/metron/pass/include_test_module.h \
- tests/metron/pass/include_test_submod.h
 // Metron should be able to handle #included submodules.
 
 #include "metron/metron_tools.h"
@@ -9888,7 +9848,6 @@ public:
 private:
   int y_;
 };
-tests/metron/pass/include_test_submod.sv: tests/metron/pass/include_test_submod.h
 #include "metron/metron_tools.h"
 
 // I don't know why you would want to do this, but it should work.
@@ -9944,7 +9903,6 @@ private:
   }
 
 };
-tests/metron/pass/init_chain.sv: tests/metron/pass/init_chain.h
 #include "metron/metron_tools.h"
 
 // Zero-initializing structs should work for convenience.
@@ -9963,7 +9921,6 @@ public:
     my_struct1.field = 0;
   }
 };
-tests/metron/pass/initialize_struct_to_zero.sv: tests/metron/pass/initialize_struct_to_zero.h
 #include "metron/metron_tools.h"
 
 // Public fields that are read by the module but never written become input
@@ -10015,7 +9972,6 @@ private:
 
   Submod submod;
 };
-tests/metron/pass/input_signals.sv: tests/metron/pass/input_signals.h
 #include "metron/metron_tools.h"
 
 class Module {
@@ -10028,7 +9984,6 @@ public:
   }
 
 };
-tests/metron/pass/local_localparam.sv: tests/metron/pass/local_localparam.h
 #include "metron/metron_tools.h"
 
 // Comments surrounded by / * # <something # * / get unwrapped and dropped
@@ -10049,7 +10004,6 @@ public:
 
   int my_reg_;
 };
-tests/metron/pass/magic_comments.sv: tests/metron/pass/magic_comments.h
 #include "metron/metron_tools.h"
 
 // Port and function arg names can collide, the latter is disambiguated by its
@@ -10070,7 +10024,6 @@ public:
     output2 = input_val + 8;
   }
 };
-tests/metron/pass/matching_port_and_arg_names.sv: tests/metron/pass/matching_port_and_arg_names.h
 // Comments at start of file should be preserved
 
 #include "metron/metron_tools.h"
@@ -10081,7 +10034,6 @@ class Module {
 };
 
 // Comments at end of file should be preserved
-tests/metron/pass/minimal.sv: tests/metron/pass/minimal.h
 #include "metron/metron_tools.h"
 
 // Multiple tick methods are OK as long as they're all called by tock()
@@ -10109,7 +10061,6 @@ private:
   logic<8> my_reg1_;
   logic<8> my_reg2_;
 };
-tests/metron/pass/multi_tick.sv: tests/metron/pass/multi_tick.h
 #include "metron/metron_tools.h"
 
 // Namespaces turn into packages.
@@ -10135,7 +10086,6 @@ public:
     my_reg_ = my_reg_ + MyPackage::foo;
   }
 };
-tests/metron/pass/namespaces.sv: tests/metron/pass/namespaces.h
 #include "metron/metron_tools.h"
 
 struct InnerStruct {
@@ -10174,7 +10124,6 @@ public:
     s_.z.c = 9;
   }
 };
-tests/metron/pass/nested_structs.sv: tests/metron/pass/nested_structs.h
 #include "metron/metron_tools.h"
 
 // Nesting submod calls should put all the nested input bindings above the call.
@@ -10208,7 +10157,6 @@ private:
   Submod1 submod1;
   Submod2 submod2;
 };
-tests/metron/pass/nested_submod_calls.sv: tests/metron/pass/nested_submod_calls.h
 #include "metron/metron_tools.h"
 
 class Module {
@@ -10223,7 +10171,6 @@ class Module {
   /* metron_noconvert */ size_t size_bytes();
   /* metron_noconvert */ void debug_dump() { printf("Hello World %d\n", 1234); }
 };
-tests/metron/pass/noconvert.sv: tests/metron/pass/noconvert.h
 #include "metron/metron_tools.h"
 
 // Structs exist in both C++ and Verilog
@@ -10252,7 +10199,6 @@ private:
   MyUnion1 my_union_;
 
 };
-tests/metron/pass/nonblocking_assign_to_struct_union.sv: tests/metron/pass/nonblocking_assign_to_struct_union.h
 #include "metron/metron_tools.h"
 
 // Cramming various statements into one line should not break anything.
@@ -10267,7 +10213,6 @@ public:
   logic<8> my_reg_;
 
 };
-tests/metron/pass/oneliners.sv: tests/metron/pass/oneliners.h
 class Metron {
 public:
 
@@ -10302,7 +10247,6 @@ public:
     my_reg6_ *= 22;
   }
 };
-tests/metron/pass/plus_equals.sv: tests/metron/pass/plus_equals.h
 #include "metron/metron_tools.h"
 
 // We need to support very basic preprocessor macros or else dealing with mixed
@@ -10359,7 +10303,6 @@ private:
   }
 
 };
-tests/metron/pass/private_getter.sv: tests/metron/pass/private_getter.h
 #include "metron/metron_tools.h"
 
 // A module should be able to have a noconvert-tagged method that returns a
@@ -10369,7 +10312,6 @@ class Module {
 public:
   /* metron_noconvert */ Module* get_this();
 };
-tests/metron/pass/self_reference.sv: tests/metron/pass/self_reference.h
 #include "metron/metron_tools.h"
 
 // Using slice<>() to write to sub-sections of a variable should work.
@@ -10388,7 +10330,6 @@ public:
 private:
   logic<32> ram_[256];
 };
-tests/metron/pass/slice.sv: tests/metron/pass/slice.h
 #include "metron/metron_tools.h"
 
 // Structs exist in both C++ and Verilog
@@ -10422,7 +10363,6 @@ private:
   }
 
 };
-tests/metron/pass/structs.sv: tests/metron/pass/structs.h
 #include "metron/metron_tools.h"
 
 // Passing structs to functions that turn into always_comb or always_ff
@@ -10449,7 +10389,6 @@ public:
 };
 
 //------------------------------------------------------------------------------
-tests/metron/pass/structs_as_args.sv: tests/metron/pass/structs_as_args.h
 #include "metron/metron_tools.h"
 
 // Structs can be used as input/output ports to submodules.
@@ -10584,7 +10523,6 @@ public:
 };
 
 //------------------------------------------------------------------------------
-tests/metron/pass/structs_as_ports.sv: tests/metron/pass/structs_as_ports.h
 #include "metron/metron_tools.h"
 
 // Submodule bindings should be placed immediately before the statement
@@ -10622,7 +10560,6 @@ public:
 
   Submod submod;
 };
-tests/metron/pass/submod_bindings.sv: tests/metron/pass/submod_bindings.h
 #include "metron/metron_tools.h"
 
 // Tocks should be able to call private tasks and functions
@@ -10651,7 +10588,6 @@ private:
   }
 
 };
-tests/metron/pass/tock_task.sv: tests/metron/pass/tock_task.h
 #include "metron/metron_tools.h"
 
 // Trivial adder just for example.
@@ -10664,7 +10600,6 @@ public:
   }
 
 };
-tests/metron/pass/trivial_adder.sv: tests/metron/pass/trivial_adder.h
 #include "metron/metron_tools.h"
 
 union my_union {
@@ -10682,7 +10617,6 @@ public:
 
   my_union blah;
 };
-tests/metron/pass/unions.sv: tests/metron/pass/unions.h
 #include "metron/metron_tools.h"
 
 // UTF-8 text files with a byte order mark should be supported.
@@ -10714,7 +10648,6 @@ private:
 
   logic<8> my_reg_;
 };
-tests/metron/pass/utf8-mod.bom.sv: tests/metron/pass/utf8-mod.bom.h
 #include "metron/metron_tools.h"
 
 // UTF-8 text files with a byte order mark should be supported.
@@ -10746,4 +10679,3 @@ private:
 
   logic<8> my_reg_;
 };
-tests/metron/pass/utf8-mod.sv: tests/metron/pass/utf8-mod.h

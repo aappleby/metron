@@ -6,6 +6,8 @@ import subprocess
 import multiprocessing
 import shlex
 import argparse
+import shutil
+from os import path
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -134,41 +136,68 @@ def main():
 
     if not options.basic:
         includes = "-I. -Itests/metron/generated"
-        print_b("Checking that all converted files can be parsed by Verilator")
-        errors += check_commands_good(
-            [
-                f"verilator -Wno-width {includes} --lint-only {filename}"
-                for filename in metron_sv
-            ]
-        )
-        print()
 
-        if options.synth:
-            print_b("Checking that all converted files can be synthesized by Yosys")
+        print_b("Checking that all converted files can be parsed by Verilator")
+        if shutil.which("verilator"):
             errors += check_commands_good(
                 [
-                    f"yosys -q -p 'read_verilog {includes} -sv {filename}; dump; synth_ice40 -json /dev/null'"
+                    f"verilator -Wno-width {includes} --lint-only {filename}"
                     for filename in metron_sv
                 ]
             )
+            print()
         else:
-            print_b("Checking that all converted files can be parsed by Yosys")
+            print_r("Verilator not found")
+            errors += 1
+
+        print_b("Checking that all converted files can be run through sv2v")
+        metron_v = []
+        if shutil.which("sv2v"):
             errors += check_commands_good(
                 [
-                    f"yosys -q -p 'read_verilog {includes} -sv {filename};'"
+                    f"sv2v -I . -w adjacent {filename}"
                     for filename in metron_sv
                 ]
             )
-        print()
+            metron_v = [path.splitext(filename)[0] + '.v' for filename in metron_sv]
+            print()
+        else:
+            print_r("SV2V not found")
+            errors += 1
+
+        print_b(f"Checking that all converted files can be {'synthesized' if options.synth else 'parsed'} by Yosys (after sv2v)")
+        if shutil.which("yosys") and shutil.which("sv2v"):
+            if options.synth:
+                errors += check_commands_good(
+                    [
+                        f"yosys -q -p 'read_verilog {includes} -sv {filename}; dump; synth_ice40 -json /dev/null'"
+                        for filename in metron_v
+                    ]
+                )
+            else:
+                errors += check_commands_good(
+                    [
+                        f"yosys -q -p 'read_verilog {includes} -sv {filename};'"
+                        for filename in metron_v
+                    ]
+                )
+            print()
+        else:
+            print_r("Yosys and/or SV2V not found")
+            errors += 1
 
         print_b("Checking that all converted files can be parsed by Icarus")
-        errors += check_commands_good(
-            [
-                f"iverilog -g2012 -Wall {includes} -o /dev/null {filename}"
-                for filename in metron_sv
-            ]
-        )
-        print()
+        if shutil.which("iverilog"):
+            errors += check_commands_good(
+                [
+                    f"iverilog -g2012 -Wall {includes} -o /dev/null {filename}"
+                    for filename in metron_sv
+                ]
+            )
+            print()
+        else:
+            print_r("iverilog not found")
+            errors += 1
 
         print_b("Running misc bad commands")
         errors += check_commands_bad(

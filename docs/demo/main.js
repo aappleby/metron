@@ -107,8 +107,8 @@ function main(mod) {
     src_selector.appendChild(opt);
   }
 
-  // Load scratch.h by default.
-  var initial_file = "./examples/scratch.h";
+  // Load examples/tutorial/adder.h by default.
+  var initial_file = "./examples/tutorial/adder.h";
   src_selector.selectedIndex = src_paths.indexOf(initial_file);
   src_jar.updateCode(new TextDecoder().decode(mod.FS.readFile(initial_file)));
 
@@ -129,7 +129,7 @@ function main(mod) {
   opt_verbose.addEventListener("change", () => convert(mod));
   opt_monochrome.addEventListener("change", () => convert(mod));
 
-  // Trigger convert so we generate scratch.sv.
+  // Trigger convert so we generate adder.sv.
   convert(mod);
 }
 

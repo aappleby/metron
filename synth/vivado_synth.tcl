@@ -9,7 +9,7 @@ set_msg_config -id {HDL 9-2613} -suppress
 # Unused sequential element was removed
 set_msg_config -id {Synth 8-6014} -suppress
 
-cd d:/Metron
+cd d:/metron
 pwd
 
 # smallest artix part

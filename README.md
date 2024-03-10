@@ -10,9 +10,9 @@ Because it targets hardware implementation, Metron can't handle a lot of C++ lan
 
 # TL;DR:
 ## [Short essay about hardware vs. software programming](docs/BlueBallMachines.md)
-## [Demo](https://aappleby.github.io/Metron/demo/)
-## [Tutorial](https://aappleby.github.io/Metron/tutorial/)
-## [How Metron Works - Tracing & Symbolic Logic](https://aappleby.github.io/Metron/TemporalLogic.html)
+## [Demo](https://aappleby.github.io/metron/demo/)
+## [Tutorial](https://aappleby.github.io/metron/tutorial/)
+## [How Metron Works - Tracing & Symbolic Logic](https://aappleby.github.io/metron/TemporalLogic.html)
 
 ## Metron v0.0.1 Release Notes
 
@@ -55,8 +55,8 @@ Note: Metron doesn't use Git submodules anymore, instead it expects its dependen
 ```
 sudo apt install git build-essential ninja-build python3 libicu-dev libsdl2-dev
 git clone https://github.com/CLIUtils/CLI11
-git clone https://github.com/aappleby/Metron
-cd Metron
+git clone https://github.com/aappleby/metron
+cd metron
 ./build.py
 ninja bin/metron
 ```

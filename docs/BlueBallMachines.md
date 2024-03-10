@@ -33,7 +33,7 @@ Together, the set of all possible symbols formed a weird sort of state machine. 
 
 At that point I felt like I was really obligated to publish something. I figured that as long as I was writing all this stuff up, I should put together a live demo where you can type code in one side and see the translated version come out the other side. I'd always enjoyed tools like Compiler Explorer and JSFiddle and that seemed to be a good way to get people interested. A tutorial seemed appropriate too - this was a pretty weird project and I still wasn't 100% convinced that it would make sense to anyone except me, so writing it all down in tutorial form would be a good way to get all my thoughts straight.
 
-And so that became Metron v0.0.1, published at https://github.com/aappleby/Metron - complete with live demo, live tutorial, and a slightly more fleshed-out explanation of the code-traversing, symbol-concatenating algorithm I mentioned above.
+And so that became Metron v0.0.1, published at https://github.com/aappleby/metron - complete with live demo, live tutorial, and a slightly more fleshed-out explanation of the code-traversing, symbol-concatenating algorithm I mentioned above.
 
 ----------
 

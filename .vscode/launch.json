@@ -36,27 +36,7 @@
           "ignoreFailures": true
         }
       ]
-    },
-    {
-      "name": "Metron_newlex",
-      "preLaunchTask": "build_metron_bin",
-      "type": "cppdbg",
-      "request": "launch",
-      "program": "${workspaceFolder}/bin/metron",
-      "cwd": "${workspaceFolder}",
-      "args" : [
-        "--newlex",
-        "-c", "examples/scratch.h"
-      ],
-      "setupCommands": [
-        {
-          "description": "Enable pretty-printing for gdb",
-          "text": "-enable-pretty-printing",
-          "ignoreFailures": true
-        }
-      ]
     }
-
   ]
 }
 // clang-format on

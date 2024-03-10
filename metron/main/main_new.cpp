@@ -147,7 +147,7 @@ bool assign_method_type(CNodeFunction* func) {
 //------------------------------------------------------------------------------
 
 void assign_method_types(CNodeClass* node_class) {
-  LOG("Assigning method types for %s\n", node_class->name.c_str());
+  if (global_options.verbose) LOG("Assigning method types for %s\n", node_class->name.c_str());
   LOG_INDENT_SCOPE();
 
   std::set<CNodeClass*> submod_classes;
@@ -213,7 +213,7 @@ void assign_method_types(CNodeClass* node_class) {
   }
 
   assert(!bad);
-  LOG("Assigning method types for %s done\n", node_class->name.c_str());
+  if (global_options.verbose) LOG("Assigning method types for %s done\n", node_class->name.c_str());
 }
 
 //------------------------------------------------------------------------------
@@ -318,25 +318,23 @@ Err log_action(CInstance* inst, CNode* node, TraceAction action) {
 //==============================================================================
 //==============================================================================
 
-int main_new(Options opts) {
-  LOG_G("New parser!\n");
-
+int main_new() {
   Err err;
 
   CSourceRepo repo;
 
   repo.search_paths.insert(".");
-  if (!opts.inc_path.empty()) {
-    repo.search_paths.insert(opts.inc_path);
+  if (!global_options.inc_path.empty()) {
+    repo.search_paths.insert(global_options.inc_path);
   }
 
   CSourceFile* root_file = nullptr;
-  err << repo.load_source(opts.src_name, &root_file);
+  err << repo.load_source(global_options.src_name, &root_file);
 
   //exit(-1);
 
   if (!root_file) {
-    LOG_R("Could not load %s\n", opts.src_name.c_str());
+    LOG_R("Could not load %s\n", global_options.src_name.c_str());
     return -1;
   }
 
@@ -350,7 +348,7 @@ int main_new(Options opts) {
 
   //----------------------------------------
 
-  LOG_B("Count module instances so we can find top modules\n");
+  if (global_options.verbose) LOG_B("Count module instances so we can find top modules\n");
 
   for (auto file : repo.source_files) {
     for (auto c : file->all_classes) {
@@ -372,12 +370,12 @@ int main_new(Options opts) {
   }
 
   for (auto top : tops) {
-    LOG_Y("Top module is %s\n", top->name.c_str());
+    if (global_options.verbose) LOG_Y("Top module is %s\n", top->name.c_str());
   }
 
   //----------------------------------------
 
-  LOG_B("Build call graph\n");
+  if (global_options.verbose) LOG_B("Build call graph\n");
 
   for (auto file : repo.source_files) {
     for (auto node_class : file->all_classes) {
@@ -389,7 +387,7 @@ int main_new(Options opts) {
 
   for (auto file : repo.source_files) {
     for (auto node_class : file->all_classes) {
-      LOG_S("Instantiating %s\n", node_class->name.c_str());
+      if (global_options.verbose) LOG_S("Instantiating %s\n", node_class->name.c_str());
       LOG_INDENT_SCOPE();
 
       node_class->instance = instantiate_class(&repo, node_class->name, nullptr, nullptr, node_class, 1000);
@@ -398,7 +396,7 @@ int main_new(Options opts) {
 
   for (auto file : repo.source_files) {
     for (auto node_class : file->all_classes) {
-      LOG_S("Tracing %s\n", node_class->name.c_str());
+      if (global_options.verbose) LOG_S("Tracing %s\n", node_class->name.c_str());
       LOG_INDENT_SCOPE();
 
       Tracer tracer(&repo, node_class->instance);
@@ -425,7 +423,7 @@ int main_new(Options opts) {
         node_func = node_class->constructor;
         auto func_name = node_func->name;
         auto inst_func = node_class->instance->resolve(func_name);
-        LOG_S("Tracing %s\n", func_name.c_str());
+        if (global_options.verbose) LOG_S("Tracing %s\n", func_name.c_str());
         LOG_INDENT_SCOPE();
         err << tracer.start_trace(inst_func, node_func, callback, /*deep_trace*/ false);
       }
@@ -434,7 +432,7 @@ int main_new(Options opts) {
         node_func = f;
         auto func_name = node_func->name;
         auto inst_func = node_class->instance->resolve(func_name);
-        LOG_S("Tracing %s.%s\n", node_class->name.c_str(), func_name.c_str());
+        if (global_options.verbose) LOG_S("Tracing %s.%s\n", node_class->name.c_str(), func_name.c_str());
         LOG_INDENT_SCOPE();
         err << tracer.start_trace(inst_func, node_func, callback, /*deep_trace*/ false);
       }
@@ -493,14 +491,14 @@ int main_new(Options opts) {
   //----------------------------------------
 
   for (auto top : tops) {
-    LOG_B("Assign method types to %s\n", top->name.c_str());
+    if (global_options.verbose) LOG_B("Assign method types to %s\n", top->name.c_str());
     LOG_INDENT_SCOPE();
     assign_method_types(top);
   }
 
   //----------------------------------------
 
-  LOG_B("Check for multiple returns\n");
+  if (global_options.verbose) LOG_B("Check for multiple returns\n");
 
   for (auto file : repo.source_files) {
     for (auto node_class : file->all_classes) {
@@ -515,7 +513,7 @@ int main_new(Options opts) {
 
   //----------------------------------------
 
-  LOG_B("Check for mid-block break\n");
+  if (global_options.verbose) LOG_B("Check for mid-block break\n");
 
   for (auto file : repo.source_files) {
     for (auto node_class : file->all_classes) {
@@ -537,7 +535,7 @@ int main_new(Options opts) {
 
   //----------------------------------------
 
-  LOG_B("Sort top methods for each module\n");
+  if (global_options.verbose) LOG_B("Sort top methods for each module\n");
 
   LOG_INDENT();
   for (auto file : repo.source_files) {
@@ -577,10 +575,12 @@ int main_new(Options opts) {
         }
       }
 
-      LOG_S("Call order for %s:\n", node_class->name.c_str());
-      LOG_INDENT_SCOPE();
-      for (int i = 0; i < sf.size(); i++) {
-        LOG_S("%02d: %s\n", i, sf[i]->name.c_str());
+      if (global_options.verbose) {
+        LOG_S("Call order for %s:\n", node_class->name.c_str());
+        LOG_INDENT_SCOPE();
+        for (int i = 0; i < sf.size(); i++) {
+          LOG_S("%02d: %s\n", i, sf[i]->name.c_str());
+        }
       }
     }
   }
@@ -588,11 +588,11 @@ int main_new(Options opts) {
 
   //----------------------------------------
 
-  LOG_B("Deep-tracing modules\n");
+  if (global_options.verbose) LOG_B("Deep-tracing modules\n");
   LOG_INDENT();
   for (auto file : repo.source_files) {
     for (auto node_class : file->all_classes) {
-      LOG_B("Deep-tracing %s in sorted order\n", node_class->name.c_str());
+      if (global_options.verbose) LOG_B("Deep-tracing %s in sorted order\n", node_class->name.c_str());
       LOG_INDENT_SCOPE();
 
       Tracer tracer(&repo, node_class->instance);
@@ -604,7 +604,7 @@ int main_new(Options opts) {
       for (auto node_func : node_class->sorted_functions) {
         auto func_name = node_func->name;
         auto inst_func = node_class->instance->resolve(func_name);
-        LOG_S("Deep-tracing %s.%s\n", node_class->name.c_str(), func_name.c_str());
+        if (global_options.verbose) LOG_S("Deep-tracing %s.%s\n", node_class->name.c_str(), func_name.c_str());
         LOG_INDENT_SCOPE();
         err << tracer.start_trace(inst_func, node_func, callback, /*deep_trace*/ true);
       }
@@ -618,51 +618,53 @@ int main_new(Options opts) {
   //----------------------------------------
   // Dump
 
-  LOG_B("\n");
-  LOG_B("========================================\n");
-  LOG_B("Dump repo\n\n");
+  if (global_options.dump) {
+    LOG_B("\n");
+    LOG_B("========================================\n");
+    LOG_B("Dump repo\n\n");
 
-  dump_repo(&repo);
+    dump_repo(&repo);
 
-  LOG_B("\n");
-  LOG_B("========================================\n");
-  LOG_B("Dump instance tree\n\n");
+    LOG_B("\n");
+    LOG_B("========================================\n");
+    LOG_B("Dump instance tree\n\n");
 
-  for (auto file : repo.source_files) {
-    for (auto node_class : file->all_classes) {
-      LOG_B("Instance tree for %s\n", node_class->name.c_str());
-      LOG_INDENT();
-      dump_inst_tree(node_class->instance);
-      LOG_DEDENT();
-      LOG_B("\n");
+    for (auto file : repo.source_files) {
+      for (auto node_class : file->all_classes) {
+        LOG_B("Instance tree for %s\n", node_class->name.c_str());
+        LOG_INDENT();
+        dump_inst_tree(node_class->instance);
+        LOG_DEDENT();
+        LOG_B("\n");
+      }
     }
-  }
 
-  LOG_B("\n");
-  LOG_B("========================================\n");
-  LOG_B("Dump call graphs\n\n");
+    LOG_B("\n");
+    LOG_B("========================================\n");
+    LOG_B("Dump call graphs\n\n");
 
-  for (auto file : repo.source_files) {
-    for (auto node_class : file->all_classes) {
-      LOG_B("Call graph for %s\n", node_class->name.c_str());
-      LOG_INDENT();
-      dump_call_graph(node_class);
-      LOG_DEDENT();
-      LOG("\n");
+    for (auto file : repo.source_files) {
+      for (auto node_class : file->all_classes) {
+        LOG_B("Call graph for %s\n", node_class->name.c_str());
+        LOG_INDENT();
+        dump_call_graph(node_class);
+        LOG_DEDENT();
+        LOG("\n");
+      }
     }
-  }
 
-  LOG("\n");
+    LOG("\n");
+  }
 
   //----------------------------------------
   // Prep done, time to emit!
 
   LOG_B("========================================\n");
-  LOG_B("Converting %s to SystemVerilog\n\n", opts.src_name.c_str());
+  LOG_B("Converting %s to SystemVerilog\n\n", global_options.src_name.c_str());
 
   std::string out_string;
   Cursor cursor(root_file, &out_string);
-  cursor.echo = opts.echo && !opts.quiet;
+  cursor.echo = global_options.echo && !global_options.quiet;
 
   Emitter emitter(&repo, cursor);
   err << emitter.emit_everything();
@@ -673,14 +675,14 @@ int main_new(Options opts) {
   }
 
   // Save translated source to output directory, if there is one.
-  if (opts.dst_name.size()) {
-    auto dst_path = split_path(opts.dst_name);
+  if (global_options.dst_name.size()) {
+    auto dst_path = split_path(global_options.dst_name);
     dst_path.pop_back();
     mkdir_all(dst_path);
 
-    FILE* out_file = fopen(opts.dst_name.c_str(), "wb");
+    FILE* out_file = fopen(global_options.dst_name.c_str(), "wb");
     if (!out_file) {
-      LOG_R("ERROR Could not open %s for output\n", opts.dst_name.c_str());
+      LOG_R("ERROR Could not open %s for output\n", global_options.dst_name.c_str());
     } else {
       // Copy the BOM over if needed.
       if (root_file->use_utf8_bom) {
@@ -694,13 +696,13 @@ int main_new(Options opts) {
 
     {
       // Write deps file
-      auto dst_dep_name = opts.dst_name + ".d";
+      auto dst_dep_name = global_options.dst_name + ".d";
       FILE* out_file = fopen(dst_dep_name.c_str(), "wb");
       if (!out_file) {
       }
       else {
-        fprintf(out_file, "%s: ", opts.dst_name.c_str());
-        fprintf(out_file, "%s", opts.src_name.c_str());
+        fprintf(out_file, "%s: ", global_options.dst_name.c_str());
+        fprintf(out_file, "%s", global_options.src_name.c_str());
         for (auto dep : root_file->deps) {
           fprintf(out_file, " \\\n %s", dep->filepath.c_str());
         }
@@ -709,14 +711,15 @@ int main_new(Options opts) {
       }
     }
   }
-  LOG("\n");
 
-  LOG_B("========================================\n");
-  LOG_B("Output:\n\n");
-
-  LOG_G("%s\n", out_string.c_str());
-
-  LOG_B("========================================\n");
+  if (global_options.verbose) {
+    LOG("\n");
+    LOG_B("========================================\n");
+    LOG_B("Output:\n\n");
+    LOG_G("%s\n", out_string.c_str());
+    LOG_B("========================================\n");
+    LOG("\n");
+  }
 
   LOG("Done!\n");
 
@@ -797,7 +800,7 @@ void sanity_check_parse_tree(CSourceRepo& repo) {
 
     visit_children(file->translation_unit, check_span);
   }
-  LOG_G("Parse tree is sane\n");
+  if (global_options.verbose) LOG_G("Parse tree is sane\n");
 }
 
 //------------------------------------------------------------------------------

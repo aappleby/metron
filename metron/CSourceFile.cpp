@@ -112,12 +112,12 @@ Err CSourceFile::init(CSourceRepo* _repo, const std::string& _filename,
   context.source = _source_code;
   context.source_file = this;
 
-  LOG("Lexing %s\n", filename.c_str());
+  if (global_options.verbose) LOG("Lexing %s\n", filename.c_str());
   lexer.lex(context.source, context.lexemes);
 
   //return Err();
 
-  LOG("Tokenizing %s\n", filename.c_str());
+  if (global_options.verbose) LOG("Tokenizing %s\n", filename.c_str());
   for (auto& t : context.lexemes) {
     if (!t.is_gap()) {
       context.tokens.push_back(CToken(&t));
@@ -127,7 +127,7 @@ Err CSourceFile::init(CSourceRepo* _repo, const std::string& _filename,
   context.span.begin = &context.tokens[0];
   context.span.end   = context.span.begin + context.tokens.size();
 
-  LOG("Parsing %s\n", filepath.c_str());
+  if (global_options.verbose) LOG("Parsing %s\n", filepath.c_str());
   LOG_INDENT();
   auto tail = context.parse();
   LOG_DEDENT();
@@ -136,7 +136,7 @@ Err CSourceFile::init(CSourceRepo* _repo, const std::string& _filename,
   translation_unit->file = this;
 
   if (tail.is_valid() && tail.is_empty() && translation_unit) {
-    LOG("Parse OK\n");
+    if (global_options.verbose) LOG("Parse OK\n");
   } else {
     LOG_R("could not parse %s\n", filepath.c_str());
     return ERR("Could not parse file");
@@ -150,7 +150,7 @@ Err CSourceFile::init(CSourceRepo* _repo, const std::string& _filename,
 //------------------------------------------------------------------------------
 
 void CSourceFile::link() {
-  LOG_B("Processing source file\n");
+  if (global_options.verbose) LOG_B("Processing source file %s\n", filename.c_str());
 
   for (auto n : translation_unit) {
     if (auto node_template = n->as<CNodeTemplate>()) {
@@ -169,7 +169,7 @@ void CSourceFile::link() {
     }
   }
 
-  LOG_B("Collecting fields and methods\n");
+  if (global_options.verbose) LOG_B("Collecting fields and methods for %s\n", filename.c_str());
 
   for (auto n : translation_unit) {
     if (auto node_template = n->as<CNodeTemplate>()) {

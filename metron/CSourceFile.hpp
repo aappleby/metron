@@ -4,6 +4,7 @@
 
 #include "metron/CContext.hpp"
 #include "metron/CLexer.hpp"
+#include "metron/main/main.h"
 #include "metrolib/core/Err.h"
 
 struct CSourceRepo;

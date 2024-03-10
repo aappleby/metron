@@ -3,7 +3,9 @@
 
 class ModuleWithSubmodules {
 public:
-  int update() {
+  int result;
+
+  void update() {
     // The field "my_counter.count" is a register, which means we can only read
     // it _before_ it is written. Uncomment this line to see the error if we
     // call update() on the counter before we send its value to the adder.
@@ -11,7 +13,6 @@ public:
 
     // Each branch of our if() can call my_adder.add, but we can only have one
     // call to it total per code path.
-    int result;
     if (1) {
       result = my_adder.add(my_counter.count_, 7);
     }
@@ -25,7 +26,6 @@ public:
     // The counter's update() method is a tick, but the method we're currently
     // in is a tock. This cross-module, cross-tick/tock call is OK.
     my_counter.update();
-    return result;
   }
 
 private:

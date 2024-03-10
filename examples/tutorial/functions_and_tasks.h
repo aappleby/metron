@@ -1,51 +1,30 @@
-class ModuleWithPureFunction {
+class ModuleWithFunction {
 public:
 
   // Tock methods can call pure functions.
   int get_signal1(int x) {
-    return reg1_ + my_pure_func(x);
+    return reg1_ + my_func(x);
   }
 
   // Tick methods can call pure functions.
   void update_reg() {
-    reg1_ = my_pure_func(reg1_);
+    reg1_ = my_func(reg1_);
   }
 
 private:
   int reg1_;
 
-  // This pure function is called elsewhere in the module, so it would not be
+  // This function is called elsewhere in the module, so it would not be
   // added to the port list even if it were public.
-  int my_pure_func(int x) const {
+  int my_func(int x) const {
     return x + 17;
   }
 
-  // This pure function would appear in the port list if it were public.
+  // This function would appear in the port list if it were public.
   // Uncomment the line below to see the difference.
 //public:
-  int my_pure_func2(int x) const {
+  int my_func2(int x) const {
     return x + 17;
-  }
-};
-
-//----------------------------------------
-
-class ModuleWithImpureFunction {
-public:
-  int sig1;
-  int sig2;
-
-  // The top-level tock method will become an always_comb
-  void tock1() {
-    sig1 = tock2();
-  }
-
-  // This could be a function, but right now some external tools handle this
-  // case weird so we emit it as an always_comb with its own set of binding
-  // variables.
-  int tock2() {
-    sig2 = 17;
-    return sig2;
   }
 };
 

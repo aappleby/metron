@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
   //----------
   // Startup info
 
-  LOG_B("================================================================================\n");
+  LOG_B("========================================\n");
   LOG_B("Metron v0.0.1\n");
   LOG_B("Source file '%s'\n", opts.src_name.empty() ? "<empty>" : opts.src_name.c_str());
   LOG_B("Output file '%s'\n", opts.dst_name.empty() ? "<empty>" : opts.dst_name.c_str());

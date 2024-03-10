@@ -43,6 +43,7 @@ int main(int argc, char** argv) {
 
   CLI11_PARSE(app, argc, argv);
 
+  TinyLog::get().reset();
   if (opts.quiet) TinyLog::get().mute();
   if (opts.monochrome) TinyLog::get().mono();
 

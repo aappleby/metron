@@ -63,7 +63,7 @@ def main():
         ninja.variable("opts_c",   "-rdynamic -ggdb3 -O0 -Wall -Werror -Wno-unused-function -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable")
         ninja.variable("opts_ld",  "-O0")
 
-    ninja.variable("ems_opts_cpp", "-O2 -std=c++20 -sNO_DISABLE_EXCEPTION_CATCHING ")
+    ninja.variable("ems_opts_cpp", "-O0 -g3 -gsource-map -std=c++20 -sNO_DISABLE_EXCEPTION_CATCHING ")
     ninja.variable("ems_opts_ld", "-sEXPORT_ES6 -sEXPORTED_RUNTIME_METHODS=['FS','callMain'] -sNO_DISABLE_EXCEPTION_CATCHING -sTOTAL_STACK=32MB -sINITIAL_MEMORY=256MB -sALLOW_MEMORY_GROWTH -sFORCE_FILESYSTEM")
 
     ninja.variable("base_includes", base_includes)

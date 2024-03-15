@@ -53,7 +53,7 @@ def main():
     os.system("./build.py")
 
     if options.basic:
-        if os.system("ninja bin/metron"):
+        if os.system("ninja build/metron/metron"):
             print("Build failed!")
             return -1
     else:
@@ -95,7 +95,7 @@ def main():
     print_b("Checking that all test cases in tests/metron/pass convert to SV cleanly")
     errors += check_commands_good(
         [
-            f"bin/metron -c {filename} -o {filename.replace('/pass/', '/generated/').replace('.h', '.sv')}"
+            f"build/metron/metron -c {filename} -o {filename.replace('/pass/', '/generated/').replace('.h', '.sv')}"
             for filename in metron_pass
         ]
     )
@@ -104,7 +104,7 @@ def main():
     print_b("Checking that all test cases in tests/metron/fail fail conversion")
     errors += check_commands_bad(
         [
-            f"bin/metron -c {filename} -o {filename.replace('/fail/', '/generated/').replace('.h', '.sv')}"
+            f"build/metron/metron -c {filename} -o {filename.replace('/fail/', '/generated/').replace('.h', '.sv')}"
             for filename in metron_fail
         ]
     )
@@ -113,9 +113,9 @@ def main():
     print_b("Checking that examples convert to SV cleanly")
     errors += check_commands_good(
         [
-            f"bin/metron -c examples/uart/metron/uart_top.h",
-            f"bin/metron -c examples/rvsimple/metron/toplevel.h",
-            f"bin/metron -c examples/pong/metron/pong.h",
+            f"build/metron/metron -c examples/uart/metron/uart_top.h",
+            f"build/metron/metron -c examples/rvsimple/metron/toplevel.h",
+            f"build/metron/metron -c examples/pong/metron/pong.h",
         ]
     )
     print()
@@ -202,8 +202,8 @@ def main():
         print_b("Running misc bad commands")
         errors += check_commands_bad(
             [
-                f"bin/metron skjdlsfjkhdfsjhdf.h",
-                f"bin/metron -c skjdlsfjkhdfsjhdf.h",
+                f"build/metron/metron skjdlsfjkhdfsjhdf.h",
+                f"build/metron/metron -c skjdlsfjkhdfsjhdf.h",
             ]
         )
         print()
@@ -211,13 +211,13 @@ def main():
         print_b("Running standalone tests")
         errors += check_commands_good(
             [
-                "bin/tests/utils/test_logic",
-                "bin/examples/uart",
-                "bin/examples/uart_vl",
-                "bin/examples/uart_iv",
-                "bin/examples/rvsimple",
-                "bin/examples/rvsimple_vl",
-                "bin/examples/rvsimple_ref",
+                "build/tests/utils/test_logic",
+                "build/examples/uart/uart",
+                "build/examples/uart/uart_vl",
+                "build/examples/uart/uart_iv",
+                "build/examples/rvsimple/rvsimple",
+                "build/examples/rvsimple/rvsimple_vl",
+                "build/examples/rvsimple/rvsimple_ref",
             ]
         )
         print()
@@ -306,7 +306,7 @@ def print_b(*args):
 def prep_cmd(cmd):
     cmd = cmd.strip()
     kcov_prefix = "kcov --exclude-region=KCOV_OFF:KCOV_ON --include-pattern=metron --exclude-pattern=submodules --exclude-line=debugbreak coverage"
-    if options.coverage and cmd.startswith("bin/metron "):
+    if options.coverage and cmd.startswith("build/metron/metron "):
         cmd = kcov_prefix + " " + cmd
     args = [arg for arg in shlex.split(cmd) if len(arg)]
     return args
@@ -455,7 +455,7 @@ def check_icarus_fail(filenames):
 def check_bad_expected_errors(filename):
     lines = open(filename).readlines()
     expected_errors = [line[4:].strip() for line in lines if line.startswith("// X ")]
-    cmd = f"bin/metron -c {filename} -o {filename.replace('/pass/', '/generated/').replace('.h', '.sv')}"
+    cmd = f"build/metron/metron -c {filename} -o {filename.replace('/pass/', '/generated/').replace('.h', '.sv')}"
     return check_cmd_bad(cmd, expected_errors, [])
 
 
@@ -470,8 +470,8 @@ def build_lockstep(filename):
     test_src = f"tests/lockstep/test_lockstep.cpp"
 
     mt_root = f"tests/lockstep"
-    sv_root = f"gen/{mt_root}/metron_sv"
-    vl_root = f"gen/{mt_root}/metron_vl"
+    sv_root = f"build/{mt_root}/metron_sv"
+    vl_root = f"build/{mt_root}/metron_vl"
 
     # Our lockstep test top modules are all named "Module". Verilator will
     # name the top module after the <test_name>.sv filename.
@@ -481,14 +481,14 @@ def build_lockstep(filename):
     mt_header = f"{mt_root}/{test_name}.h"
     vl_header = f"{vl_root}/V{test_name}.h"
     vl_obj = f"{vl_root}/V{test_name}__ALL.o"
-    test_obj = f"obj/{mt_root}/{test_name}.o"
-    test_bin = f"bin/{mt_root}/{test_name}"
+    test_obj = f"build/{mt_root}/{test_name}.o"
+    test_bin = f"build/{mt_root}/{test_name}"
 
     includes = f"-I. -Isymlinks -Isymlinks/metrolib -I{sv_root} -I/usr/local/share/verilator/include"
 
     errors = 0
 
-    cmd = f"bin/metron -q -c {mt_root}/{test_name}.h -o {sv_root}/{test_name}.sv"
+    cmd = f"build/metron/metron -q -c {mt_root}/{test_name}.h -o {sv_root}/{test_name}.sv"
     errors += check_cmd_good(cmd)
 
     cmd = f"verilator -Wno-width {includes} --cc {test_name}.sv -Mdir {vl_root}"
@@ -500,7 +500,7 @@ def build_lockstep(filename):
     cmd = f"g++ -O3 -std=gnu++2a -DMT_TOP={mt_top} -DVL_TOP={vl_top} -DMT_HEADER={mt_header} -DVL_HEADER={vl_header} {includes} -c {test_src} -o {test_obj}"
     errors += check_cmd_good(cmd)
 
-    cmd = f"g++ {test_obj} {vl_obj} symlinks/metrolib/obj/metrolib/core/Utils.o obj/verilated.o obj/verilated_threads.o -o {test_bin}"
+    cmd = f"g++ {test_obj} {vl_obj} symlinks/metrolib/build/metrolib/core/Utils.o build/verilator/verilated.o build/verilator/verilated_threads.o -o {test_bin}"
     errors += check_cmd_good(cmd)
 
     return errors
@@ -518,22 +518,20 @@ def test_lockstep():
         "timeout_bad.h",
     ]
 
-    os.system(f"mkdir -p gen/tests/lockstep")
-    os.system(f"mkdir -p obj/tests/lockstep")
-    os.system(f"mkdir -p bin/tests/lockstep")
+    os.system(f"mkdir -p build/tests/lockstep")
 
     # Build all the lockstep tests
     errors = 0
     errors += sum(get_pool().map(build_lockstep, tests))
 
     # These lockstep tests should pass
-    errors += check_cmd_good("bin/tests/lockstep/counter")
-    errors += check_cmd_good("bin/tests/lockstep/lfsr")
-    errors += check_cmd_good("bin/tests/lockstep/funcs_and_tasks")
+    errors += check_cmd_good("build/tests/lockstep/counter")
+    errors += check_cmd_good("build/tests/lockstep/lfsr")
+    errors += check_cmd_good("build/tests/lockstep/funcs_and_tasks")
 
     # These two are expected to fail to test the lockstep test system
-    errors += check_cmd_bad("bin/tests/lockstep/lockstep_bad")
-    errors += check_cmd_bad("bin/tests/lockstep/timeout_bad")
+    errors += check_cmd_bad("build/tests/lockstep/lockstep_bad")
+    errors += check_cmd_bad("build/tests/lockstep/timeout_bad")
 
     return errors
 

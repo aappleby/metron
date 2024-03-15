@@ -58,7 +58,7 @@ git clone https://github.com/CLIUtils/CLI11
 git clone https://github.com/aappleby/metron
 cd metron
 ./build.py
-ninja bin/metron
+ninja build/metron
 ```
 
 ## Building everything in the repo:

@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include "metron/MetroBoySPU2.h"
-#include "gen/examples/gb_spu/metron_vl/VMetroBoySPU2.h"
+#include "build/examples/gb_spu/metron_vl/VMetroBoySPU2.h"
 
 int main(int argc, char** argv) {
   printf("Hello World\n");

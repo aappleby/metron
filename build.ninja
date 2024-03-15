@@ -1,4 +1,4 @@
-include symlinks/metrolib/ninja/rules.ninja
+include symlinks/metrolib/rules/rules.ninja
 
 
 
@@ -121,129 +121,129 @@ build docs/app/metron.js: ems_js_binary wasm/obj/metron/main/main.o wasm/obj/met
 ################################################################################
 # Verilator libraries
 
-build obj/verilated.o: compile_cpp /usr/local/share/verilator/include/verilated.cpp
-build obj/verilated_threads.o: compile_cpp /usr/local/share/verilator/include/verilated_threads.cpp
+build build/verilator/verilated.o: compile_cpp /usr/local/share/verilator/include/verilated.cpp
+build build/verilator/verilated_threads.o: compile_cpp /usr/local/share/verilator/include/verilated_threads.cpp
 
 
 ################################################################################
-# Create static library bin/libmetron.a
+# Create static library build/metron/libmetron.a
 
-build obj/metron/CContext.o: compile_cpp metron/CContext.cpp
+build build/metron/CContext.o: compile_cpp metron/CContext.cpp
   includes = ${base_includes}
-build obj/metron/CInstance.o: compile_cpp metron/CInstance.cpp
+build build/metron/CInstance.o: compile_cpp metron/CInstance.cpp
   includes = ${base_includes}
-build obj/metron/CLexer.o: compile_cpp metron/CLexer.cpp
+build build/metron/CLexer.o: compile_cpp metron/CLexer.cpp
   includes = ${base_includes}
-build obj/metron/CNode.o: compile_cpp metron/CNode.cpp
+build build/metron/CNode.o: compile_cpp metron/CNode.cpp
   includes = ${base_includes}
-build obj/metron/CParser.o: compile_cpp metron/CParser.cpp
+build build/metron/CParser.o: compile_cpp metron/CParser.cpp
   includes = ${base_includes}
-build obj/metron/CScope.o: compile_cpp metron/CScope.cpp
+build build/metron/CScope.o: compile_cpp metron/CScope.cpp
   includes = ${base_includes}
-build obj/metron/CSourceFile.o: compile_cpp metron/CSourceFile.cpp
+build build/metron/CSourceFile.o: compile_cpp metron/CSourceFile.cpp
   includes = ${base_includes}
-build obj/metron/CSourceRepo.o: compile_cpp metron/CSourceRepo.cpp
+build build/metron/CSourceRepo.o: compile_cpp metron/CSourceRepo.cpp
   includes = ${base_includes}
-build obj/metron/CToken.o: compile_cpp metron/CToken.cpp
+build build/metron/CToken.o: compile_cpp metron/CToken.cpp
   includes = ${base_includes}
-build obj/metron/Checker.o: compile_cpp metron/Checker.cpp
+build build/metron/Checker.o: compile_cpp metron/Checker.cpp
   includes = ${base_includes}
-build obj/metron/Cursor.o: compile_cpp metron/Cursor.cpp
+build build/metron/Cursor.o: compile_cpp metron/Cursor.cpp
   includes = ${base_includes}
-build obj/metron/Dumper.o: compile_cpp metron/Dumper.cpp
+build build/metron/Dumper.o: compile_cpp metron/Dumper.cpp
   includes = ${base_includes}
-build obj/metron/Emitter.o: compile_cpp metron/Emitter.cpp
+build build/metron/Emitter.o: compile_cpp metron/Emitter.cpp
   includes = ${base_includes}
-build obj/metron/MtUtils.o: compile_cpp metron/MtUtils.cpp
+build build/metron/MtUtils.o: compile_cpp metron/MtUtils.cpp
   includes = ${base_includes}
-build obj/metron/Tracer.o: compile_cpp metron/Tracer.cpp
+build build/metron/Tracer.o: compile_cpp metron/Tracer.cpp
   includes = ${base_includes}
-build obj/metron/metron_tools.o: compile_cpp metron/metron_tools.cpp
+build build/metron/metron_tools.o: compile_cpp metron/metron_tools.cpp
   includes = ${base_includes}
-build obj/metron/nodes/CNodeClass.o: compile_cpp metron/nodes/CNodeClass.cpp
+build build/metron/nodes/CNodeClass.o: compile_cpp metron/nodes/CNodeClass.cpp
   includes = ${base_includes}
-build obj/metron/nodes/CNodeDeclaration.o: compile_cpp metron/nodes/CNodeDeclaration.cpp
+build build/metron/nodes/CNodeDeclaration.o: compile_cpp metron/nodes/CNodeDeclaration.cpp
   includes = ${base_includes}
-build obj/metron/nodes/CNodeField.o: compile_cpp metron/nodes/CNodeField.cpp
+build build/metron/nodes/CNodeField.o: compile_cpp metron/nodes/CNodeField.cpp
   includes = ${base_includes}
-build obj/metron/nodes/CNodeFunction.o: compile_cpp metron/nodes/CNodeFunction.cpp
+build build/metron/nodes/CNodeFunction.o: compile_cpp metron/nodes/CNodeFunction.cpp
   includes = ${base_includes}
-build obj/metron/nodes/CNodeStruct.o: compile_cpp metron/nodes/CNodeStruct.cpp
+build build/metron/nodes/CNodeStruct.o: compile_cpp metron/nodes/CNodeStruct.cpp
   includes = ${base_includes}
-build obj/metron/nodes/CNodeTranslationUnit.o: compile_cpp metron/nodes/CNodeTranslationUnit.cpp
+build build/metron/nodes/CNodeTranslationUnit.o: compile_cpp metron/nodes/CNodeTranslationUnit.cpp
   includes = ${base_includes}
-build obj/metron/nodes/CNodeUnion.o: compile_cpp metron/nodes/CNodeUnion.cpp
+build build/metron/nodes/CNodeUnion.o: compile_cpp metron/nodes/CNodeUnion.cpp
   includes = ${base_includes}
-build obj/symlinks/metrolib/metrolib/core/Platform.o: compile_cpp symlinks/metrolib/metrolib/core/Platform.cpp
+build build/symlinks/metrolib/metrolib/core/Platform.o: compile_cpp symlinks/metrolib/metrolib/core/Platform.cpp
   includes = ${base_includes}
-build obj/symlinks/metrolib/metrolib/core/Utils.o: compile_cpp symlinks/metrolib/metrolib/core/Utils.cpp
+build build/symlinks/metrolib/metrolib/core/Utils.o: compile_cpp symlinks/metrolib/metrolib/core/Utils.cpp
   includes = ${base_includes}
-build obj/symlinks/metrolib/metrolib/core/Err.o: compile_cpp symlinks/metrolib/metrolib/core/Err.cpp
+build build/symlinks/metrolib/metrolib/core/Err.o: compile_cpp symlinks/metrolib/metrolib/core/Err.cpp
   includes = ${base_includes}
-build bin/libmetron.a: c_library obj/metron/CContext.o obj/metron/CInstance.o obj/metron/CLexer.o obj/metron/CNode.o obj/metron/CParser.o obj/metron/CScope.o obj/metron/CSourceFile.o obj/metron/CSourceRepo.o obj/metron/CToken.o obj/metron/Checker.o obj/metron/Cursor.o obj/metron/Dumper.o obj/metron/Emitter.o obj/metron/MtUtils.o obj/metron/Tracer.o obj/metron/metron_tools.o obj/metron/nodes/CNodeClass.o obj/metron/nodes/CNodeDeclaration.o obj/metron/nodes/CNodeField.o obj/metron/nodes/CNodeFunction.o obj/metron/nodes/CNodeStruct.o obj/metron/nodes/CNodeTranslationUnit.o obj/metron/nodes/CNodeUnion.o obj/symlinks/metrolib/metrolib/core/Platform.o obj/symlinks/metrolib/metrolib/core/Utils.o obj/symlinks/metrolib/metrolib/core/Err.o
+build build/metron/libmetron.a: c_library build/metron/CContext.o build/metron/CInstance.o build/metron/CLexer.o build/metron/CNode.o build/metron/CParser.o build/metron/CScope.o build/metron/CSourceFile.o build/metron/CSourceRepo.o build/metron/CToken.o build/metron/Checker.o build/metron/Cursor.o build/metron/Dumper.o build/metron/Emitter.o build/metron/MtUtils.o build/metron/Tracer.o build/metron/metron_tools.o build/metron/nodes/CNodeClass.o build/metron/nodes/CNodeDeclaration.o build/metron/nodes/CNodeField.o build/metron/nodes/CNodeFunction.o build/metron/nodes/CNodeStruct.o build/metron/nodes/CNodeTranslationUnit.o build/metron/nodes/CNodeUnion.o build/symlinks/metrolib/metrolib/core/Platform.o build/symlinks/metrolib/metrolib/core/Utils.o build/symlinks/metrolib/metrolib/core/Err.o
   includes = ${base_includes}
-
-
-################################################################################
-# Compile bin/metron
-
-build obj/metron/main/main.o: compile_cpp metron/main/main.cpp
-  includes = ${base_includes} -Isymlinks/CLI11/include
-build obj/metron/main/main_new.o: compile_cpp metron/main/main_new.cpp
-  includes = ${base_includes} -Isymlinks/CLI11/include
-build bin/metron: c_binary obj/metron/main/main.o obj/metron/main/main_new.o bin/libmetron.a
-  includes = ${base_includes} -Isymlinks/CLI11/include
 
 
 ################################################################################
-# Compile bin/tests/utils/test_logic
+# Compile build/metron/metron
 
-build obj/tests/utils/test_logic.o: compile_cpp tests/utils/test_logic.cpp
+build build/metron/main/main.o: compile_cpp metron/main/main.cpp
+  includes = ${base_includes} -Isymlinks/CLI11/include
+build build/metron/main/main_new.o: compile_cpp metron/main/main_new.cpp
+  includes = ${base_includes} -Isymlinks/CLI11/include
+build build/metron/metron: c_binary build/metron/main/main.o build/metron/main/main_new.o build/metron/libmetron.a
+  includes = ${base_includes} -Isymlinks/CLI11/include
+
+
+################################################################################
+# Compile build/tests/utils/test_logic
+
+build build/tests/utils/test_logic.o: compile_cpp tests/utils/test_logic.cpp
   includes = ${base_includes}
-build bin/tests/utils/test_logic: c_binary obj/tests/utils/test_logic.o bin/libmetron.a
+build build/tests/utils/test_logic: c_binary build/tests/utils/test_logic.o build/metron/libmetron.a
   includes = ${base_includes}
 build tests/risc-v/instructions/add.code.vh tests/risc-v/instructions/addi.code.vh tests/risc-v/instructions/and.code.vh tests/risc-v/instructions/andi.code.vh tests/risc-v/instructions/auipc.code.vh tests/risc-v/instructions/benchmark.code.vh tests/risc-v/instructions/beq.code.vh tests/risc-v/instructions/bge.code.vh tests/risc-v/instructions/bgeu.code.vh tests/risc-v/instructions/blt.code.vh tests/risc-v/instructions/bltu.code.vh tests/risc-v/instructions/bne.code.vh tests/risc-v/instructions/jal.code.vh tests/risc-v/instructions/jalr.code.vh tests/risc-v/instructions/lb.code.vh tests/risc-v/instructions/lbu.code.vh tests/risc-v/instructions/lh.code.vh tests/risc-v/instructions/lhu.code.vh tests/risc-v/instructions/lui.code.vh tests/risc-v/instructions/lw.code.vh tests/risc-v/instructions/or.code.vh tests/risc-v/instructions/ori.code.vh tests/risc-v/instructions/sb.code.vh tests/risc-v/instructions/sh.code.vh tests/risc-v/instructions/simple.code.vh tests/risc-v/instructions/sll.code.vh tests/risc-v/instructions/slli.code.vh tests/risc-v/instructions/slt.code.vh tests/risc-v/instructions/slti.code.vh tests/risc-v/instructions/sltiu.code.vh tests/risc-v/instructions/sltu.code.vh tests/risc-v/instructions/sra.code.vh tests/risc-v/instructions/srai.code.vh tests/risc-v/instructions/srl.code.vh tests/risc-v/instructions/srli.code.vh tests/risc-v/instructions/sub.code.vh tests/risc-v/instructions/sw.code.vh tests/risc-v/instructions/xor.code.vh tests/risc-v/instructions/xori.code.vh tests/risc-v/instructions/add.data.vh tests/risc-v/instructions/addi.data.vh tests/risc-v/instructions/and.data.vh tests/risc-v/instructions/andi.data.vh tests/risc-v/instructions/auipc.data.vh tests/risc-v/instructions/benchmark.data.vh tests/risc-v/instructions/beq.data.vh tests/risc-v/instructions/bge.data.vh tests/risc-v/instructions/bgeu.data.vh tests/risc-v/instructions/blt.data.vh tests/risc-v/instructions/bltu.data.vh tests/risc-v/instructions/bne.data.vh tests/risc-v/instructions/jal.data.vh tests/risc-v/instructions/jalr.data.vh tests/risc-v/instructions/lb.data.vh tests/risc-v/instructions/lbu.data.vh tests/risc-v/instructions/lh.data.vh tests/risc-v/instructions/lhu.data.vh tests/risc-v/instructions/lui.data.vh tests/risc-v/instructions/lw.data.vh tests/risc-v/instructions/or.data.vh tests/risc-v/instructions/ori.data.vh tests/risc-v/instructions/sb.data.vh tests/risc-v/instructions/sh.data.vh tests/risc-v/instructions/simple.data.vh tests/risc-v/instructions/sll.data.vh tests/risc-v/instructions/slli.data.vh tests/risc-v/instructions/slt.data.vh tests/risc-v/instructions/slti.data.vh tests/risc-v/instructions/sltiu.data.vh tests/risc-v/instructions/sltu.data.vh tests/risc-v/instructions/sra.data.vh tests/risc-v/instructions/srai.data.vh tests/risc-v/instructions/srl.data.vh tests/risc-v/instructions/srli.data.vh tests/risc-v/instructions/sub.data.vh tests/risc-v/instructions/sw.data.vh tests/risc-v/instructions/xor.data.vh tests/risc-v/instructions/xori.data.vh: make tests/risc-v/instructions/makefile | tests/risc-v/instructions/add.S tests/risc-v/instructions/addi.S tests/risc-v/instructions/and.S tests/risc-v/instructions/andi.S tests/risc-v/instructions/auipc.S tests/risc-v/instructions/benchmark.S tests/risc-v/instructions/beq.S tests/risc-v/instructions/bge.S tests/risc-v/instructions/bgeu.S tests/risc-v/instructions/blt.S tests/risc-v/instructions/bltu.S tests/risc-v/instructions/bne.S tests/risc-v/instructions/jal.S tests/risc-v/instructions/jalr.S tests/risc-v/instructions/lb.S tests/risc-v/instructions/lbu.S tests/risc-v/instructions/lh.S tests/risc-v/instructions/lhu.S tests/risc-v/instructions/lui.S tests/risc-v/instructions/lw.S tests/risc-v/instructions/or.S tests/risc-v/instructions/ori.S tests/risc-v/instructions/sb.S tests/risc-v/instructions/sh.S tests/risc-v/instructions/simple.S tests/risc-v/instructions/sll.S tests/risc-v/instructions/slli.S tests/risc-v/instructions/slt.S tests/risc-v/instructions/slti.S tests/risc-v/instructions/sltiu.S tests/risc-v/instructions/sltu.S tests/risc-v/instructions/sra.S tests/risc-v/instructions/srai.S tests/risc-v/instructions/srl.S tests/risc-v/instructions/srli.S tests/risc-v/instructions/sub.S tests/risc-v/instructions/sw.S tests/risc-v/instructions/xor.S tests/risc-v/instructions/xori.S
 
 
 ################################################################################
-# Compile bin/examples/uart
+# Compile build/examples/uart/uart
 
-build obj/examples/uart/main.o: compile_cpp examples/uart/main.cpp
+build build/examples/uart/main.o: compile_cpp examples/uart/main.cpp
   includes = ${base_includes}
-build bin/examples/uart: c_binary obj/examples/uart/main.o bin/libmetron.a
+build build/examples/uart/uart: c_binary build/examples/uart/main.o build/metron/libmetron.a
   includes = ${base_includes}
 
 
 ################################################################################
 # Metronize examples/uart/metron -> examples/uart/metron_sv
 
-build examples/uart/metron_sv/uart_hello.sv: metron2 examples/uart/metron/uart_hello.h | bin/metron
-build examples/uart/metron_sv/uart_rx.sv: metron2 examples/uart/metron/uart_rx.h | bin/metron
-build examples/uart/metron_sv/uart_top.sv: metron2 examples/uart/metron/uart_top.h | bin/metron
-build examples/uart/metron_sv/uart_tx.sv: metron2 examples/uart/metron/uart_tx.h | bin/metron
+build examples/uart/metron_sv/uart_hello.sv: metron2 examples/uart/metron/uart_hello.h | build/metron/metron
+build examples/uart/metron_sv/uart_rx.sv: metron2 examples/uart/metron/uart_rx.h | build/metron/metron
+build examples/uart/metron_sv/uart_top.sv: metron2 examples/uart/metron/uart_top.h | build/metron/metron
+build examples/uart/metron_sv/uart_tx.sv: metron2 examples/uart/metron/uart_tx.h | build/metron/metron
 
 
 ################################################################################
-# Verilate examples/uart/metron_sv/uart_top.sv -> gen/examples/uart/metron_vl
+# Verilate examples/uart/metron_sv/uart_top.sv -> build/examples/uart/metron_vl
 
-build gen/examples/uart/metron_vl/Vuart_top.mk gen/examples/uart/metron_vl/Vuart_top.h: verilator examples/uart/metron_sv/uart_top.sv
+build build/examples/uart/metron_vl/Vuart_top.mk build/examples/uart/metron_vl/Vuart_top.h: verilator examples/uart/metron_sv/uart_top.sv
   includes = -Iexamples/uart/metron_sv
-build gen/examples/uart/metron_vl/Vuart_top__ALL.o: make gen/examples/uart/metron_vl/Vuart_top.mk
+build build/examples/uart/metron_vl/Vuart_top__ALL.o: make build/examples/uart/metron_vl/Vuart_top.mk
 
 
 ################################################################################
-# Compile bin/examples/uart_vl
+# Compile build/examples/uart/uart_vl
 
-build obj/examples/uart/main_vl.o: compile_cpp examples/uart/main_vl.cpp | gen/examples/uart/metron_vl/Vuart_top.h
-  includes = ${base_includes} -I/usr/local/share/verilator/include -Igen/examples/uart
-build bin/examples/uart_vl: c_binary obj/verilated.o obj/verilated_threads.o gen/examples/uart/metron_vl/Vuart_top__ALL.o obj/examples/uart/main_vl.o bin/libmetron.a
-  includes = ${base_includes} -I/usr/local/share/verilator/include -Igen/examples/uart
+build build/examples/uart/main_vl.o: compile_cpp examples/uart/main_vl.cpp | build/examples/uart/metron_vl/Vuart_top.h
+  includes = ${base_includes} -I/usr/local/share/verilator/include -Ibuild/examples/uart
+build build/examples/uart/uart_vl: c_binary build/verilator/verilated.o build/verilator/verilated_threads.o build/examples/uart/metron_vl/Vuart_top__ALL.o build/examples/uart/main_vl.o build/metron/libmetron.a
+  includes = ${base_includes} -I/usr/local/share/verilator/include -Ibuild/examples/uart
 
 
 ################################################################################
 # Icarus Verilog uart testbench
 
-build bin/examples/uart_iv: iverilog examples/uart/uart_test_iv.sv | examples/uart/metron_sv/uart_hello.sv examples/uart/metron_sv/uart_rx.sv examples/uart/metron_sv/uart_top.sv examples/uart/metron_sv/uart_tx.sv
+build build/examples/uart/uart_iv: iverilog examples/uart/uart_test_iv.sv | examples/uart/metron_sv/uart_hello.sv examples/uart/metron_sv/uart_rx.sv examples/uart/metron_sv/uart_top.sv examples/uart/metron_sv/uart_tx.sv
   includes = -Iexamples/uart -Iexamples/uart/metron_sv
   defines = -DIVERILOG
 
@@ -251,93 +251,93 @@ build bin/examples/uart_iv: iverilog examples/uart/uart_test_iv.sv | examples/ua
 ################################################################################
 # Yosys/NextPNR uart testbench
 
-build obj/examples/uart/uart_test_ice40.json: yosys examples/uart/uart_test_ice40.sv | examples/uart/metron_sv/uart_hello.sv examples/uart/metron_sv/uart_rx.sv examples/uart/metron_sv/uart_top.sv examples/uart/metron_sv/uart_tx.sv examples/uart/SB_PLL40_CORE.v
+build build/examples/uart/uart_test_ice40.json: yosys examples/uart/uart_test_ice40.sv | examples/uart/metron_sv/uart_hello.sv examples/uart/metron_sv/uart_rx.sv examples/uart/metron_sv/uart_top.sv examples/uart/metron_sv/uart_tx.sv examples/uart/SB_PLL40_CORE.v
   includes = -Iexamples/uart -Iexamples/uart/metron_sv
-build obj/examples/uart/uart_test_ice40.asc: nextpnr-ice40 obj/examples/uart/uart_test_ice40.json
+build build/examples/uart/uart_test_ice40.asc: nextpnr-ice40 build/examples/uart/uart_test_ice40.json
   chip = hx8k
   package = ct256
   pcf = examples/uart/ice40-hx8k-b-evn.pcf
-build obj/examples/uart/uart_test_ice40.bin: icepack obj/examples/uart/uart_test_ice40.asc
+build build/examples/uart/uart_test_ice40.bin: icepack build/examples/uart/uart_test_ice40.asc
 
 
 ################################################################################
-# Compile bin/examples/rvsimple
+# Compile build/examples/rvsimple/rvsimple
 
-build obj/examples/rvsimple/main.o: compile_cpp examples/rvsimple/main.cpp
+build build/examples/rvsimple/main.o: compile_cpp examples/rvsimple/main.cpp
   includes = ${base_includes} -Isymlinks/CLI11/include
-build bin/examples/rvsimple: c_binary obj/examples/rvsimple/main.o bin/libmetron.a
+build build/examples/rvsimple/rvsimple: c_binary build/examples/rvsimple/main.o build/metron/libmetron.a
   includes = ${base_includes} -Isymlinks/CLI11/include
 
 
 ################################################################################
 # Metronize examples/rvsimple/metron -> examples/rvsimple/metron_sv
 
-build examples/rvsimple/metron_sv/adder.sv: metron2 examples/rvsimple/metron/adder.h | bin/metron
-build examples/rvsimple/metron_sv/alu.sv: metron2 examples/rvsimple/metron/alu.h | bin/metron
-build examples/rvsimple/metron_sv/alu_control.sv: metron2 examples/rvsimple/metron/alu_control.h | bin/metron
-build examples/rvsimple/metron_sv/config.sv: metron2 examples/rvsimple/metron/config.h | bin/metron
-build examples/rvsimple/metron_sv/constants.sv: metron2 examples/rvsimple/metron/constants.h | bin/metron
-build examples/rvsimple/metron_sv/control_transfer.sv: metron2 examples/rvsimple/metron/control_transfer.h | bin/metron
-build examples/rvsimple/metron_sv/data_memory_interface.sv: metron2 examples/rvsimple/metron/data_memory_interface.h | bin/metron
-build examples/rvsimple/metron_sv/example_data_memory.sv: metron2 examples/rvsimple/metron/example_data_memory.h | bin/metron
-build examples/rvsimple/metron_sv/example_data_memory_bus.sv: metron2 examples/rvsimple/metron/example_data_memory_bus.h | bin/metron
-build examples/rvsimple/metron_sv/example_text_memory.sv: metron2 examples/rvsimple/metron/example_text_memory.h | bin/metron
-build examples/rvsimple/metron_sv/example_text_memory_bus.sv: metron2 examples/rvsimple/metron/example_text_memory_bus.h | bin/metron
-build examples/rvsimple/metron_sv/immediate_generator.sv: metron2 examples/rvsimple/metron/immediate_generator.h | bin/metron
-build examples/rvsimple/metron_sv/instruction_decoder.sv: metron2 examples/rvsimple/metron/instruction_decoder.h | bin/metron
-build examples/rvsimple/metron_sv/multiplexer2.sv: metron2 examples/rvsimple/metron/multiplexer2.h | bin/metron
-build examples/rvsimple/metron_sv/multiplexer4.sv: metron2 examples/rvsimple/metron/multiplexer4.h | bin/metron
-build examples/rvsimple/metron_sv/multiplexer8.sv: metron2 examples/rvsimple/metron/multiplexer8.h | bin/metron
-build examples/rvsimple/metron_sv/regfile.sv: metron2 examples/rvsimple/metron/regfile.h | bin/metron
-build examples/rvsimple/metron_sv/register.sv: metron2 examples/rvsimple/metron/register.h | bin/metron
-build examples/rvsimple/metron_sv/riscv_core.sv: metron2 examples/rvsimple/metron/riscv_core.h | bin/metron
-build examples/rvsimple/metron_sv/singlecycle_control.sv: metron2 examples/rvsimple/metron/singlecycle_control.h | bin/metron
-build examples/rvsimple/metron_sv/singlecycle_ctlpath.sv: metron2 examples/rvsimple/metron/singlecycle_ctlpath.h | bin/metron
-build examples/rvsimple/metron_sv/singlecycle_datapath.sv: metron2 examples/rvsimple/metron/singlecycle_datapath.h | bin/metron
-build examples/rvsimple/metron_sv/toplevel.sv: metron2 examples/rvsimple/metron/toplevel.h | bin/metron
+build examples/rvsimple/metron_sv/adder.sv: metron2 examples/rvsimple/metron/adder.h | build/metron/metron
+build examples/rvsimple/metron_sv/alu.sv: metron2 examples/rvsimple/metron/alu.h | build/metron/metron
+build examples/rvsimple/metron_sv/alu_control.sv: metron2 examples/rvsimple/metron/alu_control.h | build/metron/metron
+build examples/rvsimple/metron_sv/config.sv: metron2 examples/rvsimple/metron/config.h | build/metron/metron
+build examples/rvsimple/metron_sv/constants.sv: metron2 examples/rvsimple/metron/constants.h | build/metron/metron
+build examples/rvsimple/metron_sv/control_transfer.sv: metron2 examples/rvsimple/metron/control_transfer.h | build/metron/metron
+build examples/rvsimple/metron_sv/data_memory_interface.sv: metron2 examples/rvsimple/metron/data_memory_interface.h | build/metron/metron
+build examples/rvsimple/metron_sv/example_data_memory.sv: metron2 examples/rvsimple/metron/example_data_memory.h | build/metron/metron
+build examples/rvsimple/metron_sv/example_data_memory_bus.sv: metron2 examples/rvsimple/metron/example_data_memory_bus.h | build/metron/metron
+build examples/rvsimple/metron_sv/example_text_memory.sv: metron2 examples/rvsimple/metron/example_text_memory.h | build/metron/metron
+build examples/rvsimple/metron_sv/example_text_memory_bus.sv: metron2 examples/rvsimple/metron/example_text_memory_bus.h | build/metron/metron
+build examples/rvsimple/metron_sv/immediate_generator.sv: metron2 examples/rvsimple/metron/immediate_generator.h | build/metron/metron
+build examples/rvsimple/metron_sv/instruction_decoder.sv: metron2 examples/rvsimple/metron/instruction_decoder.h | build/metron/metron
+build examples/rvsimple/metron_sv/multiplexer2.sv: metron2 examples/rvsimple/metron/multiplexer2.h | build/metron/metron
+build examples/rvsimple/metron_sv/multiplexer4.sv: metron2 examples/rvsimple/metron/multiplexer4.h | build/metron/metron
+build examples/rvsimple/metron_sv/multiplexer8.sv: metron2 examples/rvsimple/metron/multiplexer8.h | build/metron/metron
+build examples/rvsimple/metron_sv/regfile.sv: metron2 examples/rvsimple/metron/regfile.h | build/metron/metron
+build examples/rvsimple/metron_sv/register.sv: metron2 examples/rvsimple/metron/register.h | build/metron/metron
+build examples/rvsimple/metron_sv/riscv_core.sv: metron2 examples/rvsimple/metron/riscv_core.h | build/metron/metron
+build examples/rvsimple/metron_sv/singlecycle_control.sv: metron2 examples/rvsimple/metron/singlecycle_control.h | build/metron/metron
+build examples/rvsimple/metron_sv/singlecycle_ctlpath.sv: metron2 examples/rvsimple/metron/singlecycle_ctlpath.h | build/metron/metron
+build examples/rvsimple/metron_sv/singlecycle_datapath.sv: metron2 examples/rvsimple/metron/singlecycle_datapath.h | build/metron/metron
+build examples/rvsimple/metron_sv/toplevel.sv: metron2 examples/rvsimple/metron/toplevel.h | build/metron/metron
 
 
 ################################################################################
-# Verilate examples/rvsimple/metron_sv/toplevel.sv -> gen/examples/rvsimple/metron_vl
+# Verilate examples/rvsimple/metron_sv/toplevel.sv -> build/examples/rvsimple/metron_vl
 
-build gen/examples/rvsimple/metron_vl/Vtoplevel.mk gen/examples/rvsimple/metron_vl/Vtoplevel.h: verilator examples/rvsimple/metron_sv/toplevel.sv
+build build/examples/rvsimple/metron_vl/Vtoplevel.mk build/examples/rvsimple/metron_vl/Vtoplevel.h: verilator examples/rvsimple/metron_sv/toplevel.sv
   includes = -Iexamples/rvsimple/metron_sv
-build gen/examples/rvsimple/metron_vl/Vtoplevel__ALL.o: make gen/examples/rvsimple/metron_vl/Vtoplevel.mk
+build build/examples/rvsimple/metron_vl/Vtoplevel__ALL.o: make build/examples/rvsimple/metron_vl/Vtoplevel.mk
 
 
 ################################################################################
-# Compile bin/examples/rvsimple_vl
+# Compile build/examples/rvsimple/rvsimple_vl
 
-build obj/examples/rvsimple/main_vl.o: compile_cpp examples/rvsimple/main_vl.cpp | gen/examples/rvsimple/metron_vl/Vtoplevel.h
-  includes = ${base_includes} -I/usr/local/share/verilator/include -Igen/examples/rvsimple/metron_vl -Isymlinks/CLI11/include
-build bin/examples/rvsimple_vl: c_binary obj/verilated.o obj/verilated_threads.o gen/examples/rvsimple/metron_vl/Vtoplevel__ALL.o obj/examples/rvsimple/main_vl.o bin/libmetron.a
-  includes = ${base_includes} -I/usr/local/share/verilator/include -Igen/examples/rvsimple/metron_vl -Isymlinks/CLI11/include
+build build/examples/rvsimple/main_vl.o: compile_cpp examples/rvsimple/main_vl.cpp | build/examples/rvsimple/metron_vl/Vtoplevel.h
+  includes = ${base_includes} -I/usr/local/share/verilator/include -Ibuild/examples/rvsimple/metron_vl -Isymlinks/CLI11/include
+build build/examples/rvsimple/rvsimple_vl: c_binary build/verilator/verilated.o build/verilator/verilated_threads.o build/examples/rvsimple/metron_vl/Vtoplevel__ALL.o build/examples/rvsimple/main_vl.o build/metron/libmetron.a
+  includes = ${base_includes} -I/usr/local/share/verilator/include -Ibuild/examples/rvsimple/metron_vl -Isymlinks/CLI11/include
 
 
 ################################################################################
-# Verilate examples/rvsimple/reference_sv/toplevel.sv -> gen/examples/rvsimple/reference_vl
+# Verilate examples/rvsimple/reference_sv/toplevel.sv -> build/examples/rvsimple/reference_vl
 
-build gen/examples/rvsimple/reference_vl/Vtoplevel.mk gen/examples/rvsimple/reference_vl/Vtoplevel.h: verilator examples/rvsimple/reference_sv/toplevel.sv
+build build/examples/rvsimple/reference_vl/Vtoplevel.mk build/examples/rvsimple/reference_vl/Vtoplevel.h: verilator examples/rvsimple/reference_sv/toplevel.sv
   includes = -Iexamples/rvsimple/reference_sv
-build gen/examples/rvsimple/reference_vl/Vtoplevel__ALL.o: make gen/examples/rvsimple/reference_vl/Vtoplevel.mk
+build build/examples/rvsimple/reference_vl/Vtoplevel__ALL.o: make build/examples/rvsimple/reference_vl/Vtoplevel.mk
 
 
 ################################################################################
-# Compile bin/examples/rvsimple_ref
+# Compile build/examples/rvsimple/rvsimple_ref
 
-build obj/examples/rvsimple/main_ref_vl.o: compile_cpp examples/rvsimple/main_ref_vl.cpp | gen/examples/rvsimple/reference_vl/Vtoplevel.h
-  includes = ${base_includes} -I/usr/local/share/verilator/include -Igen/examples/rvsimple/reference_vl -Isymlinks/CLI11/include
-build bin/examples/rvsimple_ref: c_binary obj/verilated.o obj/verilated_threads.o gen/examples/rvsimple/reference_vl/Vtoplevel__ALL.o obj/examples/rvsimple/main_ref_vl.o bin/libmetron.a
-  includes = ${base_includes} -I/usr/local/share/verilator/include -Igen/examples/rvsimple/reference_vl -Isymlinks/CLI11/include
+build build/examples/rvsimple/main_ref_vl.o: compile_cpp examples/rvsimple/main_ref_vl.cpp | build/examples/rvsimple/reference_vl/Vtoplevel.h
+  includes = ${base_includes} -I/usr/local/share/verilator/include -Ibuild/examples/rvsimple/reference_vl -Isymlinks/CLI11/include
+build build/examples/rvsimple/rvsimple_ref: c_binary build/verilator/verilated.o build/verilator/verilated_threads.o build/examples/rvsimple/reference_vl/Vtoplevel__ALL.o build/examples/rvsimple/main_ref_vl.o build/metron/libmetron.a
+  includes = ${base_includes} -I/usr/local/share/verilator/include -Ibuild/examples/rvsimple/reference_vl -Isymlinks/CLI11/include
 
 
 ################################################################################
-# Compile bin/examples/pong
+# Compile build/examples/pong/pong
 
-build obj/examples/pong/main.o: compile_cpp examples/pong/main.cpp
+build build/examples/pong/main.o: compile_cpp examples/pong/main.cpp
   includes = ${base_includes}
   libraries = ${libraries} -lSDL2
-build bin/examples/pong: c_binary obj/examples/pong/main.o bin/libmetron.a
+build build/examples/pong/pong: c_binary build/examples/pong/main.o build/metron/libmetron.a
   includes = ${base_includes}
   libraries = ${libraries} -lSDL2
 
@@ -345,45 +345,45 @@ build bin/examples/pong: c_binary obj/examples/pong/main.o bin/libmetron.a
 ################################################################################
 # Metronize examples/pong/metron -> examples/pong/metron_sv
 
-build examples/pong/metron_sv/pong.sv: metron2 examples/pong/metron/pong.h | bin/metron
-build gen/examples/j1/metron/j1.h.ok: check_cpp examples/j1/metron/j1.h
+build examples/pong/metron_sv/pong.sv: metron2 examples/pong/metron/pong.h | build/metron/metron
+build build/examples/j1/metron/j1.h.ok: check_cpp examples/j1/metron/j1.h
   includes = ${base_includes}
 
 
 ################################################################################
-# Compile bin/examples/j1
+# Compile build/examples/j1/j1
 
-build obj/examples/j1/main.o: compile_cpp examples/j1/main.cpp
+build build/examples/j1/main.o: compile_cpp examples/j1/main.cpp
   includes = ${base_includes}
-build bin/examples/j1: c_binary obj/examples/j1/main.o bin/libmetron.a
+build build/examples/j1/j1: c_binary build/examples/j1/main.o build/metron/libmetron.a
   includes = ${base_includes}
 
 
 ################################################################################
 # Metronize examples/j1/metron -> examples/j1/metron_sv
 
-build examples/j1/metron_sv/dpram.sv: metron2 examples/j1/metron/dpram.h | bin/metron
-build examples/j1/metron_sv/j1.sv: metron2 examples/j1/metron/j1.h | bin/metron
+build examples/j1/metron_sv/dpram.sv: metron2 examples/j1/metron/dpram.h | build/metron/metron
+build examples/j1/metron_sv/j1.sv: metron2 examples/j1/metron/j1.h | build/metron/metron
 
 
 ################################################################################
 # Metronize examples/gb_spu/metron -> examples/gb_spu/metron_sv
 
-build examples/gb_spu/metron_sv/MetroBoySPU2.sv: metron2 examples/gb_spu/metron/MetroBoySPU2.h | bin/metron
+build examples/gb_spu/metron_sv/MetroBoySPU2.sv: metron2 examples/gb_spu/metron/MetroBoySPU2.h | build/metron/metron
 
 
 ################################################################################
-# Verilate examples/gb_spu/metron_sv/MetroBoySPU2.sv -> gen/examples/gb_spu/metron_vl
+# Verilate examples/gb_spu/metron_sv/MetroBoySPU2.sv -> build/examples/gb_spu/metron_vl
 
-build gen/examples/gb_spu/metron_vl/VMetroBoySPU2.mk gen/examples/gb_spu/metron_vl/VMetroBoySPU2.h: verilator examples/gb_spu/metron_sv/MetroBoySPU2.sv
+build build/examples/gb_spu/metron_vl/VMetroBoySPU2.mk build/examples/gb_spu/metron_vl/VMetroBoySPU2.h: verilator examples/gb_spu/metron_sv/MetroBoySPU2.sv
   includes = -Iexamples/gb_spu/metron_sv
-build gen/examples/gb_spu/metron_vl/VMetroBoySPU2__ALL.o: make gen/examples/gb_spu/metron_vl/VMetroBoySPU2.mk
+build build/examples/gb_spu/metron_vl/VMetroBoySPU2__ALL.o: make build/examples/gb_spu/metron_vl/VMetroBoySPU2.mk
 
 
 ################################################################################
-# Compile bin/examples/gb_spu
+# Compile build/examples/gb_spu/gb_spu
 
-build obj/examples/gb_spu/gb_spu_main.o: compile_cpp examples/gb_spu/gb_spu_main.cpp | gen/examples/gb_spu/metron_vl/VMetroBoySPU2.h
-  includes = ${base_includes} -I/usr/local/share/verilator/include -Igen/examples/gb_spu
-build bin/examples/gb_spu: c_binary obj/verilated.o obj/verilated_threads.o gen/examples/gb_spu/metron_vl/VMetroBoySPU2__ALL.o obj/examples/gb_spu/gb_spu_main.o bin/libmetron.a
-  includes = ${base_includes} -I/usr/local/share/verilator/include -Igen/examples/gb_spu
+build build/examples/gb_spu/gb_spu_main.o: compile_cpp examples/gb_spu/gb_spu_main.cpp | build/examples/gb_spu/metron_vl/VMetroBoySPU2.h
+  includes = ${base_includes} -I/usr/local/share/verilator/include -Ibuild/examples/gb_spu
+build build/examples/gb_spu/gb_spu: c_binary build/verilator/verilated.o build/verilator/verilated_threads.o build/examples/gb_spu/metron_vl/VMetroBoySPU2__ALL.o build/examples/gb_spu/gb_spu_main.o build/metron/libmetron.a
+  includes = ${base_includes} -I/usr/local/share/verilator/include -Ibuild/examples/gb_spu

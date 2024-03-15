@@ -8,9 +8,7 @@
 		"files.exclude": {
 			//"symlinks": true,
 			"vs": true,
-			"bin": true,
-			"obj": true,
-			"gen": true,
+			"build": true,
 			"__pycache__": true,
 			".ninja_deps": true,
 			".ninja_log": true,

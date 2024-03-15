@@ -1,7 +1,4 @@
-bin
-out
-obj
-gen
+build
 wasm
 coverage
 .ninja_deps

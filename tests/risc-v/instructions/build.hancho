@@ -1,0 +1,25 @@
+from hancho import *
+
+elf_to_hex = load("../../../symlinks/metrolib/metrolib/tools/elf_to_hex.hancho")
+
+rv_base = Rule(
+  arch = "-march=rv32i -mabi=ilp32 -mstrict-align",
+)
+
+rv_compile = rv_base.extend(
+  command   = "riscv64-unknown-elf-gcc {opts} -c {files_in} -o {files_out}",
+  opts      = "{arch} -g -Os -std=gnu++2a  -MMD",
+  files_out = "{swap_ext(files_in, '.o')}",
+  depfile   = "{swap_ext(files_out, '.d')}",
+)
+
+rv_link = rv_base.extend(
+  command   = "riscv64-unknown-elf-gcc {files_in} {opts} -o {files_out}",
+  opts      = "{arch} -nostdlib -nostartfiles -Wl,-T {linkerscript} -lgcc",
+  deps      = rv_base.deps + ["{linkerscript}"],
+  linkerscript = "{load_dir}/link.ld",
+)
+
+objs  = [rules.rv_compile(source) for source in glob("*.S")]
+bins  = [rules.rv_link(obj, "{swap_ext(files_in[0], '')}") for obj in objs]
+hexes = [elf_to_hex.run(bin) for bin in bins]

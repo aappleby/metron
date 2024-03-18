@@ -1,0 +1,31 @@
+from hancho import *
+
+####################################################################################################
+# Emscripten file packages for demo & tutorial
+
+#packager = Rule(
+#  command = "python3 {tool} {files_out} --no-node --js-output={swap_ext(files_out, '.js')} --preload {files_in} --exclude {excludes}",
+#  tool = "$EMSDK/upstream/emscripten/tools/file_packager.py",
+#  excludes = "*.cpp *.sv *.MD *.hex *.pcf *.v *.txt",
+#)
+#
+#packager(
+#  ["../examples", "../tests"],
+#  "docs/demo/examples.data",
+#  work_dir = "..",
+#  build_dir = "",
+#  deps = [
+#    glob("../examples/**/*.h", recursive=True),
+#    glob("../tests/**/*.h", recursive=True),
+#  ]
+#)
+#
+#packager(
+#  ["examples/tutorial"],
+#  "docs/tutorial/tutorial_src.data",
+#  work_dir = "..",
+#  build_dir = "",
+#  deps = [
+#    glob("../examples/tutorial/**/*.h", recursive=True),
+#  ]
+#)

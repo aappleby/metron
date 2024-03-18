@@ -1,0 +1,21 @@
+from hancho import *
+
+rules = load("../symlinks/metrolib/rules/rules.hancho")
+
+####################################################################################################
+# Verilator runtime library
+
+#verilated_o = rules.compile_cpp(
+#  "/usr/local/share/verilator/include/verilated.cpp",
+#  "{start_dir}/{build_dir}/verilator/verilated.o",
+#)
+#
+#verilated_threads_o = rules.compile_cpp(
+#  "/usr/local/share/verilator/include/verilated_threads.cpp",
+#  "{start_dir}/{build_dir}/verilator/verilated_threads.o",
+#)
+#
+#libverilator = rules.link_c_lib(
+#  [verilated_o, verilated_threads_o],
+#  "{start_dir}/{build_dir}/verilator/libverilator.a"
+#)

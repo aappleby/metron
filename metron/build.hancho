@@ -1,8 +1,11 @@
 from hancho import *
 
-rules    = load("../symlinks/metrolib/rules/rules.hancho")
+rules = load("{root_dir}/symlinks/metrolib/rules/rules.hancho")
 
-metrolib_core = load(file="metrolib/core/build.hancho", root="../symlinks/metrolib")
+metrolib_core = load(
+    root="{root_dir}/symlinks/metrolib",
+    file="metrolib/core/build.hancho"
+)
 
 ####################################################################################################
 # Metron binary

@@ -1,26 +1,26 @@
 from hancho import *
 
-rules = load("{root_dir}/symlinks/metrolib/rules/rules.hancho")
+rules = build_config.include("{rules_file}")
 
-metrolib_core = load(
-    root="{root_dir}/symlinks/metrolib",
-    file="metrolib/core/build.hancho"
-)
+#metrolib_core = build_config.load(
+#    root="{root_dir}/symlinks/metrolib",
+#    file="metrolib/core/build.hancho"
+#)
 
-####################################################################################################
-# Metron binary
-
-lib = rules.cpp_lib(
-  glob("*.cpp") + glob("nodes/*.cpp"),
-  "libmetron.a",
-  includes  = "-I. -Isymlinks/metrolib -Isymlinks/matcheroni",
-  warnings  = "",
-)
-
-bin = rules.cpp_bin(
-  glob("main/*.cpp"),
-  "metron",
-  libraries = [lib, metrolib_core.lib],
-  includes  = "-I. -Isymlinks -Isymlinks/metrolib -Isymlinks/matcheroni",
-  warnings  = "",
-)
+#####################################################################################################
+## Metron binary
+#
+#lib = rules.cpp_lib(
+#  glob("*.cpp") + glob("nodes/*.cpp"),
+#  "libmetron.a",
+#  includes  = "-I. -Isymlinks/metrolib -Isymlinks/matcheroni",
+#  warnings  = "",
+#)
+#
+#bin = rules.cpp_bin(
+#  glob("main/*.cpp"),
+#  "metron",
+#  libraries = [lib, metrolib_core.lib],
+#  includes  = "-I. -Isymlinks -Isymlinks/metrolib -Isymlinks/matcheroni",
+#  warnings  = "",
+#)

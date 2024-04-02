@@ -22,3 +22,5 @@ all: ${BINS}
 
 clean:
 	rm -f ${OBJS} ${ELFS} ${BINS}
+
+.SECONDARY:

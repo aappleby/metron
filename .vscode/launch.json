@@ -41,7 +41,7 @@
       "name": "Debug Hancho",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/hancho.py",
+      "program": "${workspaceFolder}/symlinks/hancho/hancho.py",
       "cwd": "${workspaceFolder}",
       "args": [],
       "console": "integratedTerminal",

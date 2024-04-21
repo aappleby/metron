@@ -1,21 +1,12 @@
-from hancho import *
+#####
 
-build_config.build_tag  = "debug"
+hancho.build_tag = "debug"
 
-#metrolib_config = build_config.extend(
-#  metrolib_root = this_path / "symlinks/metrolib"
-#)
+metrolib = hancho.repo("symlinks/metrolib/build.hancho")
 
-metrolib = build_config.load("symlinks/metrolib/build.hancho")
-#metrolib_audio = metrolib_config.load(metrolib_config.metrolib_root / "metrolib/audio/build.hancho")
+rules = metrolib.rules
 
-#elf_to_hex = metrolib_config.include("symlinks/metrolib/metrolib/tools/elf_to_hex.hancho")
-
-#metron_config = build_config.extend(
-#  rules_file = this_path / "symlinks/metrolib/rules/rules.hancho",
-#)
-
-#build_config.
+#task = metrolib.elf_to_hex("add.elf", ["add.code.vh", "add.rwdata.vh"])
 
 #metron = build_config.load("metron/build.hancho")
 
@@ -26,3 +17,20 @@ metrolib = build_config.load("symlinks/metrolib/build.hancho")
 #ems_opts_ld = "-sEXPORT_ES6 -sEXPORTED_RUNTIME_METHODS=['FS','callMain'] -sNO_DISABLE_EXCEPTION_CATCHING -sTOTAL_STACK=32MB -sINITIAL_MEMORY=256MB -sALLOW_MEMORY_GROWTH -sFORCE_FILESYSTEM"
 #base_includes = "-I. -Isymlinks -Isymlinks/metrolib -Isymlinks/matcheroni"
 #libraries = "-lgcc -lc"
+
+metron_source = hancho.glob("metron/*.cpp") + hancho.glob("metron/nodes/*.cpp")
+
+metron_lib = rules.cpp_lib(
+  metron_source,
+  "metron/libmetron.a",
+  cpp_flags = ["-rdynamic", "-ggdb3"],
+  includes = [".", "symlinks", "symlinks/metrolib", "symlinks/matcheroni"],
+  warnings = ["all", "error", "suggest-override", "no-unused-function", "no-sign-compare", "no-unused-variable", "no-unused-but-set-variable"],
+)
+
+#rules.compile_cpp(
+#  "metron/CToken.cpp",
+#  cpp_flags = ["-rdynamic", "-ggdb3"],
+#  includes = [".", "symlinks", "symlinks/metrolib", "symlinks/matcheroni"],
+#  warnings = ["all", "error", "suggest-override", "no-unused-function", "no-sign-compare", "no-unused-variable", "no-unused-but-set-variable"],
+#)

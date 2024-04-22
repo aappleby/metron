@@ -3,12 +3,7 @@
 hancho.build_tag = "debug"
 
 metrolib = hancho.repo("symlinks/metrolib/build.hancho")
-
-rules = metrolib.rules
-
-#task = metrolib.elf_to_hex("add.elf", ["add.code.vh", "add.rwdata.vh"])
-
-#metron = build_config.load("metron/build.hancho")
+matcheroni = hancho.repo("symlinks/matcheroni/build.hancho")
 
 #opts_cpp = "-rdynamic -ggdb3 -O0 -Wall -Werror -Wsuggest-override -Wno-unused-function -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable -std=gnu++2a"
 #opts_c = "-rdynamic -ggdb3 -O0 -Wall -Werror -Wno-unused-function -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable"
@@ -20,17 +15,39 @@ rules = metrolib.rules
 
 metron_source = hancho.glob("metron/*.cpp") + hancho.glob("metron/nodes/*.cpp")
 
-metron_lib = rules.cpp_lib(
+metron_lib = metrolib.rules.cpp_lib(
   metron_source,
   "metron/libmetron.a",
   cpp_flags = ["-rdynamic", "-ggdb3"],
-  includes = [".", "symlinks", "symlinks/metrolib", "symlinks/matcheroni"],
-  warnings = ["all", "error", "suggest-override", "no-unused-function", "no-sign-compare", "no-unused-variable", "no-unused-but-set-variable"],
+  includes  = [".", "symlinks", "symlinks/metrolib", "symlinks/matcheroni"],
+  warnings  = ["all", "error", "suggest-override", "no-unused-function", "no-sign-compare", "no-unused-variable", "no-unused-but-set-variable"],
 )
 
-#rules.compile_cpp(
-#  "metron/CToken.cpp",
-#  cpp_flags = ["-rdynamic", "-ggdb3"],
-#  includes = [".", "symlinks", "symlinks/metrolib", "symlinks/matcheroni"],
-#  warnings = ["all", "error", "suggest-override", "no-unused-function", "no-sign-compare", "no-unused-variable", "no-unused-but-set-variable"],
+my_cpp_bin = metrolib.rules.cpp_bin.extend(
+  cpp_flags = ["-rdynamic", "-ggdb3"],
+  includes  = [".", "symlinks", "symlinks/metrolib", "symlinks/matcheroni"],
+  warnings  = ["all", "error", "suggest-override", "no-unused-function", "no-sign-compare", "no-unused-variable", "no-unused-but-set-variable"],
+  sys_libs  = ["gcc", "c"],
+)
+
+j1_main = my_cpp_bin("examples/j1/main.cpp", "examples/j1/j1")
+
+pong_main = my_cpp_bin(
+  ["examples/pong/main.cpp", metrolib.libcore],
+  "examples/pong/pong",
+  sys_libs = ["gcc", "c", "SDL2"]
+)
+
+uart_main = my_cpp_bin(
+  ["examples/uart/main.cpp", metrolib.libcore],
+  "examples/uart/uart"
+)
+
+#symlinks/metron/build/metron/metron -q -v -e -c examples/gb_spu/metron/MetroBoySPU2.h -o examples/gb_spu/metron_sv/MetroBoySPU2.sv
+
+#metron = hancho.command(
+#  command = "{rel_command_files} -q -v -e -c {rel_source_files} -o {rel_build_files}"
+#  command_files = metron_bin
 #)
+
+#print(j1_main)

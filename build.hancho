@@ -3,7 +3,7 @@
 hancho.build_tag = "debug"
 
 metrolib = hancho.repo("symlinks/metrolib/build.hancho")
-matcheroni = hancho.repo("symlinks/matcheroni/build.hancho")
+#matcheroni = hancho.repo("symlinks/matcheroni/build.hancho")
 
 #opts_cpp = "-rdynamic -ggdb3 -O0 -Wall -Werror -Wsuggest-override -Wno-unused-function -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable -std=gnu++2a"
 #opts_c = "-rdynamic -ggdb3 -O0 -Wall -Werror -Wno-unused-function -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable"
@@ -15,39 +15,134 @@ matcheroni = hancho.repo("symlinks/matcheroni/build.hancho")
 
 metron_source = hancho.glob("metron/*.cpp") + hancho.glob("metron/nodes/*.cpp")
 
-metron_lib = metrolib.rules.cpp_lib(
-  metron_source,
-  "metron/libmetron.a",
+cpp_settings = hancho.Config(
   cpp_flags = ["-rdynamic", "-ggdb3"],
   includes  = [".", "symlinks", "symlinks/metrolib", "symlinks/matcheroni"],
   warnings  = ["all", "error", "suggest-override", "no-unused-function", "no-sign-compare", "no-unused-variable", "no-unused-but-set-variable"],
+  sys_libs  = ["gcc", "c", "SDL2"],
 )
 
-my_cpp_bin = metrolib.rules.cpp_bin.extend(
-  cpp_flags = ["-rdynamic", "-ggdb3"],
-  includes  = [".", "symlinks", "symlinks/metrolib", "symlinks/matcheroni"],
-  warnings  = ["all", "error", "suggest-override", "no-unused-function", "no-sign-compare", "no-unused-variable", "no-unused-but-set-variable"],
-  sys_libs  = ["gcc", "c"],
+check_cpp_syntax = hancho.command(
+  command = "g++ -I. -fsyntax-only -c {rel_source_files} && touch {rel_build_files}.ok",
+  build_files = "{source_files}.ok",
 )
 
-j1_main = my_cpp_bin("examples/j1/main.cpp", "examples/j1/j1")
+#check_cpp_syntax("examples/j1/metron/j1.h", cpp_settings)
 
-pong_main = my_cpp_bin(
+metron_lib = metrolib.rules.cpp_lib(metron_source, "metron/libmetron.a", cpp_settings)
+
+j1_bin = metrolib.rules.cpp_bin("examples/j1/main.cpp", "examples/j1/j1", cpp_settings)
+
+test_logic_bin = metrolib.rules.cpp_bin(
+  ["tests/utils/test_logic.cpp", metrolib.libcore],
+  "tests/utils/test_logic",
+  cpp_settings
+)
+
+rvsimple_bin = metrolib.rules.cpp_bin(
+  ["examples/rvsimple/main.cpp", metrolib.libcore],
+  "examples/rvsimple/rvsimple",
+  cpp_settings
+)
+
+pong_bin = metrolib.rules.cpp_bin(
   ["examples/pong/main.cpp", metrolib.libcore],
   "examples/pong/pong",
-  sys_libs = ["gcc", "c", "SDL2"]
+  cpp_settings
 )
 
-uart_main = my_cpp_bin(
+uart_bin = metrolib.rules.cpp_bin(
   ["examples/uart/main.cpp", metrolib.libcore],
-  "examples/uart/uart"
+  "examples/uart/uart",
+  cpp_settings
 )
 
-#symlinks/metron/build/metron/metron -q -v -e -c examples/gb_spu/metron/MetroBoySPU2.h -o examples/gb_spu/metron_sv/MetroBoySPU2.sv
+metron_bin = metrolib.rules.cpp_bin(
+  [hancho.glob("metron/main/*.cpp"), metron_lib, metrolib.libcore],
+  "metron/metron",
+  cpp_settings
+)
 
-#metron = hancho.command(
-#  command = "{rel_command_files} -q -v -e -c {rel_source_files} -o {rel_build_files}"
-#  command_files = metron_bin
-#)
+metron = hancho.command(
+  command = "{rel_command_files} -q -v -e -c {rel_source_files} -o {rel_build_files}",
+  command_files = metron_bin,
+  build_files = "{swap_ext(source_files, '.sv')}",
+)
 
-#print(j1_main)
+metron_examples = [
+  "examples/j1/metron/dpram.h",
+  "examples/j1/metron/j1.h",
+  "examples/pong/metron/pong.h",
+  "examples/rvsimple/metron/adder.h",
+  "examples/rvsimple/metron/alu_control.h",
+  "examples/rvsimple/metron/alu.h",
+  "examples/rvsimple/metron/config.h",
+  "examples/rvsimple/metron/constants.h",
+  "examples/rvsimple/metron/control_transfer.h",
+  "examples/rvsimple/metron/data_memory_interface.h",
+  "examples/rvsimple/metron/example_data_memory_bus.h",
+  "examples/rvsimple/metron/example_data_memory.h",
+  "examples/rvsimple/metron/example_text_memory_bus.h",
+  "examples/rvsimple/metron/example_text_memory.h",
+  "examples/rvsimple/metron/immediate_generator.h",
+  "examples/rvsimple/metron/instruction_decoder.h",
+  "examples/rvsimple/metron/multiplexer2.h",
+  "examples/rvsimple/metron/multiplexer4.h",
+  "examples/rvsimple/metron/multiplexer8.h",
+  "examples/rvsimple/metron/regfile.h",
+  "examples/rvsimple/metron/register.h",
+  "examples/rvsimple/metron/riscv_core.h",
+  "examples/rvsimple/metron/singlecycle_control.h",
+  "examples/rvsimple/metron/singlecycle_ctlpath.h",
+  "examples/rvsimple/metron/singlecycle_datapath.h",
+  "examples/rvsimple/metron/toplevel.h",
+  "examples/uart/metron/uart_hello.h",
+  "examples/uart/metron/uart_rx.h",
+  "examples/uart/metron/uart_top.h",
+  "examples/uart/metron/uart_tx.h",
+]
+
+for file in metron_examples:
+  metron(file)
+
+
+verilator = hancho.command(
+  command = "verilator -Wno-width --public -I{includes} --cc {source_files} -Mdir {path.dirname(rel_build_files[0])}",
+)
+
+verilated_o = metrolib.rules.compile_cpp("/usr/local/share/verilator/include/verilated.cpp", "verilator/verilated.o")
+verilated_threads_o = metrolib.rules.compile_cpp("/usr/local/share/verilator/include/verilated_threads.cpp", "verilator/verilated_threads.o")
+
+MetroBoySPU2_sv = metron("examples/gb_spu/metron/MetroBoySPU2.h")
+
+MetroBoySPU2_mk = verilator(
+  source_files = MetroBoySPU2_sv,
+  build_files = "examples/gb_spu/metron_vl/VMetroBoySPU2.mk",
+  includes = "examples/gb_spu/metron_sv",
+)
+
+make = hancho.command(
+  command = "make --quiet -C {path.dirname(rel_source_files[0])} -f {path.basename(rel_source_files[0])} > /dev/null"
+)
+
+VMetroBoySPU2_all_o = make(
+  source_files = MetroBoySPU2_mk,
+  build_files = "examples/gb_spu/metron_vl/VMetroBoySPU2__ALL.o"
+)
+
+make("tests/risc-v/instructions/makefile")
+
+gb_spu_main_o = metrolib.rules.compile_cpp(
+  "examples/gb_spu/gb_spu_main.cpp",
+  "examples/gb_spu/gb_spu_main.o",
+  includes = [
+    ".",
+    "{build_dir}/{build_tag}/{repo_name}",
+    "/usr/local/share/verilator/include",
+  ]
+)
+
+gb_spu_bin = metrolib.rules.cpp_bin(
+  [verilated_o, verilated_threads_o, VMetroBoySPU2_all_o, metron_lib, gb_spu_main_o],
+  "examples/gb_spu/gb_spu",
+)

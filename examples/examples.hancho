@@ -1,0 +1,99 @@
+metron = hancho.metron.metron
+
+j1_bin = hancho.rules.cpp_bin(
+  "j1/main.cpp",
+  "j1/j1"
+)
+
+pong_bin = hancho.rules.cpp_bin(
+  ["pong/main.cpp", hancho.metrolib.libcore],
+  "pong/pong",
+)
+
+rvsimple_bin = hancho.rules.cpp_bin(
+  ["rvsimple/main.cpp", hancho.metrolib.libcore],
+  "rvsimple/rvsimple",
+)
+
+metron_examples = [
+  "j1/metron/dpram.h",
+  "j1/metron/j1.h",
+  "pong/metron/pong.h",
+  "rvsimple/metron/adder.h",
+  "rvsimple/metron/alu_control.h",
+  "rvsimple/metron/alu.h",
+  "rvsimple/metron/config.h",
+  "rvsimple/metron/constants.h",
+  "rvsimple/metron/control_transfer.h",
+  "rvsimple/metron/data_memory_interface.h",
+  "rvsimple/metron/example_data_memory_bus.h",
+  "rvsimple/metron/example_data_memory.h",
+  "rvsimple/metron/example_text_memory_bus.h",
+  "rvsimple/metron/example_text_memory.h",
+  "rvsimple/metron/immediate_generator.h",
+  "rvsimple/metron/instruction_decoder.h",
+  "rvsimple/metron/multiplexer2.h",
+  "rvsimple/metron/multiplexer4.h",
+  "rvsimple/metron/multiplexer8.h",
+  "rvsimple/metron/regfile.h",
+  "rvsimple/metron/register.h",
+  "rvsimple/metron/riscv_core.h",
+  "rvsimple/metron/singlecycle_control.h",
+  "rvsimple/metron/singlecycle_ctlpath.h",
+  "rvsimple/metron/singlecycle_datapath.h",
+  "rvsimple/metron/toplevel.h",
+]
+
+metron_examples_sv = [metron(file) for file in metron_examples]
+
+#hancho.rules.check_cpp_syntax("j1/metron/j1.h")
+
+################################################################################
+# UART example
+
+uart_hello_sv = metron("uart/metron/uart_hello.h")
+uart_rx_sv    = metron("uart/metron/uart_rx.h")
+uart_top_sv   = metron("uart/metron/uart_top.h")
+uart_tx_sv    = metron("uart/metron/uart_tx.h")
+
+uart_bin = hancho.rules.cpp_bin(["uart/main.cpp", hancho.metrolib.libcore], "uart/uart")
+
+#hancho.verilator = hancho.command(
+#  command = "verilator -Wno-width --public {includes} --cc {rel_source_files} -Mdir {path.dirname(rel_build_files[0])}",
+#)
+
+verilated_uart = hancho.rules.verilator(
+  uart_top_sv,
+  "uart/metron_vl/Vuart_top.mk",
+  includes = [
+    ".",
+    "{repo_path}",
+    "{path.dirname(source_files[0])}",
+  ],
+)
+
+#examples$ verilator -Wno-width --public -I. -I/home/aappleby/repos/metron --cc /home/aappleby/repos/metron/build/debug/metron/examples/uart/metron/uart_top.sv -Mdir /home/aappleby/repos/metron/build/debug/metron/examples/uart/metron_vl
+#./build/debug/metron/ examples/uart/metron/uart_rx.sv
+
+"""
+build build/examples/uart/metron_vl/Vuart_top.mk build/examples/uart/metron_vl/Vuart_top.h: verilator examples/uart/metron_sv/uart_top.sv
+  includes = -Iexamples/uart/metron_sv
+build build/examples/uart/metron_vl/Vuart_top__ALL.o: make build/examples/uart/metron_vl/Vuart_top.mk
+
+build build/examples/uart/main_vl.o: compile_cpp examples/uart/main_vl.cpp | build/examples/uart/metron_vl/Vuart_top.h
+  includes = ${base_includes} -I/usr/local/share/verilator/include -Ibuild/examples/uart
+build build/examples/uart/uart_vl: c_binary build/verilator/verilated.o build/verilator/verilated_threads.o build/examples/uart/metron_vl/Vuart_top__ALL.o build/examples/uart/main_vl.o build/metron/libmetron.a
+  includes = ${base_includes} -I/usr/local/share/verilator/include -Ibuild/examples/uart
+
+build build/examples/uart/uart_iv: iverilog examples/uart/uart_test_iv.sv | examples/uart/metron_sv/uart_hello.sv examples/uart/metron_sv/uart_rx.sv examples/uart/metron_sv/uart_top.sv examples/uart/metron_sv/uart_tx.sv
+  includes = -Iexamples/uart -Iexamples/uart/metron_sv
+  defines = -DIVERILOG
+
+build build/examples/uart/uart_test_ice40.json: yosys examples/uart/uart_test_ice40.sv | examples/uart/metron_sv/uart_hello.sv examples/uart/metron_sv/uart_rx.sv examples/uart/metron_sv/uart_top.sv examples/uart/metron_sv/uart_tx.sv examples/uart/SB_PLL40_CORE.v
+  includes = -Iexamples/uart -Iexamples/uart/metron_sv
+build build/examples/uart/uart_test_ice40.asc: nextpnr-ice40 build/examples/uart/uart_test_ice40.json
+  chip = hx8k
+  package = ct256
+  pcf = examples/uart/ice40-hx8k-b-evn.pcf
+build build/examples/uart/uart_test_ice40.bin: icepack build/examples/uart/uart_test_ice40.asc
+"""

@@ -1,0 +1,19 @@
+
+metron_lib = hancho.rules.cpp_lib(
+  hancho.glob("*.cpp") + hancho.glob("nodes/*.cpp"),
+  "libmetron.a"
+)
+
+metron_bin = hancho.rules.cpp_bin(
+  [hancho.glob("main/*.cpp"), metron_lib, hancho.metrolib.libcore],
+  "metron",
+)
+
+metron = hancho.command(
+  command = "{rel_command_files} -q -v -e -c {rel_source_files} -o {rel_build_files}",
+  command_files = metron_bin,
+  build_files = "{swap_ext(source_files, '.sv')}",
+)
+
+export.metron_lib = metron_lib
+export.metron     = metron

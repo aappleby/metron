@@ -1,6 +1,6 @@
 
 
-c_config = build_config.extend(
+c_config = hancho.Config(
   build_type  = "-g -O0",
   cpp_std     = "-std=gnu++2a",
 
@@ -9,15 +9,11 @@ c_config = build_config.extend(
   includes    = ["{rel_path(repo_path, command_path)}"],
   libraries   = [],
 
-  join_prefix      = lambda prefix, strings: ' '.join([prefix+str(s) for s in flatten(strings)]),
   joined_warnings  = "{join_prefix('-W', warnings)}",
   joined_defines   = "{join_prefix('-D', defines)}",
   joined_includes  = "{join_prefix('-I', includes)}",
   joined_libraries = "{join_prefix('-l', libraries)}",
 )
-
-
-compile_
 
 
 #SRCS=$(wildcard *.S)

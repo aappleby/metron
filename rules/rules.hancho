@@ -1,0 +1,42 @@
+
+export.update(hancho.metrolib.rules)
+
+#---------------------------------------------------------------------------------------------------
+
+export.cpp_settings = hancho.Config(
+  cpp_flags = ["-rdynamic", "-ggdb3"],
+  includes  = [".", "{repo_path}", "{repo_path}/symlinks", "{repo_path}/symlinks/metrolib", "{repo_path}/symlinks/matcheroni"],
+  warnings  = ["all", "error", "suggest-override", "no-unused-function", "no-sign-compare", "no-unused-variable", "no-unused-but-set-variable"],
+  sys_libs  = ["gcc", "c", "SDL2"],
+)
+
+#---------------------------------------------------------------------------------------------------
+
+export.compile_cpp = hancho.metrolib.rules.compile_cpp + export.cpp_settings
+export.cpp_bin     = hancho.metrolib.rules.cpp_bin     + export.cpp_settings
+export.cpp_lib     = hancho.metrolib.rules.cpp_lib     + export.cpp_settings
+
+export.check_cpp_syntax = hancho.Command(
+  command = "g++ -I. -I{repo_path} -fsyntax-only -c {rel_source_files} && touch {rel_build_files}.ok",
+  build_files = "{source_files}.ok",
+)
+
+#---------------------------------------------------------------------------------------------------
+
+verilated_o = export.compile_cpp(
+  "/usr/local/share/verilator/include/verilated.cpp",
+  "verilator/verilated.o"
+)
+
+verilated_threads_o = export.compile_cpp(
+  "/usr/local/share/verilator/include/verilated_threads.cpp",
+  "verilator/verilated_threads.o"
+)
+
+export.verilator_lib = export.cpp_lib([verilated_o, verilated_threads_o], "verilator/libverilator.a")
+
+export.verilator = hancho.Command(
+  command = "verilator -Wno-width --public {join_prefix('-I', includes)} --cc {rel_source_files} -Mdir {path.dirname(rel_build_files[0])}",
+)
+
+#---------------------------------------------------------------------------------------------------

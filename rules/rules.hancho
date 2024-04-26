@@ -52,7 +52,9 @@ def gen_verilator(config):
   )
 
   make_cmd = hancho.raw.Command(
-    command = "make --quiet -C {path.dirname(rel_source_files[0])} -f {path.basename(rel_source_files[0])} > /dev/null",
+    command = "make --quiet -C {make_path} -f {make_file} > /dev/null",
+    make_path = "{path.dirname(rel_source_files[0])}",
+    make_file = "{path.basename(rel_source_files[0])}",
     build_files = "{swap_ext(source_files[0], '__ALL.o')}",
   )
 

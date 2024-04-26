@@ -10,11 +10,12 @@
 
 hancho.build_tag = "debug"
 
-hancho.metrolib = hancho.repo("symlinks/metrolib/build.hancho")
-hancho.rules    = hancho.load("rules/rules.hancho")
-hancho.metron   = hancho.load("metron/metron.hancho")
-hancho.tests    = hancho.load("tests/tests.hancho")
-hancho.examples = hancho.load("examples/examples.hancho")
+metrolib = hancho.repo("symlinks/metrolib/build.hancho")
+
+rules    = hancho.load("rules/rules.hancho",       metrolib = metrolib)
+metron   = hancho.load("metron/metron.hancho",     metrolib = metrolib, rules = rules)
+tests    = hancho.load("tests/tests.hancho",       metrolib = metrolib, rules = rules)
+examples = hancho.load("examples/examples.hancho", metrolib = metrolib, rules = rules, metron = metron)
 
 """
 

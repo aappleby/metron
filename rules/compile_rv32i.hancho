@@ -1,6 +1,6 @@
 
 
-c_config = hancho.Config(
+c_config = hancho.raw.Config(
   build_type  = "-g -O0",
   cpp_std     = "-std=gnu++2a",
 

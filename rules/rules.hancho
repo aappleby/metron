@@ -1,22 +1,23 @@
-
-export.update(hancho.metrolib.rules)
+metrolib = hancho.metrolib
 
 #---------------------------------------------------------------------------------------------------
 
-export.cpp_settings = hancho.Config(
+export.cpp_settings = hancho.raw.Config(
   cpp_flags = ["-rdynamic", "-ggdb3"],
   includes  = [".", "{repo_path}", "{repo_path}/symlinks", "{repo_path}/symlinks/metrolib", "{repo_path}/symlinks/matcheroni"],
   warnings  = ["all", "error", "suggest-override", "no-unused-function", "no-sign-compare", "no-unused-variable", "no-unused-but-set-variable"],
   sys_libs  = ["gcc", "c", "SDL2"],
+  build_tag = hancho.build_tag,
 )
 
 #---------------------------------------------------------------------------------------------------
 
-export.compile_cpp = hancho.metrolib.rules.compile_cpp + export.cpp_settings
-export.cpp_bin     = hancho.metrolib.rules.cpp_bin     + export.cpp_settings
-export.cpp_lib     = hancho.metrolib.rules.cpp_lib     + export.cpp_settings
+export.compile_cpp = metrolib.rules.compile_cpp + export.cpp_settings
+export.cpp_bin     = metrolib.rules.cpp_bin     + export.cpp_settings
+export.cpp_lib     = metrolib.rules.cpp_lib     + export.cpp_settings
+export.make        = metrolib.rules.make
 
-export.check_cpp_syntax = hancho.Command(
+export.check_cpp_syntax = hancho.command(
   command = "g++ -I. -I{repo_path} -fsyntax-only -c {rel_source_files} && touch {rel_build_files}.ok",
   build_files = "{source_files}.ok",
 )
@@ -25,18 +26,41 @@ export.check_cpp_syntax = hancho.Command(
 
 verilated_o = export.compile_cpp(
   "/usr/local/share/verilator/include/verilated.cpp",
-  "verilator/verilated.o"
+  "verilator/verilated.o",
 )
 
 verilated_threads_o = export.compile_cpp(
   "/usr/local/share/verilator/include/verilated_threads.cpp",
-  "verilator/verilated_threads.o"
+  "verilator/verilated_threads.o",
 )
 
 export.verilator_lib = export.cpp_lib([verilated_o, verilated_threads_o], "verilator/libverilator.a")
 
-export.verilator = hancho.Command(
-  command = "verilator -Wno-width --public {join_prefix('-I', includes)} --cc {rel_source_files} -Mdir {path.dirname(rel_build_files[0])}",
-)
+def gen_verilator(config):
+
+  def sv_to_mk(filename):
+    from os import path
+    dirname  = path.dirname(filename)
+    basename = path.basename(filename)
+    stem     = path.splitext(basename)[0]
+    return f"{dirname}/V{stem}.mk"
+
+  verilate_cmd = hancho.raw.Command(
+    command = "verilator -Wno-width --public {join_prefix('-I', includes)} --cc {rel_source_files} -Mdir {path.dirname(rel_build_files[0])}",
+    build_files = "{sv_to_mk(source_files[0])}",
+    sv_to_mk = sv_to_mk,
+  )
+
+  make_cmd = hancho.raw.Command(
+    command = "make --quiet -C {path.dirname(rel_source_files[0])} -f {path.basename(rel_source_files[0])} > /dev/null",
+    build_files = "{swap_ext(source_files[0], '__ALL.o')}",
+  )
+
+  verilated_mk = config.task(verilate_cmd, source_files = config.source_files)
+  verilated_o  = config.task(make_cmd, source_files = verilated_mk)
+
+  return verilated_o
+
+export.verilator = hancho.generator(gen_verilator)
 
 #---------------------------------------------------------------------------------------------------

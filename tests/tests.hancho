@@ -1,6 +1,7 @@
-hancho.rules.cpp_bin(
-  ["utils/test_logic.cpp", hancho.metrolib.libcore],
-  "utils/test_logic",
+imports.rules.cpp_bin(
+  in_srcs = ["utils/test_logic.cpp"],
+  in_objs = [imports.metrolib.libcore],
+  out_bin = ["utils/test_logic"],
 )
 
-hancho.rules.make("risc-v/instructions/makefile")
+imports.rules.make(in_makefile = "risc-v/instructions/makefile")

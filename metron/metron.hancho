@@ -1,19 +1,21 @@
+import hancho
+import glob
 
-metron_lib = hancho.rules.cpp_lib(
-  hancho.glob("*.cpp") + hancho.glob("nodes/*.cpp"),
-  "libmetron.a"
+metron_lib = imports.rules.cpp_lib(
+  in_srcs = glob.glob("*.cpp") + glob.glob("nodes/*.cpp"),
+  out_lib = "libmetron.a"
 )
 
-metron_bin = hancho.rules.cpp_bin(
-  [hancho.glob("main/*.cpp"), metron_lib, hancho.metrolib.libcore],
-  "metron",
+exports.metron_lib = metron_lib
+
+metron_bin = imports.rules.cpp_bin(
+  in_srcs = glob.glob("main/*.cpp"),
+  in_objs = [metron_lib, imports.metrolib.libcore],
+  out_bin = "metron",
 )
 
-metron = hancho.command(
-  command = "{rel_command_files} -q -v -e -c {rel_source_files} -o {rel_build_files}",
-  command_files = metron_bin,
-  build_files = "{swap_ext(source_files, '.sv')}",
+exports.convert = hancho.Config(
+  command = "{in_binary} -q -v -e -c {rel(in_src)} -o {rel(out_sv)}",
+  in_binary = metron_bin,
+  out_sv = "{swap_ext(in_src, '.sv')}",
 )
-
-export.metron_lib = metron_lib
-export.metron     = metron

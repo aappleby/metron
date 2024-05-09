@@ -1,5 +1,7 @@
 #####
 
+import hancho
+
 #opts_cpp = "-rdynamic -ggdb3 -O0 -Wall -Werror -Wsuggest-override -Wno-unused-function -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable -std=gnu++2a"
 #opts_c = "-rdynamic -ggdb3 -O0 -Wall -Werror -Wno-unused-function -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable"
 #opts_ld = "-O0"
@@ -8,14 +10,23 @@
 #base_includes = "-I. -Isymlinks -Isymlinks/metrolib -Isymlinks/matcheroni"
 #libraries = "-lgcc -lc"
 
-hancho.build_tag = "debug"
+config = hancho.Config(build_tag = "debug")
 
-metrolib = hancho.repo("symlinks/metrolib/build.hancho")
+metrolib = hancho.repo("symlinks/metrolib/build.hancho", build_tag = config.build_tag)
+rules    = hancho.load("rules/rules.hancho",   build_tag = config.build_tag, metrolib = metrolib)
+metron   = hancho.load("metron/metron.hancho", metrolib = metrolib, rules = rules)
+tests    = hancho.load("tests/tests.hancho",   metrolib = metrolib, rules = rules)
 
-rules    = hancho.load("rules/rules.hancho",       metrolib = metrolib)
-metron   = hancho.load("metron/metron.hancho",     metrolib = metrolib, rules = rules)
-tests    = hancho.load("tests/tests.hancho",       metrolib = metrolib, rules = rules)
-examples = hancho.load("examples/examples.hancho", metrolib = metrolib, rules = rules, metron = metron)
+deps = hancho.Config(
+  config = config,
+  metrolib = metrolib,
+  rules = rules,
+  metron = metron
+)
+
+examples = hancho.load("examples/examples.hancho", deps)
+
+#print(metrolib.rules.link_cpp_bin)
 
 """
 

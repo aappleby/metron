@@ -55,13 +55,12 @@ make_cmd = hancho.Config(
   in_makefile = None,
 )
 
+#---------------------------------------------------------------------------------------------------
 
-async def gen_verilator(task):
-  config = hancho.Config(task)
+def gen_verilator(self, *args, **kwargs):
+  config = hancho.Config(self, *args, **kwargs)
 
-  command  = config.pop("command")
   in_top   = config.pop("in_top")
-  meta     = config.pop("meta")
   includes = config.pop("includes")
 
   verilated = verilator_cmd(
@@ -80,17 +79,15 @@ async def gen_verilator(task):
     config,
     in_top  = in_top,
     in_objs = [verilated_o, verilated_threads_o, compiled],
-    out_lib = "{swap_ext(in_top, '.a')}"
+    out_lib = "{swap_ext(in_top, '.a')}",
   )
 
-  #await lib.run_async()
-  task._out_files = lib.promise("_out_files")
-  task.out_lib = lib.promise("out_lib")
+  return hancho.Task(
+    command = ":",
+    in_top  = in_top,
+    out_lib = lib.promise("out_lib")
+  )
 
-exports.verilator = hancho.Config(
-  command = gen_verilator,
-  #out_lib = "{swap_ext(in_top, '.a')}",
-  meta = True,
-)
+exports.verilator = hancho.Config(call = gen_verilator)
 
 #---------------------------------------------------------------------------------------------------

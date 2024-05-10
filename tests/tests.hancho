@@ -6,5 +6,5 @@ imports.rules.cpp_bin(
 
 imports.rules.make(
   in_makefile = "risc-v/instructions/makefile",
-  out_bin = "{base_path}/risc-v/instructions/add.o",
+  out_bin = "{base_path}/risc-v/instructions/add.elf",
 )

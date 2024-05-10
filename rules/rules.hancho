@@ -57,11 +57,8 @@ make_cmd = hancho.Config(
 
 #---------------------------------------------------------------------------------------------------
 
-def gen_verilator(self, *args, **kwargs):
-  config = hancho.Config(self, *args, **kwargs)
-
-  in_top   = config.pop("in_top")
-  includes = config.pop("includes")
+def gen_verilator(*, in_top, includes = [], **kwargs):
+  config = hancho.Config(**kwargs)
 
   verilated = verilator_cmd(
     config,
@@ -84,8 +81,9 @@ def gen_verilator(self, *args, **kwargs):
 
   return hancho.Task(
     command = ":",
-    in_top  = in_top,
-    out_lib = lib.promise("out_lib")
+    in_top     = in_top,
+    out_lib    = lib.promise("out_lib"),
+    out_header = verilated.promise("out_header"),
   )
 
 exports.verilator = hancho.Config(call = gen_verilator)

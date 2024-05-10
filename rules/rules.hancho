@@ -19,8 +19,6 @@ exports.cpp_bin     = hancho.Config(metrolib.rules.cpp_bin,     exports.cpp_sett
 exports.cpp_lib     = hancho.Config(metrolib.rules.cpp_lib,     exports.cpp_settings)
 exports.make        = metrolib.rules.make
 
-#print(exports.cpp_bin)
-
 exports.check_cpp_syntax = hancho.Config(
   command = "g++ -I. -I{repo_path} -fsyntax-only -c {rel_source_files} && touch {rel_build_files}.ok",
   build_files = "{source_files}.ok",
@@ -30,6 +28,7 @@ exports.check_cpp_syntax = hancho.Config(
 
 verilated_o = metrolib.rules.compile_cpp(
   exports.cpp_settings,
+  name    = "verilated.o",
   in_src  = "/usr/local/share/verilator/include/verilated.cpp",
   out_obj = "verilator/verilated.o",
 )
@@ -37,14 +36,9 @@ verilated_o = metrolib.rules.compile_cpp(
 
 verilated_threads_o = metrolib.rules.compile_cpp(
   exports.cpp_settings,
+  name    = "verilated_threads.o",
   in_src  = "/usr/local/share/verilator/include/verilated_threads.cpp",
   out_obj = "verilator/verilated_threads.o",
-)
-
-exports.verilator_lib = metrolib.rules.cpp_lib(
-  exports.cpp_settings,
-  in_objs = [verilated_o, verilated_threads_o],
-  out_lib = "verilator/libverilator.a"
 )
 
 verilator_cmd = hancho.Config(
@@ -54,32 +48,49 @@ verilator_cmd = hancho.Config(
   includes = ["."],
 )
 
-#exports.verilator_cmd = verilator_cmd
-
 make_cmd = hancho.Config(
   command   = "make --quiet -C {make_path} -f {make_file} > /dev/null",
   make_path = "{path.dirname(in_makefile)}",
   make_file = "{path.basename(in_makefile)}",
-
   in_makefile = None,
-  out_obj     = "{swap_ext(in_makefile, '__ALL.o')}",
 )
 
-#exports.verilator_make_cmd = make_cmd
 
-def gen_verilator(self, *args, **kwargs):
-  config = hancho.Config(self, *args, **kwargs)
-  in_top = config.pop("in_top")
-  verilated = verilator_cmd(config, in_top = in_top)
+async def gen_verilator(task):
+  config = hancho.Config(task)
+
+  command  = config.pop("command")
+  in_top   = config.pop("in_top")
+  meta     = config.pop("meta")
+  includes = config.pop("includes")
+
+  verilated = verilator_cmd(
+    config,
+    in_top = in_top,
+    includes = includes,
+  )
+
   compiled = make_cmd(
     config,
-    in_makefile = verilated.promise("out_makefile")
-  )
-  return hancho.Config(
-    compiled = compiled,
-    verilated = verilated,
+    in_makefile = verilated.promise("out_makefile"),
+    out_obj     = "{swap_ext(in_makefile, '__ALL.o')}",
   )
 
-exports.verilator = hancho.Config(call = gen_verilator)
+  lib = metrolib.rules.cpp_lib(
+    config,
+    in_top  = in_top,
+    in_objs = [verilated_o, verilated_threads_o, compiled],
+    out_lib = "{swap_ext(in_top, '.a')}"
+  )
+
+  #await lib.run_async()
+  task._out_files = lib.promise("_out_files")
+  task.out_lib = lib.promise("out_lib")
+
+exports.verilator = hancho.Config(
+  command = gen_verilator,
+  #out_lib = "{swap_ext(in_top, '.a')}",
+  meta = True,
+)
 
 #---------------------------------------------------------------------------------------------------

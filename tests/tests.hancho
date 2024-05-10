@@ -4,4 +4,7 @@ imports.rules.cpp_bin(
   out_bin = ["utils/test_logic"],
 )
 
-imports.rules.make(in_makefile = "risc-v/instructions/makefile")
+imports.rules.make(
+  in_makefile = "risc-v/instructions/makefile",
+  out_bin = "{base_path}/risc-v/instructions/add.o",
+)

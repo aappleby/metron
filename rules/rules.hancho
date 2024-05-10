@@ -26,16 +26,14 @@ exports.check_cpp_syntax = hancho.Config(
 
 #---------------------------------------------------------------------------------------------------
 
-verilated_o = metrolib.rules.compile_cpp(
-  exports.cpp_settings,
+verilated_o = exports.compile_cpp(
   name    = "verilated.o",
   in_src  = "/usr/local/share/verilator/include/verilated.cpp",
   out_obj = "verilator/verilated.o",
 )
 
 
-verilated_threads_o = metrolib.rules.compile_cpp(
-  exports.cpp_settings,
+verilated_threads_o = exports.compile_cpp(
   name    = "verilated_threads.o",
   in_src  = "/usr/local/share/verilator/include/verilated_threads.cpp",
   out_obj = "verilator/verilated_threads.o",
@@ -48,32 +46,23 @@ verilator_cmd = hancho.Config(
   includes = ["."],
 )
 
-make_cmd = hancho.Config(
-  command   = "make --quiet -C {make_path} -f {make_file} > /dev/null",
-  make_path = "{path.dirname(in_makefile)}",
-  make_file = "{path.basename(in_makefile)}",
-  in_makefile = None,
-)
-
 #---------------------------------------------------------------------------------------------------
 
-def gen_verilator(*, in_top, includes = [], **kwargs):
-  config = hancho.Config(**kwargs)
-
+def verilator(*, in_top, includes = [], **kwargs):
   verilated = verilator_cmd(
-    config,
+    kwargs,
     in_top = in_top,
     includes = includes,
   )
 
-  compiled = make_cmd(
-    config,
+  compiled = exports.make(
+    kwargs,
     in_makefile = verilated.promise("out_makefile"),
     out_obj     = "{swap_ext(in_makefile, '__ALL.o')}",
   )
 
-  lib = metrolib.rules.cpp_lib(
-    config,
+  lib = exports.cpp_lib(
+    kwargs,
     in_top  = in_top,
     in_objs = [verilated_o, verilated_threads_o, compiled],
     out_lib = "{swap_ext(in_top, '.a')}",
@@ -86,6 +75,6 @@ def gen_verilator(*, in_top, includes = [], **kwargs):
     out_header = verilated.promise("out_header"),
   )
 
-exports.verilator = hancho.Config(call = gen_verilator)
+exports.verilator = hancho.Config(call = verilator)
 
 #---------------------------------------------------------------------------------------------------

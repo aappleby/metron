@@ -1,10 +1,12 @@
 imports.rules.cpp_bin(
+  name    = "tests/test_logic",
   in_srcs = ["utils/test_logic.cpp"],
   in_objs = [imports.metrolib.libcore],
   out_bin = ["utils/test_logic"],
 )
 
 imports.rules.make(
+  name = "risc-v/instructions/makefile",
   in_makefile = "risc-v/instructions/makefile",
   out_bin = "{base_path}/risc-v/instructions/add.elf",
 )

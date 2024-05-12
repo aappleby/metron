@@ -48,7 +48,7 @@ verilator_cmd = hancho.Config(
 
 #---------------------------------------------------------------------------------------------------
 
-def verilator(*, in_top, includes = [], **kwargs):
+def verilator(*, name, in_top, includes = [], **kwargs):
   verilated = verilator_cmd(
     kwargs,
     in_top = in_top,
@@ -63,14 +63,13 @@ def verilator(*, in_top, includes = [], **kwargs):
 
   lib = exports.cpp_lib(
     kwargs,
+    name    = f"{name} lib",
     in_top  = in_top,
     in_objs = [verilated_o, verilated_threads_o, compiled],
     out_lib = "{swap_ext(in_top, '.a')}",
   )
 
   return hancho.Task(
-    command = ":",
-    in_top     = in_top,
     out_lib    = lib.promise("out_lib"),
     out_header = verilated.promise("out_header"),
   )

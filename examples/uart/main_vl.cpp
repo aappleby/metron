@@ -4,7 +4,8 @@
 
 #include "metrolib/core/Platform.h"
 #include "metrolib/core/Tests.h"
-#include "metron_vl/Vuart_top.h"
+//#include "metron_vl/Vuart_top.h"
+#include "metron/Vuart_top.h"
 
 //------------------------------------------------------------------------------
 // Note that you have to build the Verilator version with "repeat_msg = 1" on

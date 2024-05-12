@@ -25,37 +25,3 @@ deps = hancho.Config(
 )
 
 examples = hancho.load("examples/examples.hancho", deps)
-
-#print(metrolib.rules.link_cpp_bin)
-
-"""
-
-MetroBoySPU2_sv = metron("examples/gb_spu/metron/MetroBoySPU2.h")
-
-MetroBoySPU2_mk = verilator(
-  source_files = MetroBoySPU2_sv,
-  build_files = "examples/gb_spu/metron_vl/VMetroBoySPU2.mk",
-  includes = "examples/gb_spu/metron_sv",
-)
-
-VMetroBoySPU2_all_o = make(
-  source_files = MetroBoySPU2_mk,
-  build_files = "examples/gb_spu/metron_vl/VMetroBoySPU2__ALL.o"
-)
-
-
-gb_spu_main_o = metrolib.rules.compile_cpp(
-  "examples/gb_spu/gb_spu_main.cpp",
-  "examples/gb_spu/gb_spu_main.o",
-  includes = [
-    ".",
-    "{build_dir}/{build_tag}/{repo_name}",
-    "/usr/local/share/verilator/include",
-  ]
-)
-
-gb_spu_bin = metrolib.rules.cpp_bin(
-  [verilated_o, verilated_threads_o, VMetroBoySPU2_all_o, metron_lib, gb_spu_main_o],
-  "examples/gb_spu/gb_spu",
-)
-"""

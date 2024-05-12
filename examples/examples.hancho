@@ -36,7 +36,11 @@ gb_spu_main = rules.cpp_bin(
 
 ################################################################################
 
-j1_bin = rules.cpp_bin(in_srcs = "j1/main.cpp", out_bin = "j1/j1")
+j1_bin = rules.cpp_bin(
+  name    = "J1 bin",
+  in_srcs = "j1/main.cpp",
+  out_bin = "j1/j1"
+)
 
 #j1_h = ["j1/metron/dpram.h", "j1/metron/j1.h"]
 
@@ -76,12 +80,14 @@ pong_sv = metron.convert(
 
 pong_vl = rules.verilator(
   config,
-  in_top = pong_sv.promise("out_sv"),
+  name     = "pong vl",
+  in_top   = pong_sv.promise("out_sv"),
   includes = ["{repo_path}"]
 )
 
 pong_bin = rules.cpp_bin(
   config,
+  name = "pong bin",
   in_srcs = "pong/main.cpp",
   in_libs = [
     pong_vl.promise("out_lib"),
@@ -130,12 +136,14 @@ rvsimple_top_sv = metron.convert(
 
 rvsimple_top_vl = rules.verilator(
   config,
-  in_top = rvsimple_top_sv.promise("out_sv"),
-  in_deps = rvsimple_sv,
+  name     = "rvsimple vl",
+  in_top   = rvsimple_top_sv.promise("out_sv"),
+  in_deps  = rvsimple_sv,
   includes = ["{repo_path}"]
 )
 
 rvsimple_bin = rules.cpp_bin(
+  name = "rvsimple bin",
   in_srcs = "rvsimple/main.cpp",
   in_libs = [
     metrolib.libcore,
@@ -149,31 +157,55 @@ rvsimple_bin = rules.cpp_bin(
 ################################################################################
 # UART example
 
-#uart_top_h = "uart/metron/uart_top.h"
-#
-#uart_h = [
-#  "uart/metron/uart_hello.h",
-#  "uart/metron/uart_rx.h",
-#  "uart/metron/uart_tx.h",
-#]
-#
-#uart_sv     = [metron.convert(config, in_src = src) for src in uart_h]
-#uart_top_sv = metron.convert(config, in_src = uart_top_h)
-#uart_top_vl = rules.verilator(config, in_top = uart_top_sv, in_sv = uart_sv, includes = ["{repo_path}"])
-#
-#uart_bin = rules.cpp_bin(
-#  in_srcs = "uart/main.cpp",
-#  in_libs = metrolib.libcore,
-#  out_bin = "uart/uart"
-#)
+uart_top_h = "uart/metron/uart_top.h"
+
+uart_h = [
+  "uart/metron/uart_hello.h",
+  "uart/metron/uart_rx.h",
+  "uart/metron/uart_tx.h",
+]
+
+uart_sv     = [metron.convert(config, in_src = src) for src in uart_h]
+uart_top_sv = metron.convert(config, in_src = uart_top_h)
+uart_top_vl = rules.verilator(
+  config,
+  name = "verilate uart_top",
+  in_top = uart_top_sv.promise("out_sv"),
+  in_deps = uart_sv,
+  includes = ["{repo_path}"]
+)
+
+uart_bin = rules.cpp_bin(
+  name = "uart/uart",
+  in_srcs = "uart/main.cpp",
+  includes = [
+    "{repo_path}",
+    "{repo_path}/symlinks/metrolib",
+  ],
+  in_libs = [
+    metrolib.libcore,
+  ],
+  out_bin = "uart/uart",
+)
+
+uart_bin_vl = rules.cpp_bin(
+  name = "uart/uart_vl",
+  in_srcs = "uart/main_vl.cpp",
+  in_deps = uart_top_vl.promise("out_lib"),
+  includes = [
+    "{repo_path}",
+    "{repo_path}/symlinks/metrolib",
+    "{build_path}/uart",
+    "/usr/local/share/verilator/include",
+  ],
+  in_libs = [
+    metrolib.libcore,
+    uart_top_vl.promise("out_lib"),
+  ],
+  out_bin = "uart/uart_vl",
+)
 
 """
-
-build build/examples/uart/main_vl.o: compile_cpp examples/uart/main_vl.cpp | build/examples/uart/metron_vl/Vuart_top.h
-  includes = ${base_includes} -I/usr/local/share/verilator/include -Ibuild/examples/uart
-build build/examples/uart/uart_vl: c_binary build/verilator/verilated.o build/verilator/verilated_threads.o build/examples/uart/metron_vl/Vuart_top__ALL.o build/examples/uart/main_vl.o build/metron/libmetron.a
-  includes = ${base_includes} -I/usr/local/share/verilator/include -Ibuild/examples/uart
-
 build build/examples/uart/uart_iv:
   iverilog
   examples/uart/uart_test_iv.sv |
@@ -185,12 +217,19 @@ build build/examples/uart/uart_iv:
   includes = -Iexamples/uart -Iexamples/uart/metron_sv
   defines = -DIVERILOG
 
-build build/examples/uart/uart_test_ice40.json: yosys examples/uart/uart_test_ice40.sv | examples/uart/metron_sv/uart_hello.sv examples/uart/metron_sv/uart_rx.sv examples/uart/metron_sv/uart_top.sv examples/uart/metron_sv/uart_tx.sv examples/uart/SB_PLL40_CORE.v
+build build/examples/uart/uart_test_ice40.json: yosys examples/uart/uart_test_ice40.sv
+  | examples/uart/metron_sv/uart_hello.sv
+    examples/uart/metron_sv/uart_rx.sv
+    examples/uart/metron_sv/uart_top.sv
+    examples/uart/metron_sv/uart_tx.sv
+    examples/uart/SB_PLL40_CORE.v
   includes = -Iexamples/uart -Iexamples/uart/metron_sv
+
 build build/examples/uart/uart_test_ice40.asc: nextpnr-ice40 build/examples/uart/uart_test_ice40.json
   chip = hx8k
   package = ct256
   pcf = examples/uart/ice40-hx8k-b-evn.pcf
+
 build build/examples/uart/uart_test_ice40.bin: icepack build/examples/uart/uart_test_ice40.asc
 """
 

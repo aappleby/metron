@@ -15,6 +15,7 @@ config = hancho.Config(build_tag = "debug")
 metrolib = hancho.repo("symlinks/metrolib/build.hancho", build_tag = config.build_tag)
 rules    = hancho.load("rules/rules.hancho",   build_tag = config.build_tag, metrolib = metrolib)
 metron   = hancho.load("metron/metron.hancho", metrolib = metrolib, rules = rules)
+
 tests    = hancho.load("tests/tests.hancho",   metrolib = metrolib, rules = rules)
 
 deps = hancho.Config(

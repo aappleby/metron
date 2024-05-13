@@ -3,7 +3,7 @@
 `default_nettype none
 `timescale 1 ns / 1 ns
 
-`include "metron_sv/uart_top.sv"
+`include "uart_top.sv"
 
 //==============================================================================
 

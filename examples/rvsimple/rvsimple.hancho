@@ -1,0 +1,55 @@
+################################################################################
+
+rvsimple_top_h = "rvsimple/metron/toplevel.h"
+
+rvsimple_h = [
+  "rvsimple/metron/adder.h",
+  "rvsimple/metron/alu_control.h",
+  "rvsimple/metron/alu.h",
+  "rvsimple/metron/config.h",
+  "rvsimple/metron/constants.h",
+  "rvsimple/metron/control_transfer.h",
+  "rvsimple/metron/data_memory_interface.h",
+  "rvsimple/metron/example_data_memory_bus.h",
+  "rvsimple/metron/example_data_memory.h",
+  "rvsimple/metron/example_text_memory_bus.h",
+  "rvsimple/metron/example_text_memory.h",
+  "rvsimple/metron/immediate_generator.h",
+  "rvsimple/metron/instruction_decoder.h",
+  "rvsimple/metron/multiplexer2.h",
+  "rvsimple/metron/multiplexer4.h",
+  "rvsimple/metron/multiplexer8.h",
+  "rvsimple/metron/regfile.h",
+  "rvsimple/metron/register.h",
+  "rvsimple/metron/riscv_core.h",
+  "rvsimple/metron/singlecycle_control.h",
+  "rvsimple/metron/singlecycle_ctlpath.h",
+  "rvsimple/metron/singlecycle_datapath.h",
+]
+
+rvsimple_sv = [metron.convert(config, in_src = src) for src in rvsimple_h]
+
+rvsimple_top_sv = metron.convert(
+  config,
+  in_src = rvsimple_top_h
+)
+
+rvsimple_top_vl = rules.verilator(
+  config,
+  name     = "rvsimple vl",
+  in_top   = rvsimple_top_sv.promise("out_sv"),
+  in_deps  = rvsimple_sv,
+  includes = ["{repo_path}"]
+)
+
+rvsimple_bin = rules.cpp_bin(
+  name = "rvsimple bin",
+  in_srcs = "rvsimple/main.cpp",
+  in_libs = [
+    metrolib.libcore,
+    rvsimple_top_vl.promise("out_lib"),
+  ],
+  out_bin = "rvsimple/rvsimple"
+)
+
+# FIXME verilated version of rvsimple?

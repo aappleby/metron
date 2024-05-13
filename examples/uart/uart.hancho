@@ -1,0 +1,87 @@
+import hancho
+
+config   = imports.config
+metron   = imports.metron
+rules    = imports.rules
+metrolib = imports.metrolib
+
+################################################################################
+
+uart_top_h = "uart_top.h"
+
+uart_h = [
+  "uart_hello.h",
+  "uart_rx.h",
+  "uart_tx.h",
+]
+
+uart_sv     = [metron.convert(config, in_src = src) for src in uart_h]
+uart_top_sv = metron.convert(config, in_src = uart_top_h)
+uart_top_vl = rules.verilator(
+  config,
+  name = "verilate uart_top",
+  in_top = uart_top_sv.promise("out_sv"),
+  in_deps = uart_sv,
+  includes = ["{repo_path}"]
+)
+
+uart_bin = rules.cpp_bin(
+  name = "uart_cpp",
+  in_srcs = "main.cpp",
+  includes = [
+    "{repo_path}",
+    "{repo_path}/symlinks/metrolib",
+  ],
+  in_libs = [
+    metrolib.libcore,
+  ],
+  out_bin = "uart_cpp",
+)
+
+uart_bin_vl = rules.cpp_bin(
+  name = "uart_vl",
+  in_srcs = "main_vl.cpp",
+  in_deps = uart_top_vl.promise("out_lib"),
+  includes = [
+    "{repo_path}",
+    "{repo_path}/symlinks/metrolib",
+    "{build_path}",
+    "/usr/local/share/verilator/include",
+  ],
+  in_libs = [
+    metrolib.libcore,
+    uart_top_vl.promise("out_lib"),
+  ],
+  out_bin = "uart_vl",
+)
+
+uart_iv = rules.iverilog(
+  in_sv    = "uart_test_iv.sv",
+  in_deps  = [uart_sv, uart_top_sv],
+  out_iv   = "uart_iv",
+  includes = "-I. -I{out_path} -I{repo_path}",
+  defines  = "-DIVERILOG",
+  debug = True,
+)
+
+#uart_yosys = rules.yosys(
+#  in_sv    = "uart_test_ice40.sv",
+#  in_deps  = [uart_sv, uart_top_sv],
+#  out_json = "uart_test_ice40.json",
+#  includes = "-I. -I{build_path} -I{repo_path}",
+#)
+#
+#uart_nextpnr = rules.nextpnr(
+#  in_json = uart_yosys.promise("out_json"),
+#  out_asc = "uart_test_ice40.asc",
+#  chip    = "hx8k",
+#  package = "ct256",
+#  pcf     = "ice40-hx8k-b-evn.pcf",
+#)
+#
+#uart_bin = rules.icepack(
+#  in_asc  = uart_nextpnr.promise("out_asc"),
+#  out_bin = "uart_test_ice40.bin",
+#)
+
+################################################################################

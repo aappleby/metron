@@ -1,0 +1,27 @@
+################################################################################
+
+pong_sv = metron.convert(
+  config,
+  name   = "pong metronize",
+  in_src = "pong/metron/pong.h"
+)
+
+pong_vl = rules.verilator(
+  config,
+  name     = "pong vl",
+  in_top   = pong_sv.promise("out_sv"),
+  includes = ["{repo_path}"]
+)
+
+pong_bin = rules.cpp_bin(
+  config,
+  name = "pong bin",
+  in_srcs = "pong/main.cpp",
+  in_libs = [
+    pong_vl.promise("out_lib"),
+    metrolib.libcore
+  ],
+  out_bin = "pong/pong",
+)
+
+# FIXME verilated version of pong

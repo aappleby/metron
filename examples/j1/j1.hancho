@@ -1,0 +1,35 @@
+################################################################################
+
+j1_bin = rules.cpp_bin(
+  name    = "J1 bin",
+  in_srcs = "j1/main.cpp",
+  out_bin = "j1/j1"
+)
+
+#j1_h = ["j1/metron/dpram.h", "j1/metron/j1.h"]
+
+j1_top_sv = metron.convert(
+  config,
+  name = "J1 metronize",
+  in_src = "j1/metron/j1.h"
+)
+
+j1_dpram_sv = metron.convert(
+  config,
+  name = "J1 metronize",
+  in_src = "j1/metron/dpram.h"
+)
+
+# doesn't currently compile
+
+#j1_top_vl = rules.verilator(
+#  config,
+#  name = "J1 verilate",
+#  in_top = j1_top_sv.promise("out_sv"),
+#  includes = ["{repo_path}"],
+#)
+
+
+#j1_sv = metron(j1_h)
+
+#hancho.rules.check_cpp_syntax("j1/metron/j1.h")

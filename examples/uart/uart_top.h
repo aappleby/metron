@@ -12,6 +12,9 @@ template <int cycles_per_bit = 3, int repeat_msg = 0>
 class uart_top {
 public:
 
+  uart_top(const char* message_file = "override_me2.hex") : hello_(message_file) {
+  }
+
   // The actual bit of data currently on the transmitter's output
   logic<1> get_serial() const {
     return tx_.get_serial();

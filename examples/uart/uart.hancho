@@ -23,7 +23,11 @@ uart_top_vl = rules.verilator(
   name = "verilate uart_top",
   in_top = uart_top_sv.promise("out_sv"),
   in_deps = uart_sv,
-  includes = ["{repo_path}"]
+  in_message = "message.hex",
+  includes = ["{repo_path}"],
+  params = {
+    "message_file": "{in_message}"
+  }
 )
 
 uart_bin = rules.cpp_bin(
@@ -60,19 +64,30 @@ uart_bin_vl = rules.cpp_bin(
 
 uart_iv = rules.iverilog(
   config,
+  name     = "uart_iv",
   in_sv    = "uart_test_iv.sv",
   in_deps  = [uart_sv, uart_top_sv],
+  in_message = "message.hex",
   out_iv   = "uart_iv",
   includes = "-I. -I{build_path} -I{repo_path}",
   defines  = "-DIVERILOG",
+  top      = "uart_test",
+  params   = {
+    "message_file": "{in_message}"
+  },
 )
 
 uart_yosys = rules.yosys(
   config,
   in_sv    = "uart_test_ice40.sv",
   in_deps  = [uart_sv, uart_top_sv],
-  out_json = "uart_test_ice40.json",
+  in_message = "message.hex",
+  out_json = "{swap_ext(in_sv, '.json')}",
+  top      = "uart_test_ice40",
   includes = "-I. -I{build_path} -I{repo_path}",
+  params   = {
+    "message_file": "{in_message}"
+  },
 )
 
 uart_nextpnr = rules.nextpnr(

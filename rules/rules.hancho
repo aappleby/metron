@@ -39,12 +39,24 @@ verilated_threads_o = exports.compile_cpp(
   out_obj = "verilator/verilated_threads.o",
 )
 
+# "-G<name>=<value>"
+
+def gen_vlparams(c):
+  result = []
+  for key, val in c.items():
+    if isinstance(val, str):
+      val = f"\\\"{val}\\\""
+    result.append(f"-G{key}={val}")
+  return result
+
 verilator_cmd = hancho.Config(
   desc = "Run Verilator on {rel(in_top)}",
-  command = "verilator -Wno-width --public {join_prefix('-I', includes)} --cc {rel(in_top)} -Mdir {path.dirname(rel(out_makefile))}",
+  command = "verilator -Wno-width --public {gen_vlparams(params)} {join_prefix('-I', includes)} --cc {rel(in_top)} -Mdir {path.dirname(rel(out_makefile))}",
   out_makefile = r"{re.sub(r'([^/\\]+).sv', r'V\1.mk', in_top)}",
   out_header   = r"{re.sub(r'([^/\\]+).sv', r'V\1.h',  in_top)}",
   includes = ["."],
+  gen_vlparams = gen_vlparams,
+  params = {},
 )
 
 #---------------------------------------------------------------------------------------------------
@@ -79,8 +91,19 @@ exports.verilator = hancho.Config(call = verilator)
 
 #---------------------------------------------------------------------------------------------------
 
+def gen_chparams(c):
+  result = []
+  for key, val in c.items():
+    if isinstance(val, str):
+      val = f"\"{val}\""
+    result.append(f"chparam -set {key} {val} {{top}};")
+  return result
+
 exports.yosys = hancho.Config(
-  command = "yosys -q -p 'read_verilog {includes} -sv {rel(in_sv)}; dump; synth_ice40 -json {rel(out_json)};'",
+  command = "yosys -q -p 'read_verilog -defer {includes} -sv {rel(in_sv)}; dump; {gen_chparams(params)} synth_ice40 -top {top} -json {rel(out_json)};'",
+  gen_chparams = gen_chparams,
+  top = "{path.splitext(path.basename(in_sv))[0]}",
+  params = {},
   includes = [],
 )
 
@@ -97,6 +120,16 @@ exports.sv2v = hancho.Config(
   command = "symlinks/sv2v/bin/sv2v {includes} {rel(in_sv)} -w {rel(out_v)}",
 )
 
+def gen_ivparams(params):
+  result = []
+  for key, val in params.items():
+    if isinstance(val, str):
+      # Why Icarus wants string params to have escaped quotes is a mystery.
+      val = f"\\\"{val}\\\""
+    result.append(f"-P{{top}}.{key}={val}")
+  return result
+
 exports.iverilog = hancho.Config(
-  command = "iverilog -g2012 {defines} {includes} {rel(in_sv)} -o {rel(out_iv)}",
+  command = "iverilog {gen_ivparams(params)} -s{top} -g2012 {defines} {includes} {rel(in_sv)} -o {rel(out_iv)}",
+  gen_ivparams = gen_ivparams,
 )

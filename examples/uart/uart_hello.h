@@ -8,8 +8,8 @@
 template <int repeat_msg = 0>
 class uart_hello {
 public:
-  uart_hello() {
-    readmemh("examples/uart/message.hex", memory_, 0, 511);
+  uart_hello(const char* message_file = "override_me3.hex") {
+    readmemh(message_file, memory_, 0, 511);
     state_ = 0;
     cursor_ = 0;
   }

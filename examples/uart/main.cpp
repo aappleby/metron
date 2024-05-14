@@ -7,12 +7,12 @@
 
 //------------------------------------------------------------------------------
 
-void benchmark() {
+void benchmark(const char* message_file) {
   const int cycles_per_bit = 3;
   const int repeat_msg = 1;
   const int cycle_max = 1000000000;
 
-  uart_top<cycles_per_bit, repeat_msg> top;
+  uart_top<cycles_per_bit, repeat_msg> top(message_file);
   top.tock(1);
 
   auto time_a = timestamp();
@@ -28,11 +28,11 @@ void benchmark() {
 
 //------------------------------------------------------------------------------
 
-TestResults test_uart_metron() {
+TestResults test_uart_metron(const char* message_file) {
   TEST_INIT("Metron UART simulation\n");
 
   const int cycles_per_bit = 3;
-  uart_top<cycles_per_bit, 0> top;
+  uart_top<cycles_per_bit, 0> top(message_file);
   top.tock(1);
 
   LOG_B("========================================\n");
@@ -60,9 +60,12 @@ TestResults test_uart_metron() {
 //------------------------------------------------------------------------------
 
 int main(int argc, char** argv) {
-  printf("Hello world?\n");
+  if (argc < 2) {
+    printf("Usage: uart_cpp path/to/message.hex\n");
+    return -1;
+  }
   TestResults results;
-  results << test_uart_metron();
+  results << test_uart_metron(argv[1]);
   return results.show_result();
 }
 

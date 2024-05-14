@@ -7,7 +7,11 @@
 
 //==============================================================================
 
-module uart_test;
+
+module uart_test
+#(
+  parameter message_file = "override_me1.hex"
+);
 
   // 12 mhz clock
   logic clock;
@@ -27,7 +31,13 @@ module uart_test;
   logic out_done;
   logic[31:0] out_sum;
 
-  uart_top #(.cycles_per_bit(3)) top
+  uart_top
+  #(
+    .cycles_per_bit(3),
+    .repeat_msg(0),
+    .message_file(message_file)
+  )
+  top
   (
     .clock(clock),
     .get_serial_ret(out_serial),

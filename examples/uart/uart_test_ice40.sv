@@ -7,7 +7,12 @@
 
 //==============================================================================
 
-module uart_ice40(
+
+module uart_test_ice40
+#(
+  parameter /*const char**/ message_file = "message.hex"
+)
+(
   input logic CLK,
 
   // Serial port to host
@@ -68,7 +73,7 @@ module uart_ice40(
 
   assign reset = !pll_lock;
 
-  uart_top #(.cycles_per_bit(cycles_per_bit), .repeat_msg(1)) dut
+  uart_top #(.cycles_per_bit(cycles_per_bit), .repeat_msg(1), .message_file(message_file)) dut
   (
     .clock(pll_clock),
     .get_serial_ret(o_serial),

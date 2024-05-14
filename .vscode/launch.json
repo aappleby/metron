@@ -43,7 +43,7 @@
       "request": "launch",
       "program": "${workspaceFolder}/symlinks/hancho/hancho.py",
       "cwd": "${workspaceFolder}",
-      "args": ["-f", "-v"],
+      "args": ["-v", "-j1"],
       "console": "integratedTerminal",
       "justMyCode": false,
     },

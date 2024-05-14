@@ -329,3 +329,70 @@ build build/examples/rvsimple/main_ref_vl.o: compile_cpp examples/rvsimple/main_
   includes = ${base_includes} -I/usr/local/share/verilator/include -Ibuild/examples/rvsimple/reference_sv -Isymlinks/CLI11/include
 build build/examples/rvsimple/rvsimple_ref: c_binary build/verilator/verilated.o build/verilator/verilated_threads.o build/examples/rvsimple/reference_sv/Vtoplevel__ALL.o build/examples/rvsimple/main_ref_vl.o build/metron/libmetron.a
   includes = ${base_includes} -I/usr/local/share/verilator/include -Ibuild/examples/rvsimple/reference_sv -Isymlinks/CLI11/include
+
+
+################################################################################
+# Compile build/examples/ibex/ibex
+
+build build/examples/ibex/main.o: compile_cpp examples/ibex/main.cpp
+  includes = ${base_includes}
+build build/examples/ibex/ibex: c_binary build/examples/ibex/main.o
+  includes = ${base_includes}
+
+
+################################################################################
+# Compile build/examples/pong/pong
+
+build build/examples/pong/main.o: compile_cpp examples/pong/main.cpp
+  includes = ${base_includes}
+  libraries = ${libraries} -lSDL2
+build build/examples/pong/pong: c_binary build/examples/pong/main.o build/metron/libmetron.a
+  includes = ${base_includes}
+  libraries = ${libraries} -lSDL2
+
+
+################################################################################
+# Metronize ['examples/pong/pong.h'] -> build/examples/pong
+
+build build/examples/pong/pong.sv: metron2 examples/pong/pong.h | build/metron/metron
+build build/examples/j1/j1.h.ok: check_cpp examples/j1/j1.h
+  includes = ${base_includes}
+
+
+################################################################################
+# Compile build/examples/j1/j1
+
+build build/examples/j1/main.o: compile_cpp examples/j1/main.cpp
+  includes = ${base_includes}
+build build/examples/j1/j1: c_binary build/examples/j1/main.o build/metron/libmetron.a
+  includes = ${base_includes}
+
+
+################################################################################
+# Metronize ['examples/j1/j1.h', 'examples/j1/dpram.h'] -> build/examples/j1
+
+build build/examples/j1/j1.sv: metron2 examples/j1/j1.h | build/metron/metron
+build build/examples/j1/dpram.sv: metron2 examples/j1/dpram.h | build/metron/metron
+
+
+################################################################################
+# Metronize ['examples/gb_spu/MetroBoySPU2.h'] -> build/examples/gb_spu
+
+build build/examples/gb_spu/MetroBoySPU2.sv: metron2 examples/gb_spu/MetroBoySPU2.h | build/metron/metron
+
+
+################################################################################
+# Verilate build/examples/gb_spu/MetroBoySPU2.sv -> build/examples/gb_spu
+
+build build/examples/gb_spu/VMetroBoySPU2.mk build/examples/gb_spu/VMetroBoySPU2.h: verilator build/examples/gb_spu/MetroBoySPU2.sv
+  includes = -Ibuild/examples/gb_spu
+build build/examples/gb_spu/VMetroBoySPU2__ALL.o: make build/examples/gb_spu/VMetroBoySPU2.mk
+
+
+################################################################################
+# Compile build/examples/gb_spu/gb_spu
+
+build build/examples/gb_spu/gb_spu_main.o: compile_cpp examples/gb_spu/gb_spu_main.cpp | build/examples/gb_spu/VMetroBoySPU2.h
+  includes = ${base_includes} -I/usr/local/share/verilator/include -Ibuild/examples/gb_spu
+build build/examples/gb_spu/gb_spu: c_binary build/verilator/verilated.o build/verilator/verilated_threads.o build/examples/gb_spu/VMetroBoySPU2__ALL.o build/examples/gb_spu/gb_spu_main.o build/metron/libmetron.a
+  includes = ${base_includes} -I/usr/local/share/verilator/include -Ibuild/examples/gb_spu

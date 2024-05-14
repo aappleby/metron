@@ -68,74 +68,47 @@ def main():
     ############################################################
 
 
-    print_b("Wiping tests/metron/generated/*")
-    os.system("rm tests/metron/generated/*")
+    #print_b("Wiping tests/metron/generated/*")
+    #os.system("rm build/tests/metron/generated/*")
 
     metron_pass = sorted(sorted_glob("tests/metron/pass/*.h"))
     metron_fail = sorted(sorted_glob("tests/metron/fail/*.h"))
 
     print_b("Checking that all headers in tests/metron/pass compile")
-    errors += check_commands_good(
-        [
-            f"g++ -I. --std=gnu++2a -fsyntax-only -c {filename}"
-            for filename in metron_pass
-        ]
-    )
+    for file_in in metron_pass:
+        errors += check_cmd_good(f"g++ -I. --std=gnu++2a -fsyntax-only -c {file_in}")
     print()
 
     print_b("Checking that all headers in tests/metron/fail compile")
-    errors += check_commands_good(
-        [
-            f"g++ -I. --std=gnu++2a -fsyntax-only -c {filename}"
-            for filename in metron_fail
-        ]
-    )
+    for file_in in metron_fail:
+        errors += check_cmd_good(f"g++ -I. --std=gnu++2a -fsyntax-only -c {file_in}")
     print()
 
     print_b("Checking that all test cases in tests/metron/pass convert to SV cleanly")
-    errors += check_commands_good(
-        [
-            f"build/metron/metron -c {filename} -o {filename.replace('/pass/', '/generated/').replace('.h', '.sv')}"
-            for filename in metron_pass
-        ]
-    )
+    for file_in in metron_pass:
+        file_out = "build/" + file_in.replace('/pass/', '/generated/').replace('.h', '.sv')
+        errors += check_cmd_good(f"build/metron/metron -c {file_in} -o {file_out}")
     print()
 
     print_b("Checking that all test cases in tests/metron/fail fail conversion")
-    errors += check_commands_bad(
-        [
-            f"build/metron/metron -c {filename} -o {filename.replace('/fail/', '/generated/').replace('.h', '.sv')}"
-            for filename in metron_fail
-        ]
-    )
+    for file_in in metron_fail:
+        file_out = "build/" + file_in.replace('/fail/', '/generated/').replace('.h', '.sv')
+        errors += check_cmd_bad(f"build/metron/metron -c {file_in} -o {file_out}")
     print()
-
-    print_b("Checking that examples convert to SV cleanly")
-    errors += check_commands_good(
-        [
-            f"build/metron/metron -c examples/uart/uart_top.h",
-            f"build/metron/metron -c examples/rvsimple/toplevel.h",
-            f"build/metron/metron -c examples/pong/pong.h",
-        ]
-    )
-    print()
-
-    metron_sv = sorted(sorted_glob("tests/metron/generated/*.sv"))
 
     print_b("Checking that all converted files match their golden version, if present")
-    errors += check_commands_good(
-        [
-            f"diff {filename} {filename.replace('/generated/', '/golden/')}"
-            for filename in metron_sv
-        ]
-    )
+    metron_sv = sorted(sorted_glob("build/tests/metron/generated/*.sv"))
+    for file_in in metron_sv:
+        file_out = file_in.removeprefix("build/").replace('/generated/', '/golden/')
+        errors += check_cmd_good(f"diff {file_in} {file_out}")
+
     print()
 
     ################################################################################
     # These tests are skipped in basic mode
 
     if not options.basic:
-        includes = "-I. -Itests/metron/generated"
+        includes = "-I. -Itests/metron/generated -Ibuild/tests/metron/generated"
 
         print_b("Checking that all converted files can be parsed by Verilator")
         if shutil.which("verilator"):
@@ -470,8 +443,8 @@ def build_lockstep(filename):
     test_src = f"tests/lockstep/test_lockstep.cpp"
 
     mt_root = f"tests/lockstep"
-    sv_root = f"build/{mt_root}/metron_sv"
-    vl_root = f"build/{mt_root}/metron_vl"
+    sv_root = f"build/tests/lockstep"
+    vl_root = f"build/tests/lockstep"
 
     # Our lockstep test top modules are all named "Module". Verilator will
     # name the top module after the <test_name>.sv filename.

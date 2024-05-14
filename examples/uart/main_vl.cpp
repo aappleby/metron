@@ -4,7 +4,6 @@
 
 #include "metrolib/core/Platform.h"
 #include "metrolib/core/Tests.h"
-//#include "metron_vl/Vuart_top.h"
 #include "Vuart_top.h"
 
 //------------------------------------------------------------------------------

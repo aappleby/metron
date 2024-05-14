@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include "MetroBoySPU2.h"
-#include "gb_spu/VMetroBoySPU2.h"
+#include "VMetroBoySPU2.h"
 
 // Doesn't do anything yet, just here to validate that the metron + verilate +
 // compile + link steps work OK.

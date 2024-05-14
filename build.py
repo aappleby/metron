@@ -82,10 +82,10 @@ def main():
     build_rvtests()
     build_uart()
     build_rvsimple()
-    #build_ibex()
-    #build_pong()
-    #build_j1()
-    #build_gb_spu()
+    build_ibex()
+    build_pong()
+    build_j1()
+    build_gb_spu()
     print("Done!")
     outfile.close()
     outfile = None
@@ -334,9 +334,11 @@ def build_metron_test():
 
 def build_j1():
 
-    ninja.build(outputs=["build/examples/j1/metron/j1.h.ok"],
+    files = glob.glob("examples/j1/*.h")
+
+    ninja.build(outputs=["build/examples/j1/j1.h.ok"],
                 rule="check_cpp",
-                inputs="examples/j1/metron/j1.h",
+                inputs="examples/j1/j1.h",
                 includes=["${base_includes}"],
     )
 
@@ -349,13 +351,16 @@ def build_j1():
         src_objs=[],
         link_deps=["build/metron/libmetron.a"],
     )
-    j1_srcs = metronize_dir("examples/j1/metron", "examples/j1/metron_sv")
+
+    j1_srcs = metronize_files(files, "build/examples/j1")
 
 # ------------------------------------------------------------------------------
 
 def build_gb_spu():
-    metronize_dir("examples/gb_spu/metron", "examples/gb_spu/metron_sv")
-    gb_spu_vhdr, gb_spu_vobj = verilate_dir("examples/gb_spu/metron_sv/MetroBoySPU2.sv", "build/examples/gb_spu/metron_vl")
+    files = glob.glob("examples/gb_spu/*.h")
+
+    metronize_files(files, "build/examples/gb_spu")
+    gb_spu_vhdr, gb_spu_vobj = verilate_dir("build/examples/gb_spu/MetroBoySPU2.sv", "build/examples/gb_spu")
 
     cpp_binary(
         bin_name="build/examples/gb_spu/gb_spu",
@@ -494,9 +499,7 @@ def build_ibex():
 # Pong
 
 def build_pong():
-    mt_root = "examples/pong/metron"
-    sv_root = "examples/pong/metron_sv"
-    vl_root = "build/examples/pong/metron_vl"
+    files = glob.glob("examples/pong/*.h")
 
     cpp_binary(
         bin_name="build/examples/pong/pong",
@@ -506,7 +509,7 @@ def build_pong():
         link_deps=["build/metron/libmetron.a"],
     )
 
-    metronized_src = metronize_dir(mt_root, sv_root)
+    metronized_src = metronize_files(files, "build/examples/pong")
 
 # ------------------------------------------------------------------------------
 

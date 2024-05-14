@@ -1,9 +1,16 @@
+import hancho
+
+config   = imports.config
+metrolib = imports.metrolib
+metron   = imports.metron
+rules    = imports.rules
+
 ################################################################################
 
 gb_spu_sv = metron.convert(
   config,
   name     = "GBSPU metronize",
-  in_src   = "gb_spu/MetroBoySPU2.h",
+  in_src   = "MetroBoySPU2.h",
 )
 
 gb_spu_vl = rules.verilator(
@@ -16,10 +23,10 @@ gb_spu_vl = rules.verilator(
 gb_spu_main = rules.cpp_bin(
   config,
   name     = "GBSPU bin",
-  in_srcs  = "gb_spu/gb_spu_main.cpp",
+  in_srcs  = "gb_spu_main.cpp",
   in_deps  = gb_spu_vl.promise("out_header"),
   in_objs  = gb_spu_vl.promise("out_lib"),
-  out_bin  = "gb_spu/gb_spu",
+  out_bin  = "gb_spu",
   includes = [
     "{repo_path}",   # for metron/metron_tools.h
     "{build_path}",  # for gb_spu/VMetroBoySPU2.h

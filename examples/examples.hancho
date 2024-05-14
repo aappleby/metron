@@ -1,9 +1,10 @@
 import hancho
 
-config   = imports.config
-metrolib = imports.metrolib
-metron   = imports.metron
-rules    = imports.rules
-
-hancho.load("uart/uart.hancho", **imports)
+hancho.load("gb_spu/gb_spu.hancho", **imports)
+hancho.load("ibex/ibex.hancho", **imports)
+hancho.load("j1/j1.hancho", **imports)
+hancho.load("picorv32/picorv32.hancho", **imports)
 hancho.load("pong/pong.hancho", **imports)
+hancho.load("rvsimple/rvsimple.hancho", **imports)
+hancho.load("tutorial/tutorial.hancho", **imports)
+hancho.load("uart/uart.hancho", **imports)

@@ -1,30 +1,37 @@
+import hancho
+
+config   = imports.config
+metrolib = imports.metrolib
+metron   = imports.metron
+rules    = imports.rules
+
 ################################################################################
 
-rvsimple_top_h = "rvsimple/metron/toplevel.h"
+rvsimple_top_h = "toplevel.h"
 
 rvsimple_h = [
-  "rvsimple/metron/adder.h",
-  "rvsimple/metron/alu_control.h",
-  "rvsimple/metron/alu.h",
-  "rvsimple/metron/config.h",
-  "rvsimple/metron/constants.h",
-  "rvsimple/metron/control_transfer.h",
-  "rvsimple/metron/data_memory_interface.h",
-  "rvsimple/metron/example_data_memory_bus.h",
-  "rvsimple/metron/example_data_memory.h",
-  "rvsimple/metron/example_text_memory_bus.h",
-  "rvsimple/metron/example_text_memory.h",
-  "rvsimple/metron/immediate_generator.h",
-  "rvsimple/metron/instruction_decoder.h",
-  "rvsimple/metron/multiplexer2.h",
-  "rvsimple/metron/multiplexer4.h",
-  "rvsimple/metron/multiplexer8.h",
-  "rvsimple/metron/regfile.h",
-  "rvsimple/metron/register.h",
-  "rvsimple/metron/riscv_core.h",
-  "rvsimple/metron/singlecycle_control.h",
-  "rvsimple/metron/singlecycle_ctlpath.h",
-  "rvsimple/metron/singlecycle_datapath.h",
+  "adder.h",
+  "alu_control.h",
+  "alu.h",
+  "config.h",
+  "constants.h",
+  "control_transfer.h",
+  "data_memory_interface.h",
+  "example_data_memory_bus.h",
+  "example_data_memory.h",
+  "example_text_memory_bus.h",
+  "example_text_memory.h",
+  "immediate_generator.h",
+  "instruction_decoder.h",
+  "multiplexer2.h",
+  "multiplexer4.h",
+  "multiplexer8.h",
+  "regfile.h",
+  "register.h",
+  "riscv_core.h",
+  "singlecycle_control.h",
+  "singlecycle_ctlpath.h",
+  "singlecycle_datapath.h",
 ]
 
 rvsimple_sv = [metron.convert(config, in_src = src) for src in rvsimple_h]
@@ -44,12 +51,12 @@ rvsimple_top_vl = rules.verilator(
 
 rvsimple_bin = rules.cpp_bin(
   name = "rvsimple bin",
-  in_srcs = "rvsimple/main.cpp",
+  in_srcs = "main.cpp",
   in_libs = [
     metrolib.libcore,
     rvsimple_top_vl.promise("out_lib"),
   ],
-  out_bin = "rvsimple/rvsimple"
+  out_bin = "rvsimple"
 )
 
 # FIXME verilated version of rvsimple?

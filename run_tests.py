@@ -213,11 +213,11 @@ def main():
             [
                 "build/tests/utils/test_logic",
                 "build/examples/uart/uart",
-                #"build/examples/uart/uart_vl",
-                #"build/examples/uart/uart_iv",
-                #"build/examples/rvsimple/rvsimple",
-                #"build/examples/rvsimple/rvsimple_vl",
-                #"build/examples/rvsimple/rvsimple_ref",
+                "build/examples/uart/uart_vl",
+                "build/examples/uart/uart_iv",
+                "build/examples/rvsimple/rvsimple",
+                "build/examples/rvsimple/rvsimple_vl",
+                "build/examples/rvsimple/rvsimple_ref",
             ]
         )
         print()

@@ -394,12 +394,12 @@ def build_uart():
         link_deps=["build/metron/libmetron.a"],
     )
 
-    """
     divider("Icarus Verilog uart testbench")
 
     uart_includes = [
         "-Iexamples/uart",
-        "-Iexamples/uart/metron_sv"
+        "-Iexamples/uart",
+        "-Ibuild/examples/uart",
     ]
 
     iverilog_binary(
@@ -426,9 +426,8 @@ def build_uart():
     ninja.build(rule="icepack",
                 inputs="build/examples/uart/uart_test_ice40.asc",
                 outputs="build/examples/uart/uart_test_ice40.bin")
-    """
 
-# build out/uart_test_ice40.bin   : iceprog out/uart_test_ice40.asc
+    # build out/uart_test_ice40.bin   : iceprog out/uart_test_ice40.asc
 
 # ------------------------------------------------------------------------------
 # Test binaries for the RISC-V cores.
@@ -456,16 +455,9 @@ def build_rvsimple():
     )
 
     files = sorted(glob.glob("examples/rvsimple/*.h"))
-
     sv_srcs = metronize_files(files, "build/examples/rvsimple")
-
-    vl_vhdr, vl_vobj = verilate_dir("build/examples/rvsimple/toplevel.sv", "build/examples/rvsimple")
-
-    """
-    mt_root = "examples/rvsimple/metron"
-    sv_root = "examples/rvsimple/metron_sv"
-    vl_root = "build/examples/rvsimple/metron_vl"
-
+    vl_root = "build/examples/rvsimple"
+    vl_vhdr, vl_vobj = verilate_dir("build/examples/rvsimple/toplevel.sv", vl_root)
 
     cpp_binary(
         bin_name="build/examples/rvsimple/rvsimple_vl",
@@ -476,9 +468,8 @@ def build_rvsimple():
         link_deps=["build/metron/libmetron.a"],
     )
 
-    ref_vl_root = "build/examples/rvsimple/reference_vl"
-
-    ref_vhdr, ref_vobj = verilate_dir("examples/rvsimple/reference_sv/toplevel.sv", "build/examples/rvsimple/reference_vl")
+    ref_vl_root = "build/examples/rvsimple/reference_sv"
+    ref_vhdr, ref_vobj = verilate_dir("examples/rvsimple/reference_sv/toplevel.sv", ref_vl_root)
 
     cpp_binary(
         bin_name="build/examples/rvsimple/rvsimple_ref",
@@ -488,7 +479,6 @@ def build_rvsimple():
         deps=[ref_vhdr],
         link_deps=["build/metron/libmetron.a"],
     )
-    """
 
 # ------------------------------------------------------------------------------
 # Ibex

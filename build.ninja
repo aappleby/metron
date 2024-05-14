@@ -241,6 +241,26 @@ build build/examples/uart/uart_vl: c_binary build/verilator/verilated.o build/ve
 
 
 ################################################################################
+# Icarus Verilog uart testbench
+
+build build/examples/uart/uart_iv: iverilog examples/uart/uart_test_iv.sv | build/examples/uart/uart_hello.sv build/examples/uart/uart_rx.sv build/examples/uart/uart_top.sv build/examples/uart/uart_tx.sv
+  includes = -Iexamples/uart -Iexamples/uart -Ibuild/examples/uart
+  defines = -DIVERILOG
+
+
+################################################################################
+# Yosys/NextPNR uart testbench
+
+build build/examples/uart/uart_test_ice40.json: yosys examples/uart/uart_test_ice40.sv | build/examples/uart/uart_hello.sv build/examples/uart/uart_rx.sv build/examples/uart/uart_top.sv build/examples/uart/uart_tx.sv examples/uart/SB_PLL40_CORE.v
+  includes = -Iexamples/uart -Iexamples/uart -Ibuild/examples/uart
+build build/examples/uart/uart_test_ice40.asc: nextpnr-ice40 build/examples/uart/uart_test_ice40.json
+  chip = hx8k
+  package = ct256
+  pcf = examples/uart/ice40-hx8k-b-evn.pcf
+build build/examples/uart/uart_test_ice40.bin: icepack build/examples/uart/uart_test_ice40.asc
+
+
+################################################################################
 # Compile build/examples/rvsimple/rvsimple
 
 build build/examples/rvsimple/main.o: compile_cpp examples/rvsimple/main.cpp
@@ -283,3 +303,29 @@ build build/examples/rvsimple/toplevel.sv: metron2 examples/rvsimple/toplevel.h 
 build build/examples/rvsimple/Vtoplevel.mk build/examples/rvsimple/Vtoplevel.h: verilator build/examples/rvsimple/toplevel.sv
   includes = -Ibuild/examples/rvsimple
 build build/examples/rvsimple/Vtoplevel__ALL.o: make build/examples/rvsimple/Vtoplevel.mk
+
+
+################################################################################
+# Compile build/examples/rvsimple/rvsimple_vl
+
+build build/examples/rvsimple/main_vl.o: compile_cpp examples/rvsimple/main_vl.cpp | build/examples/rvsimple/Vtoplevel.h
+  includes = ${base_includes} -I/usr/local/share/verilator/include -Ibuild/examples/rvsimple -Isymlinks/CLI11/include
+build build/examples/rvsimple/rvsimple_vl: c_binary build/verilator/verilated.o build/verilator/verilated_threads.o build/examples/rvsimple/Vtoplevel__ALL.o build/examples/rvsimple/main_vl.o build/metron/libmetron.a
+  includes = ${base_includes} -I/usr/local/share/verilator/include -Ibuild/examples/rvsimple -Isymlinks/CLI11/include
+
+
+################################################################################
+# Verilate examples/rvsimple/reference_sv/toplevel.sv -> build/examples/rvsimple/reference_sv
+
+build build/examples/rvsimple/reference_sv/Vtoplevel.mk build/examples/rvsimple/reference_sv/Vtoplevel.h: verilator examples/rvsimple/reference_sv/toplevel.sv
+  includes = -Iexamples/rvsimple/reference_sv
+build build/examples/rvsimple/reference_sv/Vtoplevel__ALL.o: make build/examples/rvsimple/reference_sv/Vtoplevel.mk
+
+
+################################################################################
+# Compile build/examples/rvsimple/rvsimple_ref
+
+build build/examples/rvsimple/main_ref_vl.o: compile_cpp examples/rvsimple/main_ref_vl.cpp | build/examples/rvsimple/reference_sv/Vtoplevel.h
+  includes = ${base_includes} -I/usr/local/share/verilator/include -Ibuild/examples/rvsimple/reference_sv -Isymlinks/CLI11/include
+build build/examples/rvsimple/rvsimple_ref: c_binary build/verilator/verilated.o build/verilator/verilated_threads.o build/examples/rvsimple/reference_sv/Vtoplevel__ALL.o build/examples/rvsimple/main_ref_vl.o build/metron/libmetron.a
+  includes = ${base_includes} -I/usr/local/share/verilator/include -Ibuild/examples/rvsimple/reference_sv -Isymlinks/CLI11/include

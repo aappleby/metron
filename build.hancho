@@ -10,19 +10,17 @@ import hancho
 #base_includes = "-I. -Isymlinks -Isymlinks/metrolib -Isymlinks/matcheroni"
 #libraries = "-lgcc -lc"
 
-config = hancho.Config(build_tag = "debug")
+hancho.Config.build_tag = "debug"
 
-metrolib = hancho.repo("symlinks/metrolib/build.hancho", build_tag = config.build_tag)
-rules    = hancho.load("rules/rules.hancho",   build_tag = config.build_tag, metrolib = metrolib)
+metrolib = hancho.repo("symlinks/metrolib/build.hancho")
+rules    = hancho.load("rules/rules.hancho",   metrolib = metrolib)
 metron   = hancho.load("metron/metron.hancho", metrolib = metrolib, rules = rules)
 
-tests    = hancho.load("tests/tests.hancho",   metrolib = metrolib, rules = rules)
-
 deps = hancho.Config(
-  config = config,
   metrolib = metrolib,
   rules = rules,
   metron = metron
 )
 
-examples = hancho.load("examples/examples.hancho", deps)
+tests    = hancho.load("tests/tests.hancho", **deps)
+examples = hancho.load("examples/examples.hancho", **deps)

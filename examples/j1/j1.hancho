@@ -1,6 +1,5 @@
 import hancho
 
-config   = imports.config
 metrolib = imports.metrolib
 metron   = imports.metron
 rules    = imports.rules
@@ -16,13 +15,11 @@ j1_bin = rules.cpp_bin(
 #j1_h = ["dpram.h", "j1.h"]
 
 j1_top_sv = metron.convert(
-  config,
   name = "J1 metronize",
   in_src = "j1.h"
 )
 
 j1_dpram_sv = metron.convert(
-  config,
   name = "J1 metronize",
   in_src = "dpram.h"
 )

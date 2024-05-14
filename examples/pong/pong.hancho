@@ -1,25 +1,21 @@
 import hancho
 
-config   = imports.config
 metrolib = imports.metrolib
 metron   = imports.metron
 rules    = imports.rules
 
 pong_sv = metron.convert(
-  config,
   name   = "pong metronize",
   in_src = "pong.h"
 )
 
 pong_vl = rules.verilator(
-  config,
   name     = "pong vl",
   in_top   = pong_sv.promise("out_sv"),
   includes = ["{repo_path}"]
 )
 
 pong_bin = rules.cpp_bin(
-  config,
   name = "pong bin",
   in_srcs = "main.cpp",
   in_libs = [

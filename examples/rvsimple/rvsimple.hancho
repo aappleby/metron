@@ -1,6 +1,5 @@
 import hancho
 
-config   = imports.config
 metrolib = imports.metrolib
 metron   = imports.metron
 rules    = imports.rules
@@ -34,15 +33,13 @@ rvsimple_h = [
   "singlecycle_datapath.h",
 ]
 
-rvsimple_sv = [metron.convert(config, in_src = src) for src in rvsimple_h]
+rvsimple_sv = [metron.convert(in_src = src) for src in rvsimple_h]
 
 rvsimple_top_sv = metron.convert(
-  config,
   in_src = rvsimple_top_h
 )
 
 rvsimple_top_vl = rules.verilator(
-  config,
   name     = "rvsimple vl",
   in_top   = rvsimple_top_sv.promise("out_sv"),
   in_deps  = rvsimple_sv,

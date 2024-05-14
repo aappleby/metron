@@ -9,7 +9,6 @@ exports.cpp_settings = hancho.Config(
   includes  = [".", "{repo_path}", "{repo_path}/symlinks", "{repo_path}/symlinks/metrolib", "{repo_path}/symlinks/matcheroni"],
   warnings  = ["all", "error", "suggest-override", "no-unused-function", "no-sign-compare", "no-unused-variable", "no-unused-but-set-variable"],
   sys_libs  = ["gcc", "c", "SDL2"],
-  build_tag = imports.build_tag,
 )
 
 #---------------------------------------------------------------------------------------------------
@@ -100,7 +99,7 @@ def gen_chparams(c):
   return result
 
 exports.yosys = hancho.Config(
-  command = "yosys -q -p 'read_verilog -defer {includes} -sv {rel(in_sv)}; dump; {gen_chparams(params)} synth_ice40 -top {top} -json {rel(out_json)};'",
+  command = "yosys -q -p 'read_verilog -defer {join_prefix('-I', includes)} -sv {rel(in_sv)}; dump; {gen_chparams(params)} synth_ice40 -top {top} -json {rel(out_json)};'",
   gen_chparams = gen_chparams,
   top = "{path.splitext(path.basename(in_sv))[0]}",
   params = {},
@@ -117,7 +116,7 @@ exports.icepack = hancho.Config(
 )
 
 exports.sv2v = hancho.Config(
-  command = "symlinks/sv2v/bin/sv2v {includes} {rel(in_sv)} -w {rel(out_v)}",
+  command = "symlinks/sv2v/bin/sv2v {join_prefix('-I', includes)} {rel(in_sv)} -w {rel(out_v)}",
 )
 
 def gen_ivparams(params):
@@ -130,6 +129,6 @@ def gen_ivparams(params):
   return result
 
 exports.iverilog = hancho.Config(
-  command = "iverilog {gen_ivparams(params)} -s{top} -g2012 {defines} {includes} {rel(in_sv)} -o {rel(out_iv)}",
+  command = "iverilog {gen_ivparams(params)} -s{top} -g2012 {defines} {join_prefix('-I', includes)} {rel(in_sv)} -o {rel(out_iv)}",
   gen_ivparams = gen_ivparams,
 )

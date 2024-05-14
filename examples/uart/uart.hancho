@@ -1,11 +1,18 @@
 import hancho
 
-config   = imports.config
 metron   = imports.metron
 rules    = imports.rules
 metrolib = imports.metrolib
 
 ################################################################################
+
+includes = [
+  ".",
+  "{repo_path}",
+  "{repo_path}/symlinks/metrolib",
+  "{build_path}",
+  "/usr/local/share/verilator/include",
+]
 
 uart_top_h = "uart_top.h"
 
@@ -15,92 +22,74 @@ uart_h = [
   "uart_tx.h",
 ]
 
-uart_sv     = [metron.convert(config, in_src = src) for src in uart_h]
-uart_top_sv = metron.convert(config, in_src = uart_top_h)
+uart_sv     = [metron.convert(in_src = src) for src in uart_h]
+uart_top_sv = metron.convert(in_src = uart_top_h)
 
-uart_top_vl = rules.verilator(
-  config,
-  name = "verilate uart_top",
-  in_top = uart_top_sv.promise("out_sv"),
-  in_deps = uart_sv,
-  in_message = "message.hex",
-  includes = ["{repo_path}"],
-  params = {
-    "message_file": "{in_message}"
-  }
-)
+# C++ testbench
 
 uart_bin = rules.cpp_bin(
-  config,
-  name = "uart_cpp",
-  in_srcs = "main.cpp",
-  includes = [
-    "{repo_path}",
-    "{repo_path}/symlinks/metrolib",
-  ],
-  in_libs = [
-    metrolib.libcore,
-  ],
-  out_bin = "uart_cpp",
+  name     = "uart_cpp",
+  in_srcs  = "main.cpp",
+  includes = includes,
+  in_libs  = [metrolib.libcore],
+  out_bin  = "uart_cpp",
+)
+
+# Verilator testbench
+
+uart_top_vl = rules.verilator(
+  name     = "verilate uart_top",
+  in_top   = uart_top_sv.promise("out_sv"), # FIXME has to be a promise, because has to be a string...
+  in_deps  = uart_sv,
+  includes = includes,
+  params   = {"message_file": "{in_message}"},
+  in_message = "message.hex",
 )
 
 uart_bin_vl = rules.cpp_bin(
-  config,
-  name = "uart_vl",
-  in_srcs = "main_vl.cpp",
-  in_deps = uart_top_vl.promise("out_lib"),
-  includes = [
-    "{repo_path}",
-    "{repo_path}/symlinks/metrolib",
-    "{build_path}",
-    "/usr/local/share/verilator/include",
-  ],
-  in_libs = [
-    metrolib.libcore,
-    uart_top_vl.promise("out_lib"),
-  ],
-  out_bin = "uart_vl",
+  name     = "uart_vl",
+  in_srcs  = "main_vl.cpp",
+  includes = includes,
+  in_deps  = uart_top_vl.promise("out_lib"), # needed so that the compile task depends on uart_top_vl
+  in_libs  = [metrolib.libcore, uart_top_vl.promise("out_lib")],
+  out_bin  = "uart_vl",
 )
 
+# Icarus Verilog testbench
+
 uart_iv = rules.iverilog(
-  config,
   name     = "uart_iv",
   in_sv    = "uart_test_iv.sv",
   in_deps  = [uart_sv, uart_top_sv],
-  in_message = "message.hex",
   out_iv   = "uart_iv",
-  includes = "-I. -I{build_path} -I{repo_path}",
+  includes = includes,
   defines  = "-DIVERILOG",
   top      = "uart_test",
-  params   = {
-    "message_file": "{in_message}"
-  },
+  params   = {"message_file": "{in_message}"},
+  in_message = "message.hex",
 )
 
+# Synthesizable version of UART
+
 uart_yosys = rules.yosys(
-  config,
   in_sv    = "uart_test_ice40.sv",
   in_deps  = [uart_sv, uart_top_sv],
-  in_message = "message.hex",
   out_json = "{swap_ext(in_sv, '.json')}",
   top      = "uart_test_ice40",
-  includes = "-I. -I{build_path} -I{repo_path}",
-  params   = {
-    "message_file": "{in_message}"
-  },
+  includes = includes,
+  params   = {"message_file": "{in_message}"},
+  in_message = "message.hex",
 )
 
 uart_nextpnr = rules.nextpnr(
-  config,
-  in_json = uart_yosys.promise("out_json"),
-  out_asc = "uart_test_ice40.asc",
-  chip    = "hx8k",
-  package = "ct256",
-  pcf     = "ice40-hx8k-b-evn.pcf",
+  in_json  = uart_yosys.promise("out_json"),
+  out_asc  = "uart_test_ice40.asc",
+  chip     = "hx8k",
+  package  = "ct256",
+  pcf      = "ice40-hx8k-b-evn.pcf",
 )
 
 uart_bin = rules.icepack(
-  config,
   in_asc  = uart_nextpnr.promise("out_asc"),
   out_bin = "uart_test_ice40.bin",
 )

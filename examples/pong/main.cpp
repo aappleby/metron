@@ -10,7 +10,7 @@
 
 #include "metrolib/core/Platform.h"
 #include "metrolib/core/Utils.h"
-#include "metron/pong.h"
+#include "pong.h"
 
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480

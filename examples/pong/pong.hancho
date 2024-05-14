@@ -1,9 +1,14 @@
-################################################################################
+import hancho
+
+config   = imports.config
+metrolib = imports.metrolib
+metron   = imports.metron
+rules    = imports.rules
 
 pong_sv = metron.convert(
   config,
   name   = "pong metronize",
-  in_src = "pong/metron/pong.h"
+  in_src = "pong.h"
 )
 
 pong_vl = rules.verilator(
@@ -16,12 +21,12 @@ pong_vl = rules.verilator(
 pong_bin = rules.cpp_bin(
   config,
   name = "pong bin",
-  in_srcs = "pong/main.cpp",
+  in_srcs = "main.cpp",
   in_libs = [
     pong_vl.promise("out_lib"),
     metrolib.libcore
   ],
-  out_bin = "pong/pong",
+  out_bin = "pong",
 )
 
 # FIXME verilated version of pong

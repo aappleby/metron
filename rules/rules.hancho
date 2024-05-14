@@ -40,6 +40,7 @@ verilated_threads_o = exports.compile_cpp(
 )
 
 verilator_cmd = hancho.Config(
+  desc = "Run Verilator on {rel(in_top)}",
   command = "verilator -Wno-width --public {join_prefix('-I', includes)} --cc {rel(in_top)} -Mdir {path.dirname(rel(out_makefile))}",
   out_makefile = r"{re.sub(r'([^/\\]+).sv', r'V\1.mk', in_top)}",
   out_header   = r"{re.sub(r'([^/\\]+).sv', r'V\1.h',  in_top)}",

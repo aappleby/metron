@@ -5,4 +5,5 @@ metrolib = imports.metrolib
 metron   = imports.metron
 rules    = imports.rules
 
-hancho.load("uart/uart.hancho", rules = rules, metron = metron, config = config, metrolib = metrolib)
+hancho.load("uart/uart.hancho", **imports)
+hancho.load("pong/pong.hancho", **imports)

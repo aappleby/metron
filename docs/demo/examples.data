@@ -1,108 +1,12 @@
-rules    = hancho.rules
-metron   = hancho.metron.metron
-libcore  = hancho.metrolib.libcore
+import hancho
 
-################################################################################
+config   = imports.config
+metrolib = imports.metrolib
+metron   = imports.metron
+rules    = imports.rules
 
-#j1_bin = rules.cpp_bin("j1/main.cpp", "j1/j1")
-#
-#j1_h = ["j1/metron/dpram.h", "j1/metron/j1.h"]
-#
-#j1_sv = metron(j1_h)
-
-################################################################################
-
-#hancho.rules.check_cpp_syntax("j1/metron/j1.h")
-
-#pong_h = ["pong/metron/pong.h"]
-#
-#pong_sv = metron(pong_h)
-#
-#pong_bin = rules.cpp_bin(["pong/main.cpp", libcore], "pong/pong")
-
-################################################################################
-
-#rvsimple_h = [
-#  "rvsimple/metron/adder.h",
-#  "rvsimple/metron/alu_control.h",
-#  "rvsimple/metron/alu.h",
-#  "rvsimple/metron/config.h",
-#  "rvsimple/metron/constants.h",
-#  "rvsimple/metron/control_transfer.h",
-#  "rvsimple/metron/data_memory_interface.h",
-#  "rvsimple/metron/example_data_memory_bus.h",
-#  "rvsimple/metron/example_data_memory.h",
-#  "rvsimple/metron/example_text_memory_bus.h",
-#  "rvsimple/metron/example_text_memory.h",
-#  "rvsimple/metron/immediate_generator.h",
-#  "rvsimple/metron/instruction_decoder.h",
-#  "rvsimple/metron/multiplexer2.h",
-#  "rvsimple/metron/multiplexer4.h",
-#  "rvsimple/metron/multiplexer8.h",
-#  "rvsimple/metron/regfile.h",
-#  "rvsimple/metron/register.h",
-#  "rvsimple/metron/riscv_core.h",
-#  "rvsimple/metron/singlecycle_control.h",
-#  "rvsimple/metron/singlecycle_ctlpath.h",
-#  "rvsimple/metron/singlecycle_datapath.h",
-#  "rvsimple/metron/toplevel.h",
-#]
-#
-#rvsimple_sv = metron(rvsimple_h)
-#
-#rvsimple_bin = rules.cpp_bin(["rvsimple/main.cpp", libcore], "rvsimple/rvsimple")
-
-################################################################################
-# UART example
-
-uart_hello_sv = metron("uart/metron/uart_hello.h")
-uart_rx_sv    = metron("uart/metron/uart_rx.h")
-uart_top_sv   = metron("uart/metron/uart_top.h")
-uart_tx_sv    = metron("uart/metron/uart_tx.h")
-
-#uart_bin = rules.cpp_bin(["uart/main.cpp", libcore], "uart/uart")
-
-#verilated_uart_o = rules.verilator(
-#  uart_top_sv,
-#  includes = [".", "{repo_path}", "{path.dirname(flatten(source_files)[0])}"],
-#  build_tag = hancho.build_tag
-#)
-
-verilated_uart_o = rules.verilator2(
-  uart_top_sv,
-  includes = [".", "{repo_path}", "{path.dirname(flatten(source_files)[0])}"],
-  build_tag = hancho.build_tag
-)
-
-#hancho.raw.Task(
-#  command = "ls -al {rel_source_files}",
-#  source_files = verilated_uart_o
-#)
-
-"""
-build build/examples/uart/metron_vl/Vuart_top.mk build/examples/uart/metron_vl/Vuart_top.h: verilator examples/uart/metron_sv/uart_top.sv
-  includes = -Iexamples/uart/metron_sv
-build build/examples/uart/metron_vl/Vuart_top__ALL.o: make build/examples/uart/metron_vl/Vuart_top.mk
-
-build build/examples/uart/main_vl.o: compile_cpp examples/uart/main_vl.cpp | build/examples/uart/metron_vl/Vuart_top.h
-  includes = ${base_includes} -I/usr/local/share/verilator/include -Ibuild/examples/uart
-build build/examples/uart/uart_vl: c_binary build/verilator/verilated.o build/verilator/verilated_threads.o build/examples/uart/metron_vl/Vuart_top__ALL.o build/examples/uart/main_vl.o build/metron/libmetron.a
-  includes = ${base_includes} -I/usr/local/share/verilator/include -Ibuild/examples/uart
-
-build build/examples/uart/uart_iv: iverilog examples/uart/uart_test_iv.sv | examples/uart/metron_sv/uart_hello.sv examples/uart/metron_sv/uart_rx.sv examples/uart/metron_sv/uart_top.sv examples/uart/metron_sv/uart_tx.sv
-  includes = -Iexamples/uart -Iexamples/uart/metron_sv
-  defines = -DIVERILOG
-
-build build/examples/uart/uart_test_ice40.json: yosys examples/uart/uart_test_ice40.sv | examples/uart/metron_sv/uart_hello.sv examples/uart/metron_sv/uart_rx.sv examples/uart/metron_sv/uart_top.sv examples/uart/metron_sv/uart_tx.sv examples/uart/SB_PLL40_CORE.v
-  includes = -Iexamples/uart -Iexamples/uart/metron_sv
-build build/examples/uart/uart_test_ice40.asc: nextpnr-ice40 build/examples/uart/uart_test_ice40.json
-  chip = hx8k
-  package = ct256
-  pcf = examples/uart/ice40-hx8k-b-evn.pcf
-build build/examples/uart/uart_test_ice40.bin: icepack build/examples/uart/uart_test_ice40.asc
-"""
-
-################################################################################
+hancho.load("uart/uart.hancho", **imports)
+hancho.load("pong/pong.hancho", **imports)
 #ifndef METRO_BOY_SPU2_H
 #define METRO_BOY_SPU2_H
 #include "metron/metron_tools.h"
@@ -798,475 +702,34 @@ private:
 };
 
 #endif // METRO_BOY_SPU2_H
-// Verilated -*- C++ -*-
-// DESCRIPTION: Verilator output: Primary model header
-//
-// This header should be included by all source files instantiating the design.
-// The class here is then constructed to instantiate the design.
-// See the Verilator manual for examples.
-
-#ifndef VERILATED_VMETROBOYSPU2_H_
-#define VERILATED_VMETROBOYSPU2_H_  // guard
-
-#include "verilated.h"
-
-class VMetroBoySPU2__Syms;
-class VMetroBoySPU2___024root;
-
-// This class is the main interface to the Verilated model
-class alignas(VL_CACHE_LINE_BYTES) VMetroBoySPU2 VL_NOT_FINAL : public VerilatedModel {
-  private:
-    // Symbol table holding complete model state (owned by this class)
-    VMetroBoySPU2__Syms* const vlSymsp;
-
-  public:
-
-    // PORTS
-    // The application code writes and reads these signals to
-    // propagate new values into/out from the Verilated model.
-    VL_IN8(&clock,0,0);
-    VL_IN8(&tick_reset,0,0);
-    VL_IN8(&tick_data_in,7,0);
-    VL_IN8(&tick_read,0,0);
-    VL_IN8(&tick_write,0,0);
-    VL_OUT16(&out_r,8,0);
-    VL_OUT16(&out_l,8,0);
-    VL_IN16(&tick_addr,15,0);
-
-    // CELLS
-    // Public to allow access to /* verilator public */ items.
-    // Otherwise the application code can consider these internals.
-
-    // Root instance pointer to allow access to model internals,
-    // including inlined /* verilator public_flat_* */ items.
-    VMetroBoySPU2___024root* const rootp;
-
-    // CONSTRUCTORS
-    /// Construct the model; called by application code
-    /// If contextp is null, then the model will use the default global context
-    /// If name is "", then makes a wrapper with a
-    /// single model invisible with respect to DPI scope names.
-    explicit VMetroBoySPU2(VerilatedContext* contextp, const char* name = "TOP");
-    explicit VMetroBoySPU2(const char* name = "TOP");
-    /// Destroy the model; called (often implicitly) by application code
-    virtual ~VMetroBoySPU2();
-  private:
-    VL_UNCOPYABLE(VMetroBoySPU2);  ///< Copying not allowed
-
-  public:
-    // API METHODS
-    /// Evaluate the model.  Application must call when inputs change.
-    void eval() { eval_step(); }
-    /// Evaluate when calling multiple units/models per time step.
-    void eval_step();
-    /// Evaluate at end of a timestep for tracing, when using eval_step().
-    /// Application must call after all eval() and before time changes.
-    void eval_end_step() {}
-    /// Simulation complete, run final blocks.  Application must call on completion.
-    void final();
-    /// Are there scheduled events to handle?
-    bool eventsPending();
-    /// Returns time at next time slot. Aborts if !eventsPending()
-    uint64_t nextTimeSlot();
-    /// Trace signals in the model; called by application code
-    void trace(VerilatedVcdC* tfp, int levels, int options = 0);
-    /// Retrieve name of this model instance (as passed to constructor).
-    const char* name() const;
-
-    // Abstract methods from VerilatedModel
-    const char* hierName() const override final;
-    const char* modelName() const override final;
-    unsigned threads() const override final;
-    /// Prepare for cloning the model at the process level (e.g. fork in Linux)
-    /// Release necessary resources. Called before cloning.
-    void prepareClone() const;
-    /// Re-init after cloning the model at the process level (e.g. fork in Linux)
-    /// Re-allocate necessary resources. Called after cloning.
-    void atClone() const;
-};
-
-#endif  // guard
-# Verilated -*- Makefile -*-
-# DESCRIPTION: Verilator output: Makefile for building Verilated archive or executable
-#
-# Execute this makefile from the object directory:
-#    make -f VMetroBoySPU2.mk
-
-default: VMetroBoySPU2__ALL.a
-
-### Constants...
-# Perl executable (from $PERL)
-PERL = perl
-# Path to Verilator kit (from $VERILATOR_ROOT)
-VERILATOR_ROOT = /usr/local/share/verilator
-# SystemC include directory with systemc.h (from $SYSTEMC_INCLUDE)
-SYSTEMC_INCLUDE ?= 
-# SystemC library directory with libsystemc.a (from $SYSTEMC_LIBDIR)
-SYSTEMC_LIBDIR ?= 
-
-### Switches...
-# C++ code coverage  0/1 (from --prof-c)
-VM_PROFC = 0
-# SystemC output mode?  0/1 (from --sc)
-VM_SC = 0
-# Legacy or SystemC output mode?  0/1 (from --sc)
-VM_SP_OR_SC = $(VM_SC)
-# Deprecated
-VM_PCLI = 1
-# Deprecated: SystemC architecture to find link library path (from $SYSTEMC_ARCH)
-VM_SC_TARGET_ARCH = linux
-
-### Vars...
-# Design prefix (from --prefix)
-VM_PREFIX = VMetroBoySPU2
-# Module prefix (from --prefix)
-VM_MODPREFIX = VMetroBoySPU2
-# User CFLAGS (from -CFLAGS on Verilator command line)
-VM_USER_CFLAGS = \
-
-# User LDLIBS (from -LDFLAGS on Verilator command line)
-VM_USER_LDLIBS = \
-
-# User .cpp files (from .cpp's on Verilator command line)
-VM_USER_CLASSES = \
-
-# User .cpp directories (from .cpp's on Verilator command line)
-VM_USER_DIR = \
-
-
-### Default rules...
-# Include list of all generated classes
-include VMetroBoySPU2_classes.mk
-# Include global rules
-include $(VERILATOR_ROOT)/include/verilated.mk
-
-# Verilated -*- Makefile -*-
-// Verilated -*- C++ -*-
-// DESCRIPTION: Verilator output: Symbol table internal header
-//
-// Internal details; most calling programs do not need this header,
-// unless using verilator public meta comments.
-
-#ifndef VERILATED_VMETROBOYSPU2__SYMS_H_
-#define VERILATED_VMETROBOYSPU2__SYMS_H_  // guard
-
-#include "verilated.h"
-
-// INCLUDE MODEL CLASS
-
-#include "VMetroBoySPU2.h"
-
-// INCLUDE MODULE CLASSES
-#include "VMetroBoySPU2___024root.h"
-#include "VMetroBoySPU2___024unit.h"
-
-// SYMS CLASS (contains all model state)
-class alignas(VL_CACHE_LINE_BYTES)VMetroBoySPU2__Syms final : public VerilatedSyms {
-  public:
-    // INTERNAL STATE
-    VMetroBoySPU2* const __Vm_modelp;
-    VlDeleter __Vm_deleter;
-    bool __Vm_didInit = false;
-
-    // MODULE INSTANCE STATE
-    VMetroBoySPU2___024root        TOP;
-
-    // CONSTRUCTORS
-    VMetroBoySPU2__Syms(VerilatedContext* contextp, const char* namep, VMetroBoySPU2* modelp);
-    ~VMetroBoySPU2__Syms();
-
-    // METHODS
-    const char* name() { return TOP.name(); }
-};
-
-#endif  // guard
-// Verilated -*- C++ -*-
-// DESCRIPTION: Verilator output: Design internal header
-// See VMetroBoySPU2.h for the primary calling header
-
-#ifndef VERILATED_VMETROBOYSPU2___024ROOT_H_
-#define VERILATED_VMETROBOYSPU2___024ROOT_H_  // guard
-
-#include "verilated.h"
-
-
-class VMetroBoySPU2__Syms;
-
-class alignas(VL_CACHE_LINE_BYTES) VMetroBoySPU2___024root final : public VerilatedModule {
-  public:
-
-    // DESIGN SPECIFIC STATE
-    // Anonymous structures to workaround compiler member-count bugs
-    struct {
-        VL_IN8(clock,0,0);
-        VL_IN8(tick_reset,0,0);
-        VL_IN8(tick_data_in,7,0);
-        VL_IN8(tick_read,0,0);
-        VL_IN8(tick_write,0,0);
-        CData/*0:0*/ MetroBoySPU2__DOT__clock;
-        CData/*0:0*/ MetroBoySPU2__DOT__tick_reset;
-        CData/*7:0*/ MetroBoySPU2__DOT__tick_data_in;
-        CData/*0:0*/ MetroBoySPU2__DOT__tick_read;
-        CData/*0:0*/ MetroBoySPU2__DOT__tick_write;
-        CData/*7:0*/ MetroBoySPU2__DOT__data_out_;
-        CData/*2:0*/ MetroBoySPU2__DOT__s1_sweep_shift_;
-        CData/*0:0*/ MetroBoySPU2__DOT__s1_sweep_dir_;
-        CData/*2:0*/ MetroBoySPU2__DOT__s1_sweep_timer_init_;
-        CData/*5:0*/ MetroBoySPU2__DOT__s1_len_timer_init_;
-        CData/*1:0*/ MetroBoySPU2__DOT__s1_duty_;
-        CData/*2:0*/ MetroBoySPU2__DOT__s1_env_timer_init_;
-        CData/*0:0*/ MetroBoySPU2__DOT__s1_env_add_;
-        CData/*3:0*/ MetroBoySPU2__DOT__s1_env_vol_init_;
-        CData/*0:0*/ MetroBoySPU2__DOT__s1_len_en_;
-        CData/*0:0*/ MetroBoySPU2__DOT__s1_trig_;
-        CData/*0:0*/ MetroBoySPU2__DOT__s1_running_;
-        CData/*2:0*/ MetroBoySPU2__DOT__s1_sweep_timer_;
-        CData/*5:0*/ MetroBoySPU2__DOT__s1_len_timer_;
-        CData/*3:0*/ MetroBoySPU2__DOT__s1_env_vol_;
-        CData/*2:0*/ MetroBoySPU2__DOT__s1_env_timer_;
-        CData/*2:0*/ MetroBoySPU2__DOT__s1_phase_;
-        CData/*5:0*/ MetroBoySPU2__DOT__s2_len_timer_init_;
-        CData/*1:0*/ MetroBoySPU2__DOT__s2_duty_;
-        CData/*2:0*/ MetroBoySPU2__DOT__s2_env_timer_init_;
-        CData/*0:0*/ MetroBoySPU2__DOT__s2_env_add_;
-        CData/*3:0*/ MetroBoySPU2__DOT__s2_env_vol_init_;
-        CData/*0:0*/ MetroBoySPU2__DOT__s2_len_en_;
-        CData/*0:0*/ MetroBoySPU2__DOT__s2_trig_;
-        CData/*5:0*/ MetroBoySPU2__DOT__s2_len_timer_;
-        CData/*0:0*/ MetroBoySPU2__DOT__s2_running_;
-        CData/*2:0*/ MetroBoySPU2__DOT__s2_env_timer_;
-        CData/*3:0*/ MetroBoySPU2__DOT__s2_env_vol_;
-        CData/*2:0*/ MetroBoySPU2__DOT__s2_phase_;
-        CData/*0:0*/ MetroBoySPU2__DOT__s3_power_;
-        CData/*7:0*/ MetroBoySPU2__DOT__s3_len_timer_init_;
-        CData/*2:0*/ MetroBoySPU2__DOT__s3_volume_shift_;
-        CData/*0:0*/ MetroBoySPU2__DOT__s3_len_en_;
-        CData/*0:0*/ MetroBoySPU2__DOT__s3_trig_;
-        CData/*0:0*/ MetroBoySPU2__DOT__s3_running_;
-        CData/*7:0*/ MetroBoySPU2__DOT__s3_len_timer_;
-        CData/*4:0*/ MetroBoySPU2__DOT__s3_phase_;
-        CData/*5:0*/ MetroBoySPU2__DOT__s4_len_timer_init_;
-        CData/*2:0*/ MetroBoySPU2__DOT__s4_env_timer_init_;
-        CData/*0:0*/ MetroBoySPU2__DOT__s4_env_add_;
-        CData/*3:0*/ MetroBoySPU2__DOT__s4_env_vol_init_;
-        CData/*2:0*/ MetroBoySPU2__DOT__s4_freq_timer_init_;
-        CData/*0:0*/ MetroBoySPU2__DOT__s4_mode_;
-        CData/*3:0*/ MetroBoySPU2__DOT__s4_shift_;
-        CData/*0:0*/ MetroBoySPU2__DOT__s4_len_en_;
-        CData/*0:0*/ MetroBoySPU2__DOT__s4_trig_;
-        CData/*0:0*/ MetroBoySPU2__DOT__s4_running_;
-        CData/*5:0*/ MetroBoySPU2__DOT__s4_len_timer_;
-        CData/*2:0*/ MetroBoySPU2__DOT__s4_env_timer_;
-        CData/*3:0*/ MetroBoySPU2__DOT__s4_env_vol_;
-        CData/*2:0*/ MetroBoySPU2__DOT__s4_freq_timer_;
-        CData/*3:0*/ MetroBoySPU2__DOT__volume_l_;
-        CData/*3:0*/ MetroBoySPU2__DOT__volume_r_;
-        CData/*0:0*/ MetroBoySPU2__DOT__mix_r1_;
-    };
-    struct {
-        CData/*0:0*/ MetroBoySPU2__DOT__mix_r2_;
-        CData/*0:0*/ MetroBoySPU2__DOT__mix_r3_;
-        CData/*0:0*/ MetroBoySPU2__DOT__mix_r4_;
-        CData/*0:0*/ MetroBoySPU2__DOT__mix_l1_;
-        CData/*0:0*/ MetroBoySPU2__DOT__mix_l2_;
-        CData/*0:0*/ MetroBoySPU2__DOT__mix_l3_;
-        CData/*0:0*/ MetroBoySPU2__DOT__mix_l4_;
-        CData/*0:0*/ MetroBoySPU2__DOT__spu_power_;
-        CData/*0:0*/ MetroBoySPU2__DOT__tock_out__DOT__unnamedblk1__DOT__s1_out;
-        CData/*0:0*/ MetroBoySPU2__DOT__tock_out__DOT__unnamedblk2__DOT__s2_out;
-        CData/*7:0*/ MetroBoySPU2__DOT__tock_out__DOT__unnamedblk3__DOT__s3_sample;
-        CData/*3:0*/ MetroBoySPU2__DOT__tock_out__DOT__unnamedblk3__DOT__s3_out;
-        CData/*0:0*/ MetroBoySPU2__DOT__tock_out__DOT__unnamedblk4__DOT__s4_out;
-        CData/*0:0*/ MetroBoySPU2__DOT__tick__DOT__unnamedblk6__DOT__sweep_tick;
-        CData/*0:0*/ MetroBoySPU2__DOT__tick__DOT__unnamedblk6__DOT__length_tick;
-        CData/*0:0*/ MetroBoySPU2__DOT__tick__DOT__unnamedblk6__DOT__env_tick;
-        CData/*0:0*/ MetroBoySPU2__DOT__tick__DOT__unnamedblk6__DOT__lfsr_clock_old;
-        CData/*0:0*/ MetroBoySPU2__DOT__tick__DOT__unnamedblk6__DOT__lfsr_clock_new;
-        CData/*4:0*/ MetroBoySPU2__DOT__tick__DOT__unnamedblk6__DOT__unnamedblk8__DOT__next_phase;
-        CData/*0:0*/ MetroBoySPU2__DOT__tick__DOT__unnamedblk6__DOT__unnamedblk9__DOT__new_bit;
-        CData/*0:0*/ __VstlFirstIteration;
-        CData/*0:0*/ __VicoFirstIteration;
-        CData/*0:0*/ __Vtrigprevexpr___TOP__clock__0;
-        CData/*0:0*/ __VactContinue;
-        VL_OUT16(out_r,8,0);
-        VL_OUT16(out_l,8,0);
-        VL_IN16(tick_addr,15,0);
-        SData/*8:0*/ MetroBoySPU2__DOT__out_r;
-        SData/*8:0*/ MetroBoySPU2__DOT__out_l;
-        SData/*15:0*/ MetroBoySPU2__DOT__tick_addr;
-        SData/*15:0*/ MetroBoySPU2__DOT__spu_clock_old_;
-        SData/*10:0*/ MetroBoySPU2__DOT__s1_freq_timer_init_;
-        SData/*10:0*/ MetroBoySPU2__DOT__s1_sweep_freq_;
-        SData/*10:0*/ MetroBoySPU2__DOT__s1_freq_timer_;
-        SData/*10:0*/ MetroBoySPU2__DOT__s2_freq_timer_init_;
-        SData/*10:0*/ MetroBoySPU2__DOT__s2_freq_timer_;
-        SData/*10:0*/ MetroBoySPU2__DOT__s3_freq_timer_init_;
-        SData/*10:0*/ MetroBoySPU2__DOT__s3_freq_timer_;
-        SData/*15:0*/ MetroBoySPU2__DOT__s4_lfsr_;
-        SData/*8:0*/ MetroBoySPU2__DOT__tock_out__DOT__l;
-        SData/*8:0*/ MetroBoySPU2__DOT__tock_out__DOT__r;
-        SData/*15:0*/ MetroBoySPU2__DOT__tick__DOT__unnamedblk6__DOT__spu_clock_new;
-        SData/*15:0*/ MetroBoySPU2__DOT__tick__DOT__unnamedblk6__DOT__spu_tick;
-        SData/*10:0*/ MetroBoySPU2__DOT__tick__DOT__unnamedblk6__DOT__unnamedblk7__DOT__delta;
-        SData/*11:0*/ MetroBoySPU2__DOT__tick__DOT__unnamedblk6__DOT__unnamedblk7__DOT__next_freq;
-        SData/*10:0*/ MetroBoySPU2__DOT__tick__DOT__unnamedblk6__DOT__unnamedblk8__DOT__next_timer;
-        IData/*31:0*/ MetroBoySPU2__DOT__tick__DOT__unnamedblk5__DOT__i;
-        IData/*31:0*/ __VactIterCount;
-        VlUnpacked<CData/*7:0*/, 16> MetroBoySPU2__DOT__s3_wave_;
-    };
-    VlTriggerVec<1> __VstlTriggered;
-    VlTriggerVec<1> __VicoTriggered;
-    VlTriggerVec<1> __VactTriggered;
-    VlTriggerVec<1> __VnbaTriggered;
-
-    // INTERNAL VARIABLES
-    VMetroBoySPU2__Syms* const vlSymsp;
-
-    // CONSTRUCTORS
-    VMetroBoySPU2___024root(VMetroBoySPU2__Syms* symsp, const char* v__name);
-    ~VMetroBoySPU2___024root();
-    VL_UNCOPYABLE(VMetroBoySPU2___024root);
-
-    // INTERNAL METHODS
-    void __Vconfigure(bool first);
-};
-
-
-#endif  // guard
-// Verilated -*- C++ -*-
-// DESCRIPTION: Verilator output: Design internal header
-// See VMetroBoySPU2.h for the primary calling header
-
-#ifndef VERILATED_VMETROBOYSPU2___024UNIT_H_
-#define VERILATED_VMETROBOYSPU2___024UNIT_H_  // guard
-
-#include "verilated.h"
-
-
-class VMetroBoySPU2__Syms;
-
-class alignas(VL_CACHE_LINE_BYTES) VMetroBoySPU2___024unit final : public VerilatedModule {
-  public:
-
-    // INTERNAL VARIABLES
-    VMetroBoySPU2__Syms* const vlSymsp;
-
-    // CONSTRUCTORS
-    VMetroBoySPU2___024unit(VMetroBoySPU2__Syms* symsp, const char* v__name);
-    ~VMetroBoySPU2___024unit();
-    VL_UNCOPYABLE(VMetroBoySPU2___024unit);
-
-    // INTERNAL METHODS
-    void __Vconfigure(bool first);
-};
-
-
-#endif  // guard
-// Verilated -*- C++ -*-
-// DESCRIPTION: Verilator output: Precompiled header
-//
-// Internal details; most user sources do not need this header,
-// unless using verilator public meta comments.
-// Suggest use VMetroBoySPU2.h instead.
-
-
-#ifndef VERILATED_VMETROBOYSPU2__PCH_H_
-#define VERILATED_VMETROBOYSPU2__PCH_H_  // guard
-
-// GCC and Clang only will precompile headers (PCH) for the first header.
-// So, make sure this is the one and only PCH.
-// If multiple module's includes are needed, use individual includes.
-#ifdef VL_PCH_INCLUDED
-# error "Including multiple precompiled header files"
-#endif
-#define VL_PCH_INCLUDED
-
-
-#include "verilated.h"
-
-#include "VMetroBoySPU2__Syms.h"
-#include "VMetroBoySPU2.h"
-
-#endif  // guard
-examples/gb_spu/metron_vl/VMetroBoySPU2.cpp examples/gb_spu/metron_vl/VMetroBoySPU2.h examples/gb_spu/metron_vl/VMetroBoySPU2.mk examples/gb_spu/metron_vl/VMetroBoySPU2__Syms.cpp examples/gb_spu/metron_vl/VMetroBoySPU2__Syms.h examples/gb_spu/metron_vl/VMetroBoySPU2___024root.h examples/gb_spu/metron_vl/VMetroBoySPU2___024root__DepSet_h6e425a5e__0.cpp examples/gb_spu/metron_vl/VMetroBoySPU2___024root__DepSet_h6e425a5e__0__Slow.cpp examples/gb_spu/metron_vl/VMetroBoySPU2___024root__DepSet_h8022f1b5__0.cpp examples/gb_spu/metron_vl/VMetroBoySPU2___024root__DepSet_h8022f1b5__0__Slow.cpp examples/gb_spu/metron_vl/VMetroBoySPU2___024root__Slow.cpp examples/gb_spu/metron_vl/VMetroBoySPU2___024unit.h examples/gb_spu/metron_vl/VMetroBoySPU2___024unit__DepSet_hb5b57996__0__Slow.cpp examples/gb_spu/metron_vl/VMetroBoySPU2___024unit__Slow.cpp examples/gb_spu/metron_vl/VMetroBoySPU2__pch.h examples/gb_spu/metron_vl/VMetroBoySPU2__ver.d examples/gb_spu/metron_vl/VMetroBoySPU2_classes.mk  : /usr/local/bin/verilator_bin /home/aappleby/repos/metron/build/debug/metron/examples/gb_spu/metron/MetroBoySPU2.sv /usr/local/bin/verilator_bin /usr/local/share/verilator/include/verilated_std.sv metron/metron_tools.sv 
-# DESCRIPTION: Verilator output: Timestamp data for --skip-identical.  Delete at will.
-C "-Wno-width --public -Iexamples/gb_spu/metron_sv --cc /home/aappleby/repos/metron/build/debug/metron/examples/gb_spu/metron/MetroBoySPU2.sv -Mdir examples/gb_spu/metron_vl"
-S     20468  5808425  1713775111   510050548  1713775111   510050548 "/home/aappleby/repos/metron/build/debug/metron/examples/gb_spu/metron/MetroBoySPU2.sv"
-S  14068288  8040552  1709081451   966402354  1709081451   966402354 "/usr/local/bin/verilator_bin"
-S      4942  8919909  1709081452   210400867  1709081452   210400867 "/usr/local/share/verilator/include/verilated_std.sv"
-T      3846  7372168  1713775111   578050371  1713775111   578050371 "examples/gb_spu/metron_vl/VMetroBoySPU2.cpp"
-T      3426  7372167  1713775111   578050371  1713775111   578050371 "examples/gb_spu/metron_vl/VMetroBoySPU2.h"
-T      1522  7372232  1713775111   582050361  1713775111   582050361 "examples/gb_spu/metron_vl/VMetroBoySPU2.mk"
-T       846  7372165  1713775111   578050371  1713775111   578050371 "examples/gb_spu/metron_vl/VMetroBoySPU2__Syms.cpp"
-T      1030  7372166  1713775111   578050371  1713775111   578050371 "examples/gb_spu/metron_vl/VMetroBoySPU2__Syms.h"
-T      7445  7372170  1713775111   578050371  1713775111   578050371 "examples/gb_spu/metron_vl/VMetroBoySPU2___024root.h"
-T    121163  7372228  1713775111   582050361  1713775111   582050361 "examples/gb_spu/metron_vl/VMetroBoySPU2___024root__DepSet_h6e425a5e__0.cpp"
-T     22352  7372226  1713775111   578050371  1713775111   578050371 "examples/gb_spu/metron_vl/VMetroBoySPU2___024root__DepSet_h6e425a5e__0__Slow.cpp"
-T      1741  7372227  1713775111   578050371  1713775111   578050371 "examples/gb_spu/metron_vl/VMetroBoySPU2___024root__DepSet_h8022f1b5__0.cpp"
-T       937  7372173  1713775111   578050371  1713775111   578050371 "examples/gb_spu/metron_vl/VMetroBoySPU2___024root__DepSet_h8022f1b5__0__Slow.cpp"
-T       730  7372172  1713775111   578050371  1713775111   578050371 "examples/gb_spu/metron_vl/VMetroBoySPU2___024root__Slow.cpp"
-T       717  7372171  1713775111   578050371  1713775111   578050371 "examples/gb_spu/metron_vl/VMetroBoySPU2___024unit.h"
-T       530  7372230  1713775111   582050361  1713775111   582050361 "examples/gb_spu/metron_vl/VMetroBoySPU2___024unit__DepSet_hb5b57996__0__Slow.cpp"
-T       730  7372229  1713775111   582050361  1713775111   582050361 "examples/gb_spu/metron_vl/VMetroBoySPU2___024unit__Slow.cpp"
-T       729  7372169  1713775111   578050371  1713775111   578050371 "examples/gb_spu/metron_vl/VMetroBoySPU2__pch.h"
-T      1212  7372233  1713775111   582050361  1713775111   582050361 "examples/gb_spu/metron_vl/VMetroBoySPU2__ver.d"
-T         0        0  1713775111   582050361  1713775111   582050361 "examples/gb_spu/metron_vl/VMetroBoySPU2__verFiles.dat"
-T      1780  7372231  1713775111   582050361  1713775111   582050361 "examples/gb_spu/metron_vl/VMetroBoySPU2_classes.mk"
-S       195  6171462  1709080816   852724759  1709080816   852724759 "metron/metron_tools.sv"
-# Verilated -*- Makefile -*-
-# DESCRIPTION: Verilator output: Make include file with class lists
-#
-# This file lists generated Verilated files, for including in higher level makefiles.
-# See VMetroBoySPU2.mk for the caller.
-
-### Switches...
-# C11 constructs required?  0/1 (always on now)
-VM_C11 = 1
-# Timing enabled?  0/1
-VM_TIMING = 0
-# Coverage output mode?  0/1 (from --coverage)
-VM_COVERAGE = 0
-# Parallel builds?  0/1 (from --output-split)
-VM_PARALLEL_BUILDS = 0
-# Tracing output mode?  0/1 (from --trace/--trace-fst)
-VM_TRACE = 0
-# Tracing output mode in VCD format?  0/1 (from --trace)
-VM_TRACE_VCD = 0
-# Tracing output mode in FST format?  0/1 (from --trace-fst)
-VM_TRACE_FST = 0
-
-### Object file lists...
-# Generated module classes, fast-path, compile with highest optimization
-VM_CLASSES_FAST += \
-	VMetroBoySPU2 \
-	VMetroBoySPU2___024root__DepSet_h8022f1b5__0 \
-	VMetroBoySPU2___024root__DepSet_h6e425a5e__0 \
-
-# Generated module classes, non-fast-path, compile with low/medium optimization
-VM_CLASSES_SLOW += \
-	VMetroBoySPU2___024root__Slow \
-	VMetroBoySPU2___024root__DepSet_h8022f1b5__0__Slow \
-	VMetroBoySPU2___024root__DepSet_h6e425a5e__0__Slow \
-	VMetroBoySPU2___024unit__Slow \
-	VMetroBoySPU2___024unit__DepSet_hb5b57996__0__Slow \
-
-# Generated support classes, fast-path, compile with highest optimization
-VM_SUPPORT_FAST += \
-
-# Generated support classes, non-fast-path, compile with low/medium optimization
-VM_SUPPORT_SLOW += \
-	VMetroBoySPU2__Syms \
-
-# Global classes, need linked once per executable, fast-path, compile with highest optimization
-VM_GLOBAL_FAST += \
-	verilated \
-	verilated_threads \
-
-# Global classes, need linked once per executable, non-fast-path, compile with low/medium optimization
-VM_GLOBAL_SLOW += \
-
-
-# Verilated -*- Makefile -*-
+################################################################################
+
+gb_spu_sv = metron.convert(
+  config,
+  name     = "GBSPU metronize",
+  in_src   = "gb_spu/MetroBoySPU2.h",
+)
+
+gb_spu_vl = rules.verilator(
+  config,
+  name     = "GBSPU verilate",
+  in_top   = gb_spu_sv.promise("out_sv"),
+  includes = ["{repo_path}"],
+)
+
+gb_spu_main = rules.cpp_bin(
+  config,
+  name     = "GBSPU bin",
+  in_srcs  = "gb_spu/gb_spu_main.cpp",
+  in_deps  = gb_spu_vl.promise("out_header"),
+  in_objs  = gb_spu_vl.promise("out_lib"),
+  out_bin  = "gb_spu/gb_spu",
+  includes = [
+    "{repo_path}",   # for metron/metron_tools.h
+    "{build_path}",  # for gb_spu/VMetroBoySPU2.h
+    "/usr/local/share/verilator/include",
+  ],
+)
 Unfinished port of the Ibex RISC-V core to Metron.
 // Copyright lowRISC contributors.
 // Copyright 2018 ETH Zurich and University of Bologna, see also CREDITS.md.
@@ -3028,6 +2491,41 @@ private:
   logic<5>  rsp_;
 
 };
+################################################################################
+
+j1_bin = rules.cpp_bin(
+  name    = "J1 bin",
+  in_srcs = "j1/main.cpp",
+  out_bin = "j1/j1"
+)
+
+#j1_h = ["j1/metron/dpram.h", "j1/metron/j1.h"]
+
+j1_top_sv = metron.convert(
+  config,
+  name = "J1 metronize",
+  in_src = "j1/metron/j1.h"
+)
+
+j1_dpram_sv = metron.convert(
+  config,
+  name = "J1 metronize",
+  in_src = "j1/metron/dpram.h"
+)
+
+# doesn't currently compile
+
+#j1_top_vl = rules.verilator(
+#  config,
+#  name = "J1 verilate",
+#  in_top = j1_top_sv.promise("out_sv"),
+#  includes = ["{repo_path}"],
+#)
+
+
+#j1_sv = metron(j1_h)
+
+#hancho.rules.check_cpp_syntax("j1/metron/j1.h")
 #include "metron/metron_tools.h"
 
 // PicoRV32 -- A Small RISC-V (RV32I) Processor Core
@@ -6480,6 +5978,38 @@ class Pong {
 //------------------------------------------------------------------------------
 
 #endif
+import hancho
+
+config   = imports.config
+metrolib = imports.metrolib
+metron   = imports.metron
+rules    = imports.rules
+
+pong_sv = metron.convert(
+  config,
+  name   = "pong metronize",
+  in_src = "pong.h"
+)
+
+pong_vl = rules.verilator(
+  config,
+  name     = "pong vl",
+  in_top   = pong_sv.promise("out_sv"),
+  includes = ["{repo_path}"]
+)
+
+pong_bin = rules.cpp_bin(
+  config,
+  name = "pong bin",
+  in_srcs = "main.cpp",
+  in_libs = [
+    pong_vl.promise("out_lib"),
+    metrolib.libcore
+  ],
+  out_bin = "pong",
+)
+
+# FIXME verilated version of pong
 Original source from https://www.fpga4fun.com/PongGame.html
 A port of riscv-simple-sv (https://github.com/tilk/riscv-simple-sv) to Metron.
 // RISC-V SiMPLE SV -- adder module
@@ -7499,6 +7029,61 @@ class riscv_core {
 };
 
 #endif // RISCV_CORE_H
+################################################################################
+
+rvsimple_top_h = "rvsimple/metron/toplevel.h"
+
+rvsimple_h = [
+  "rvsimple/metron/adder.h",
+  "rvsimple/metron/alu_control.h",
+  "rvsimple/metron/alu.h",
+  "rvsimple/metron/config.h",
+  "rvsimple/metron/constants.h",
+  "rvsimple/metron/control_transfer.h",
+  "rvsimple/metron/data_memory_interface.h",
+  "rvsimple/metron/example_data_memory_bus.h",
+  "rvsimple/metron/example_data_memory.h",
+  "rvsimple/metron/example_text_memory_bus.h",
+  "rvsimple/metron/example_text_memory.h",
+  "rvsimple/metron/immediate_generator.h",
+  "rvsimple/metron/instruction_decoder.h",
+  "rvsimple/metron/multiplexer2.h",
+  "rvsimple/metron/multiplexer4.h",
+  "rvsimple/metron/multiplexer8.h",
+  "rvsimple/metron/regfile.h",
+  "rvsimple/metron/register.h",
+  "rvsimple/metron/riscv_core.h",
+  "rvsimple/metron/singlecycle_control.h",
+  "rvsimple/metron/singlecycle_ctlpath.h",
+  "rvsimple/metron/singlecycle_datapath.h",
+]
+
+rvsimple_sv = [metron.convert(config, in_src = src) for src in rvsimple_h]
+
+rvsimple_top_sv = metron.convert(
+  config,
+  in_src = rvsimple_top_h
+)
+
+rvsimple_top_vl = rules.verilator(
+  config,
+  name     = "rvsimple vl",
+  in_top   = rvsimple_top_sv.promise("out_sv"),
+  in_deps  = rvsimple_sv,
+  includes = ["{repo_path}"]
+)
+
+rvsimple_bin = rules.cpp_bin(
+  name = "rvsimple bin",
+  in_srcs = "rvsimple/main.cpp",
+  in_libs = [
+    metrolib.libcore,
+    rvsimple_top_vl.promise("out_lib"),
+  ],
+  out_bin = "rvsimple/rvsimple"
+)
+
+# FIXME verilated version of rvsimple?
 // RISC-V SiMPLE SV -- single-cycle controller
 // BSD 3-Clause License
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
@@ -8438,6 +8023,99 @@ A simple UART-based testbench for Metron that exercises translation to
 SystemVerilog, simulation via Icarus, translation back to C via Verilator,
 synthesis via Yosys, place+route via NextPNR, and uploading to a Lattice ICE40
 fpga via Icestorm.
+import hancho
+
+config   = imports.config
+metron   = imports.metron
+rules    = imports.rules
+metrolib = imports.metrolib
+
+################################################################################
+
+uart_top_h = "uart_top.h"
+
+uart_h = [
+  "uart_hello.h",
+  "uart_rx.h",
+  "uart_tx.h",
+]
+
+uart_sv     = [metron.convert(config, in_src = src) for src in uart_h]
+uart_top_sv = metron.convert(config, in_src = uart_top_h)
+
+uart_top_vl = rules.verilator(
+  config,
+  name = "verilate uart_top",
+  in_top = uart_top_sv.promise("out_sv"),
+  in_deps = uart_sv,
+  includes = ["{repo_path}"]
+)
+
+uart_bin = rules.cpp_bin(
+  config,
+  name = "uart_cpp",
+  in_srcs = "main.cpp",
+  includes = [
+    "{repo_path}",
+    "{repo_path}/symlinks/metrolib",
+  ],
+  in_libs = [
+    metrolib.libcore,
+  ],
+  out_bin = "uart_cpp",
+)
+
+uart_bin_vl = rules.cpp_bin(
+  config,
+  name = "uart_vl",
+  in_srcs = "main_vl.cpp",
+  in_deps = uart_top_vl.promise("out_lib"),
+  includes = [
+    "{repo_path}",
+    "{repo_path}/symlinks/metrolib",
+    "{build_path}",
+    "/usr/local/share/verilator/include",
+  ],
+  in_libs = [
+    metrolib.libcore,
+    uart_top_vl.promise("out_lib"),
+  ],
+  out_bin = "uart_vl",
+)
+
+uart_iv = rules.iverilog(
+  config,
+  in_sv    = "uart_test_iv.sv",
+  in_deps  = [uart_sv, uart_top_sv],
+  out_iv   = "uart_iv",
+  includes = "-I. -I{build_path} -I{repo_path}",
+  defines  = "-DIVERILOG",
+)
+
+uart_yosys = rules.yosys(
+  config,
+  in_sv    = "uart_test_ice40.sv",
+  in_deps  = [uart_sv, uart_top_sv],
+  out_json = "uart_test_ice40.json",
+  includes = "-I. -I{build_path} -I{repo_path}",
+)
+
+uart_nextpnr = rules.nextpnr(
+  config,
+  in_json = uart_yosys.promise("out_json"),
+  out_asc = "uart_test_ice40.asc",
+  chip    = "hx8k",
+  package = "ct256",
+  pcf     = "ice40-hx8k-b-evn.pcf",
+)
+
+uart_bin = rules.icepack(
+  config,
+  in_asc  = uart_nextpnr.promise("out_asc"),
+  out_bin = "uart_test_ice40.bin",
+)
+
+################################################################################
 #ifndef UART_HELLO_H
 #define UART_HELLO_H
 

@@ -82,10 +82,10 @@ def main():
     build_rvtests()
     build_uart()
     build_rvsimple()
-    # build_ibex()
-    build_pong()
-    build_j1()
-    build_gb_spu()
+    #build_ibex()
+    #build_pong()
+    #build_j1()
+    #build_gb_spu()
     print("Done!")
     outfile.close()
     outfile = None
@@ -93,7 +93,7 @@ def main():
 
 # ------------------------------------------------------------------------------
 
-def metronize_dir(src_dir, src_top, dst_dir):
+def metronize_dir(src_dir, dst_dir):
     """
     Convert all .h files in the source directory into .sv files in the destination directory.
     Returns an array of converted filenames.
@@ -103,6 +103,23 @@ def metronize_dir(src_dir, src_top, dst_dir):
     src_paths = sorted_glob(path.join(src_dir, "*.h"))
     dst_paths = []
 
+    for src_path in src_paths:
+        src_dir, src_name = path.split(src_path)
+        dst_path = path.join(dst_dir, swap_ext(src_name, ".sv"))
+        ninja.build(rule="metron2",
+                    inputs=[src_path],
+                    implicit=["build/metron/metron"],
+                    outputs=[dst_path])
+        dst_paths.append(dst_path)
+
+    return dst_paths
+
+# ------------------------------------------------------------------------------
+
+def metronize_files(src_paths, dst_dir):
+    divider(f"Metronize {src_paths} -> {dst_dir}")
+
+    dst_paths = []
     for src_path in src_paths:
         src_dir, src_name = path.split(src_path)
         dst_path = path.join(dst_dir, swap_ext(src_name, ".sv"))
@@ -332,12 +349,12 @@ def build_j1():
         src_objs=[],
         link_deps=["build/metron/libmetron.a"],
     )
-    j1_srcs = metronize_dir("examples/j1/metron", "j1.h", "examples/j1/metron_sv")
+    j1_srcs = metronize_dir("examples/j1/metron", "examples/j1/metron_sv")
 
 # ------------------------------------------------------------------------------
 
 def build_gb_spu():
-    metronize_dir("examples/gb_spu/metron", "MetroBoySPU2.h", "examples/gb_spu/metron_sv")
+    metronize_dir("examples/gb_spu/metron", "examples/gb_spu/metron_sv")
     gb_spu_vhdr, gb_spu_vobj = verilate_dir("examples/gb_spu/metron_sv/MetroBoySPU2.sv", "build/examples/gb_spu/metron_vl")
 
     cpp_binary(
@@ -354,6 +371,8 @@ def build_gb_spu():
 # Simple Uart testbench
 
 def build_uart():
+    files = sorted(glob.glob("examples/uart/uart_*.h"))
+
     cpp_binary(
         bin_name="build/examples/uart/uart",
         src_files=[
@@ -363,8 +382,8 @@ def build_uart():
         link_deps=["build/metron/libmetron.a"],
     )
 
-    uart_srcs = metronize_dir("examples/uart/metron", "uart_top.h", "examples/uart/metron_sv")
-    uart_vhdr, uart_vobj = verilate_dir("examples/uart/metron_sv/uart_top.sv", "build/examples/uart/metron_vl")
+    uart_srcs = metronize_files(files, "build/examples/uart")
+    uart_vhdr, uart_vobj = verilate_dir("build/examples/uart/uart_top.sv", "build/examples/uart")
 
     cpp_binary(
         bin_name="build/examples/uart/uart_vl",
@@ -375,6 +394,7 @@ def build_uart():
         link_deps=["build/metron/libmetron.a"],
     )
 
+    """
     divider("Icarus Verilog uart testbench")
 
     uart_includes = [
@@ -406,6 +426,7 @@ def build_uart():
     ninja.build(rule="icepack",
                 inputs="build/examples/uart/uart_test_ice40.asc",
                 outputs="build/examples/uart/uart_test_ice40.bin")
+    """
 
 # build out/uart_test_ice40.bin   : iceprog out/uart_test_ice40.asc
 
@@ -426,9 +447,6 @@ def build_rvtests():
 # RVSimple
 
 def build_rvsimple():
-    mt_root = "examples/rvsimple/metron"
-    sv_root = "examples/rvsimple/metron_sv"
-    vl_root = "build/examples/rvsimple/metron_vl"
 
     cpp_binary(
         bin_name="build/examples/rvsimple/rvsimple",
@@ -437,9 +455,17 @@ def build_rvsimple():
         link_deps=["build/metron/libmetron.a"],
     )
 
-    sv_srcs = metronize_dir(mt_root, "toplevel.h", sv_root)
+    files = sorted(glob.glob("examples/rvsimple/*.h"))
 
-    vl_vhdr, vl_vobj = verilate_dir("examples/rvsimple/metron_sv/toplevel.sv", "build/examples/rvsimple/metron_vl")
+    sv_srcs = metronize_files(files, "build/examples/rvsimple")
+
+    vl_vhdr, vl_vobj = verilate_dir("build/examples/rvsimple/toplevel.sv", "build/examples/rvsimple")
+
+    """
+    mt_root = "examples/rvsimple/metron"
+    sv_root = "examples/rvsimple/metron_sv"
+    vl_root = "build/examples/rvsimple/metron_vl"
+
 
     cpp_binary(
         bin_name="build/examples/rvsimple/rvsimple_vl",
@@ -462,6 +488,7 @@ def build_rvsimple():
         deps=[ref_vhdr],
         link_deps=["build/metron/libmetron.a"],
     )
+    """
 
 # ------------------------------------------------------------------------------
 # Ibex
@@ -489,7 +516,7 @@ def build_pong():
         link_deps=["build/metron/libmetron.a"],
     )
 
-    metronized_src = metronize_dir(mt_root, "pong.h", sv_root)
+    metronized_src = metronize_dir(mt_root, sv_root)
 
 # ------------------------------------------------------------------------------
 

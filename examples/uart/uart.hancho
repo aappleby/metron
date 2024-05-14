@@ -17,6 +17,7 @@ uart_h = [
 
 uart_sv     = [metron.convert(config, in_src = src) for src in uart_h]
 uart_top_sv = metron.convert(config, in_src = uart_top_h)
+
 uart_top_vl = rules.verilator(
   config,
   name = "verilate uart_top",
@@ -26,6 +27,7 @@ uart_top_vl = rules.verilator(
 )
 
 uart_bin = rules.cpp_bin(
+  config,
   name = "uart_cpp",
   in_srcs = "main.cpp",
   includes = [
@@ -39,6 +41,7 @@ uart_bin = rules.cpp_bin(
 )
 
 uart_bin_vl = rules.cpp_bin(
+  config,
   name = "uart_vl",
   in_srcs = "main_vl.cpp",
   in_deps = uart_top_vl.promise("out_lib"),
@@ -56,32 +59,35 @@ uart_bin_vl = rules.cpp_bin(
 )
 
 uart_iv = rules.iverilog(
+  config,
   in_sv    = "uart_test_iv.sv",
   in_deps  = [uart_sv, uart_top_sv],
   out_iv   = "uart_iv",
-  includes = "-I. -I{out_path} -I{repo_path}",
+  includes = "-I. -I{build_path} -I{repo_path}",
   defines  = "-DIVERILOG",
-  debug = True,
 )
 
-#uart_yosys = rules.yosys(
-#  in_sv    = "uart_test_ice40.sv",
-#  in_deps  = [uart_sv, uart_top_sv],
-#  out_json = "uart_test_ice40.json",
-#  includes = "-I. -I{build_path} -I{repo_path}",
-#)
-#
-#uart_nextpnr = rules.nextpnr(
-#  in_json = uart_yosys.promise("out_json"),
-#  out_asc = "uart_test_ice40.asc",
-#  chip    = "hx8k",
-#  package = "ct256",
-#  pcf     = "ice40-hx8k-b-evn.pcf",
-#)
-#
-#uart_bin = rules.icepack(
-#  in_asc  = uart_nextpnr.promise("out_asc"),
-#  out_bin = "uart_test_ice40.bin",
-#)
+uart_yosys = rules.yosys(
+  config,
+  in_sv    = "uart_test_ice40.sv",
+  in_deps  = [uart_sv, uart_top_sv],
+  out_json = "uart_test_ice40.json",
+  includes = "-I. -I{build_path} -I{repo_path}",
+)
+
+uart_nextpnr = rules.nextpnr(
+  config,
+  in_json = uart_yosys.promise("out_json"),
+  out_asc = "uart_test_ice40.asc",
+  chip    = "hx8k",
+  package = "ct256",
+  pcf     = "ice40-hx8k-b-evn.pcf",
+)
+
+uart_bin = rules.icepack(
+  config,
+  in_asc  = uart_nextpnr.promise("out_asc"),
+  out_bin = "uart_test_ice40.bin",
+)
 
 ################################################################################

@@ -60,6 +60,7 @@ TestResults test_uart_metron() {
 //------------------------------------------------------------------------------
 
 int main(int argc, char** argv) {
+  printf("Hello world?\n");
   TestResults results;
   results << test_uart_metron();
   return results.show_result();

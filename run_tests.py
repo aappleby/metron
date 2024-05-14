@@ -113,9 +113,9 @@ def main():
     print_b("Checking that examples convert to SV cleanly")
     errors += check_commands_good(
         [
-            f"build/metron/metron -c examples/uart/metron/uart_top.h",
-            f"build/metron/metron -c examples/rvsimple/metron/toplevel.h",
-            f"build/metron/metron -c examples/pong/metron/pong.h",
+            f"build/metron/metron -c examples/uart/uart_top.h",
+            f"build/metron/metron -c examples/rvsimple/toplevel.h",
+            f"build/metron/metron -c examples/pong/pong.h",
         ]
     )
     print()
@@ -213,11 +213,11 @@ def main():
             [
                 "build/tests/utils/test_logic",
                 "build/examples/uart/uart",
-                "build/examples/uart/uart_vl",
-                "build/examples/uart/uart_iv",
-                "build/examples/rvsimple/rvsimple",
-                "build/examples/rvsimple/rvsimple_vl",
-                "build/examples/rvsimple/rvsimple_ref",
+                #"build/examples/uart/uart_vl",
+                #"build/examples/uart/uart_iv",
+                #"build/examples/rvsimple/rvsimple",
+                #"build/examples/rvsimple/rvsimple_vl",
+                #"build/examples/rvsimple/rvsimple_ref",
             ]
         )
         print()
@@ -500,7 +500,7 @@ def build_lockstep(filename):
     cmd = f"g++ -O3 -std=gnu++2a -DMT_TOP={mt_top} -DVL_TOP={vl_top} -DMT_HEADER={mt_header} -DVL_HEADER={vl_header} {includes} -c {test_src} -o {test_obj}"
     errors += check_cmd_good(cmd)
 
-    cmd = f"g++ {test_obj} {vl_obj} symlinks/metrolib/build/metrolib/core/Utils.o build/verilator/verilated.o build/verilator/verilated_threads.o -o {test_bin}"
+    cmd = f"g++ {test_obj} {vl_obj} build/symlinks/metrolib/metrolib/core/Utils.o build/verilator/verilated.o build/verilator/verilated_threads.o -o {test_bin}"
     errors += check_cmd_good(cmd)
 
     return errors

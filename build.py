@@ -289,7 +289,7 @@ def build_metron_ems():
     ninja.build(outputs = ["docs/tutorial/tutorial_src.data"],
                 rule="run_command",
                 inputs=sorted_glob("examples/tutorial/*.h"),
-                command=f"python3 ${packager} docs/tutorial/tutorial_src.data --no-node --js-output=docs/tutorial/tutorial_src.js --preload examples/tutorial examples/uart/metron");
+                command=f"python3 ${packager} docs/tutorial/tutorial_src.data --no-node --js-output=docs/tutorial/tutorial_src.js --preload examples/tutorial examples/uart");
 
     def cpp_binary2(bin_name, rule_compile, rule_link, src_files, src_objs, obj_dir, deps=None, link_deps=None, **kwargs):
         if src_objs is None:
@@ -492,10 +492,12 @@ def build_rvsimple():
     ref_vl_root = "build/examples/rvsimple/reference_sv"
     ref_vhdr, ref_vobj = verilate_dir("examples/rvsimple/reference_sv/toplevel.sv", ref_vl_root)
 
+    rvsimple_root = "build/examples/rvsimple"
+
     cpp_binary(
         bin_name="build/examples/rvsimple/rvsimple_ref",
         src_files=["examples/rvsimple/main_ref_vl.cpp"],
-        includes=["${base_includes}", "-I/usr/local/share/verilator/include", f"-I{ref_vl_root}", "-Isymlinks/CLI11/include"],
+        includes=["${base_includes}", "-I/usr/local/share/verilator/include", f"-I{rvsimple_root}", "-Isymlinks/CLI11/include"],
         src_objs=["build/verilator/verilated.o", "build/verilator/verilated_threads.o", ref_vobj],
         deps=[ref_vhdr],
         link_deps=["build/metron/libmetron.a"],

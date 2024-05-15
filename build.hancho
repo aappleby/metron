@@ -1,6 +1,7 @@
 #####
 
 import hancho
+import glob
 
 #ems_opts_cpp = "-O0 -g3 -gsource-map -std=c++20 -sNO_DISABLE_EXCEPTION_CATCHING"
 #base_includes = "-I. -Isymlinks -Isymlinks/metrolib -Isymlinks/matcheroni"
@@ -26,3 +27,68 @@ deps.metron   = hancho.load("metron/metron.hancho", **deps)
 
 tests    = hancho.load("tests/tests.hancho", **deps)
 examples = hancho.load("examples/examples.hancho", **deps)
+
+def sorted_glob(*args, **kwargs):
+    return sorted(glob.glob(*args, **kwargs))
+
+all_test_headers = sorted_glob("tests/metron/**/*.h", recursive=True)
+all_example_headers = sorted_glob("examples/**/*.h", recursive=True)
+#all_tutorial_headers = sorted_glob("examples/tutorial/*.h"),
+
+examples_data = hancho.Task(
+  command  = "python3 $EMSDK/upstream/emscripten/tools/file_packager.py {out_data} {flags} --js-output={out_js} --preload {preloads} --exclude {excludes}",
+  flags    = "--no-node",
+  preloads = "examples tests/metron/pass tests/metron/fail",
+  excludes = "*.cpp *.sv *.MD *.hex *.pcf *.v *.txt *.hancho",
+  out_data = "docs/demo/examples.data",
+  out_js   = "{swap_ext(out_data, '.js')}",
+)
+
+
+
+
+
+
+metron_src_lib   = sorted_glob("metron/*.cpp")
+metron_src_nodes = sorted_glob("metron/nodes/*.cpp")
+metron_src_main  = sorted_glob("metron/main/*.cpp")
+
+metrolib_src = [
+    "symlinks/metrolib/metrolib/core/Platform.cpp",
+    "symlinks/metrolib/metrolib/core/Utils.cpp",
+    "symlinks/metrolib/metrolib/core/Err.cpp",
+]
+
+src_files = metron_src_main + metron_src_lib + metron_src_nodes + metrolib_src
+
+metron_objs = [deps.rules.emcc(in_src=file) for file in src_files]
+
+metron_js = deps.rules.emld(
+  in_objs = metron_objs,
+  out_js = "{repo_path}/docs/app/metron.js"
+)
+
+#wasm/obj/metron/...blah.o
+#-o docs/app/metron.js
+
+"""
+build
+docs/demo/examples.data:
+
+python3 $EMSDK/upstream/emscripten/tools/file_packager.py
+docs/demo/examples.data
+--no-node --js-output=docs/demo/examples.js --preload examples tests/metron/pass tests/metron/fail --exclude *.cpp *.sv *.MD *.hex *.pcf *.v *.txt *.hancho
+
+
+build
+docs/tutorial/tutorial_src.data:
+
+python3
+$EMSDK/upstream/emscripten/tools/file_packager.py
+docs/tutorial/tutorial_src.data
+--no-node
+--js-output=docs/tutorial/tutorial_src.js
+--preload
+examples/tutorial
+examples/uart/metron
+"""

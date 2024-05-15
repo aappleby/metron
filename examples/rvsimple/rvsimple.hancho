@@ -55,8 +55,6 @@ rvsimple_bin = rules.cpp_bin(
   out_bin = "rvsimple"
 )
 
-# FIXME verilated version of rvsimple?
-
 rvsimple_vl_bin = rules.cpp_bin(
   name = "rvsimple_vl bin",
   in_srcs = "main_vl.cpp",
@@ -76,8 +74,6 @@ rvsimple_vl_bin = rules.cpp_bin(
   ]
 )
 
-
-
 ################################################################################
 # Verilate examples/rvsimple/reference_sv/toplevel.sv -> build/examples/rvsimple/reference_sv
 
@@ -86,7 +82,10 @@ rvsimple_ref_vl = rules.verilator(
   in_top   = "toplevel.sv",
   in_path  = "{base_path}/reference_sv",
   out_path = "{build_path}/reference_sv",
-  includes = ["{repo_path}", "reference_sv"],
+  includes = [
+    "{repo_path}",
+    "reference_sv"
+  ],
 )
 
 rvsimple_ref_bin = rules.cpp_bin(
@@ -105,11 +104,5 @@ rvsimple_ref_bin = rules.cpp_bin(
     "{repo_path}/symlinks/metrolib",
     "{build_path}",
     "/usr/local/share/verilator/include",
-  ]
+  ],
 )
-
-
-#build build/examples/rvsimple/main_ref_vl.o: compile_cpp examples/rvsimple/main_ref_vl.cpp | build/examples/rvsimple/reference_sv/Vtoplevel.h
-#  includes = ${base_includes} -I/usr/local/share/verilator/include -Ibuild/examples/rvsimple/reference_sv -Isymlinks/CLI11/include
-#build build/examples/rvsimple/rvsimple_ref: c_binary build/verilator/verilated.o build/verilator/verilated_threads.o build/examples/rvsimple/reference_sv/Vtoplevel__ALL.o build/examples/rvsimple/main_ref_vl.o build/metron/libmetron.a
-#  includes = ${base_includes} -I/usr/local/share/verilator/include -Ibuild/examples/rvsimple/reference_sv -Isymlinks/CLI11/include

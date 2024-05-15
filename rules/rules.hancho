@@ -135,31 +135,3 @@ exports.iverilog = hancho.Config(
   command = "iverilog {gen_ivparams(params)} -s{top} -g2012 {defines} {join_prefix('-I', includes)} {rel(in_sv)} -o {rel(out_iv)}",
   gen_ivparams = gen_ivparams,
 )
-
-
-exports.emcc = hancho.Config(
-  command = "emcc {flags} {includes} -c {rel(in_src)} -o {rel(out_obj)}",
-  flags = "-std=c++20 -O0 -g3 -gsource-map -MMD -sNO_DISABLE_EXCEPTION_CATCHING",
-  includes = [
-    "-I.",
-    "-Isymlinks",
-    "-Isymlinks/metrolib",
-    "-Isymlinks/matcheroni",
-    "-Isymlinks/CLI11/include"
-  ],
-  out_obj = "{swap_ext(in_src, '.o')}",
-  out_path = "{root_path}/wasm/{rel_path(base_path, repo_path)}",
-)
-
-exports.emld = hancho.Config(
-  command = "emcc {flags} {rel(in_objs)} -o {out_js}",
-  flags = [
-    "-sEXPORT_ES6",
-    "-sEXPORTED_RUNTIME_METHODS=['FS','callMain']",
-    "-sNO_DISABLE_EXCEPTION_CATCHING",
-    "-sTOTAL_STACK=32MB",
-    "-sINITIAL_MEMORY=256MB",
-    "-sALLOW_MEMORY_GROWTH",
-    "-sFORCE_FILESYSTEM"
-  ],
-)

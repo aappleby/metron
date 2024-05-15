@@ -6,20 +6,19 @@ metrolib = imports.metrolib
 
 ################################################################################
 
+uart_top_h = "uart_top.h"
+uart_h = [
+  "uart_hello.h",
+  "uart_rx.h",
+  "uart_tx.h",
+]
+
 includes = [
   ".",
   "{repo_path}",
   "{repo_path}/symlinks/metrolib",
   "{build_path}",
   "/usr/local/share/verilator/include",
-]
-
-uart_top_h = "uart_top.h"
-
-uart_h = [
-  "uart_hello.h",
-  "uart_rx.h",
-  "uart_tx.h",
 ]
 
 uart_sv     = [metron.convert(in_src = src) for src in uart_h]

@@ -1,3 +1,5 @@
+import hancho
+
 imports.rules.cpp_bin(
   name    = "tests/test_logic",
   in_srcs = ["utils/test_logic.cpp"],
@@ -5,16 +7,4 @@ imports.rules.cpp_bin(
   out_bin = ["utils/test_logic"],
 )
 
-#imports.rules.make(
-#  name = "risc-v/instructions/makefile",
-#  in_makefile = "risc-v/instructions/makefile",
-#  out_bin = "{base_path}/risc-v/instructions/add.elf",
-#)
-
-
-"""
-
-objs  = [rules.rv_compile(source) for source in glob("*.S")]
-bins  = [rules.rv_link(obj, "{swap_ext(files_in[0], '')}") for obj in objs]
-hexes = [elf_to_hex.run(bin) for bin in bins]
-"""
+hancho.load("risc-v/instructions/instructions.hancho")

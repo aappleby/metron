@@ -2,25 +2,27 @@
 
 import hancho
 
-#opts_cpp = "-rdynamic -ggdb3 -O0 -Wall -Werror -Wsuggest-override -Wno-unused-function -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable -std=gnu++2a"
-#opts_c = "-rdynamic -ggdb3 -O0 -Wall -Werror -Wno-unused-function -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable"
-#opts_ld = "-O0"
 #ems_opts_cpp = "-O0 -g3 -gsource-map -std=c++20 -sNO_DISABLE_EXCEPTION_CATCHING"
-#ems_opts_ld = "-sEXPORT_ES6 -sEXPORTED_RUNTIME_METHODS=['FS','callMain'] -sNO_DISABLE_EXCEPTION_CATCHING -sTOTAL_STACK=32MB -sINITIAL_MEMORY=256MB -sALLOW_MEMORY_GROWTH -sFORCE_FILESYSTEM"
 #base_includes = "-I. -Isymlinks -Isymlinks/metrolib -Isymlinks/matcheroni"
 #libraries = "-lgcc -lc"
 
+# prefix with -s
+ems_opts_ld = [
+  "EXPORT_ES6",
+  "EXPORTED_RUNTIME_METHODS=['FS','callMain']",
+  "NO_DISABLE_EXCEPTION_CATCHING",
+  "TOTAL_STACK=32MB",
+  "INITIAL_MEMORY=256MB",
+  "ALLOW_MEMORY_GROWTH",
+  "FORCE_FILESYSTEM"
+]
+
 hancho.Config.build_tag = "debug"
 
-metrolib = hancho.repo("symlinks/metrolib/build.hancho")
-rules    = hancho.load("rules/rules.hancho",   metrolib = metrolib)
-metron   = hancho.load("metron/metron.hancho", metrolib = metrolib, rules = rules)
-
-deps = hancho.Config(
-  metrolib = metrolib,
-  rules = rules,
-  metron = metron
-)
+deps = hancho.Config()
+deps.metrolib = hancho.repo("symlinks/metrolib/build.hancho", **deps)
+deps.rules    = hancho.load("rules/rules.hancho", **deps)
+deps.metron   = hancho.load("metron/metron.hancho", **deps)
 
 tests    = hancho.load("tests/tests.hancho", **deps)
 examples = hancho.load("examples/examples.hancho", **deps)

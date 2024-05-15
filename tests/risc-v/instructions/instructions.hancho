@@ -1,0 +1,24 @@
+import hancho
+import glob
+
+build_rv_hex = hancho.Config(
+  command = [
+    "riscv64-unknown-elf-gcc -mabi=ilp32 -march=rv32i -c {in_src} -o {out_o}",
+    "riscv64-unknown-elf-ld -T{in_linkerscript} -melf32lriscv {out_o} -o {out_elf}",
+    "riscv64-unknown-elf-objcopy -O binary {out_elf} {out_code_bin} -j .init -j .text --change-addresses -0x400000",
+    "riscv64-unknown-elf-objcopy -O binary {out_elf} {out_data_bin} -j .data",
+    "srec_cat {out_code_bin} -binary -byte-swap 4 -O {out_code_vh} -VMem 32",
+    "srec_cat {out_data_bin} -binary -byte-swap 4 -O {out_data_vh} -VMem 32"
+  ],
+  in_linkerscript = "link.ld",
+  stem = "{swap_ext(in_src, '')}",
+  out_o = "{stem}.o",
+  out_elf = "{stem}.elf",
+  out_code_bin = "{stem}.code.bin",
+  out_data_bin = "{stem}.data.bin",
+  out_code_vh = "{stem}.code.vh",
+  out_data_vh = "{stem}.data.vh"
+)
+
+for file in glob.glob("*.S"):
+  build_rv_hex(in_src = file)

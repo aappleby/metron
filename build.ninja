@@ -228,6 +228,7 @@ build build/examples/uart/uart_tx.sv: metron2 examples/uart/uart_tx.h | build/me
 
 build build/examples/uart/Vuart_top.mk build/examples/uart/Vuart_top.h: verilator build/examples/uart/uart_top.sv
   includes = -Ibuild/examples/uart
+  params = -Gmessage_file=\"examples/uart/message.hex\"
 build build/examples/uart/Vuart_top__ALL.o: make build/examples/uart/Vuart_top.mk
 
 
@@ -253,6 +254,8 @@ build build/examples/uart/uart_iv: iverilog examples/uart/uart_test_iv.sv | buil
 
 build build/examples/uart/uart_test_ice40.json: yosys examples/uart/uart_test_ice40.sv | build/examples/uart/uart_hello.sv build/examples/uart/uart_rx.sv build/examples/uart/uart_top.sv build/examples/uart/uart_tx.sv examples/uart/SB_PLL40_CORE.v
   includes = -Iexamples/uart -Iexamples/uart -Ibuild/examples/uart
+  params = chparam -set message_file "examples/uart/message.hex" uart_test_ice40;
+  top = uart_test_ice40
 build build/examples/uart/uart_test_ice40.asc: nextpnr-ice40 build/examples/uart/uart_test_ice40.json
   chip = hx8k
   package = ct256
@@ -302,6 +305,7 @@ build build/examples/rvsimple/toplevel.sv: metron2 examples/rvsimple/toplevel.h 
 
 build build/examples/rvsimple/Vtoplevel.mk build/examples/rvsimple/Vtoplevel.h: verilator build/examples/rvsimple/toplevel.sv
   includes = -Ibuild/examples/rvsimple
+  params = 
 build build/examples/rvsimple/Vtoplevel__ALL.o: make build/examples/rvsimple/Vtoplevel.mk
 
 
@@ -319,6 +323,7 @@ build build/examples/rvsimple/rvsimple_vl: c_binary build/verilator/verilated.o 
 
 build build/examples/rvsimple/reference_sv/Vtoplevel.mk build/examples/rvsimple/reference_sv/Vtoplevel.h: verilator examples/rvsimple/reference_sv/toplevel.sv
   includes = -Iexamples/rvsimple/reference_sv
+  params = 
 build build/examples/rvsimple/reference_sv/Vtoplevel__ALL.o: make build/examples/rvsimple/reference_sv/Vtoplevel.mk
 
 
@@ -386,6 +391,7 @@ build build/examples/gb_spu/MetroBoySPU2.sv: metron2 examples/gb_spu/MetroBoySPU
 
 build build/examples/gb_spu/VMetroBoySPU2.mk build/examples/gb_spu/VMetroBoySPU2.h: verilator build/examples/gb_spu/MetroBoySPU2.sv
   includes = -Ibuild/examples/gb_spu
+  params = 
 build build/examples/gb_spu/VMetroBoySPU2__ALL.o: make build/examples/gb_spu/VMetroBoySPU2.mk
 
 

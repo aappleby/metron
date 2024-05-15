@@ -40,7 +40,7 @@ rvsimple_top_sv = metron.convert(
 )
 
 rvsimple_top_vl = rules.verilator(
-  name     = "rvsimple vl",
+  name     = "rvsimple verilator",
   in_top   = rvsimple_top_sv.promise("out_sv"),
   in_deps  = rvsimple_sv,
   includes = ["{repo_path}"]
@@ -51,9 +51,65 @@ rvsimple_bin = rules.cpp_bin(
   in_srcs = "main.cpp",
   in_libs = [
     metrolib.libcore,
-    rvsimple_top_vl.promise("out_lib"),
   ],
   out_bin = "rvsimple"
 )
 
 # FIXME verilated version of rvsimple?
+
+rvsimple_vl_bin = rules.cpp_bin(
+  name = "rvsimple_vl bin",
+  in_srcs = "main_vl.cpp",
+  in_deps = rvsimple_top_vl.promise("out_header"), # must be here
+  in_libs = [
+    metrolib.libcore,
+    rvsimple_top_vl.promise("out_lib"),
+  ],
+  out_bin = "rvsimple_vl",
+  includes = [
+    ".",
+    "{repo_path}",
+    "{repo_path}/symlinks",
+    "{repo_path}/symlinks/metrolib",
+    "{build_path}",
+    "/usr/local/share/verilator/include",
+  ]
+)
+
+
+
+################################################################################
+# Verilate examples/rvsimple/reference_sv/toplevel.sv -> build/examples/rvsimple/reference_sv
+
+rvsimple_ref_vl = rules.verilator(
+  name     = "rvsimple_ref verilator",
+  in_top   = "toplevel.sv",
+  in_path  = "{base_path}/reference_sv",
+  out_path = "{build_path}/reference_sv",
+  includes = ["{repo_path}", "reference_sv"],
+)
+
+rvsimple_ref_bin = rules.cpp_bin(
+  name = "rvsimple_ref bin",
+  in_srcs = "main_ref_vl.cpp",
+  in_deps = rvsimple_ref_vl.promise("out_header"), # must be here
+  in_libs = [
+    metrolib.libcore,
+    rvsimple_ref_vl.promise("out_lib"),
+  ],
+  out_bin = "rvsimple_ref",
+  includes = [
+    ".",
+    "{repo_path}",
+    "{repo_path}/symlinks",
+    "{repo_path}/symlinks/metrolib",
+    "{build_path}",
+    "/usr/local/share/verilator/include",
+  ]
+)
+
+
+#build build/examples/rvsimple/main_ref_vl.o: compile_cpp examples/rvsimple/main_ref_vl.cpp | build/examples/rvsimple/reference_sv/Vtoplevel.h
+#  includes = ${base_includes} -I/usr/local/share/verilator/include -Ibuild/examples/rvsimple/reference_sv -Isymlinks/CLI11/include
+#build build/examples/rvsimple/rvsimple_ref: c_binary build/verilator/verilated.o build/verilator/verilated_threads.o build/examples/rvsimple/reference_sv/Vtoplevel__ALL.o build/examples/rvsimple/main_ref_vl.o build/metron/libmetron.a
+#  includes = ${base_includes} -I/usr/local/share/verilator/include -Ibuild/examples/rvsimple/reference_sv -Isymlinks/CLI11/include

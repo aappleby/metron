@@ -185,7 +185,7 @@ def main():
         errors += check_commands_good(
             [
                 "build/tests/utils/test_logic",
-                "build/examples/uart/uart",
+                "build/examples/uart/uart examples/uart/message.hex",
                 "build/examples/uart/uart_vl",
                 "build/examples/uart/uart_iv",
                 "build/examples/rvsimple/rvsimple",

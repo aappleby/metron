@@ -7,14 +7,17 @@
 
 #include <stdio.h>
 
+const char* build_path = "build/debug/metron/tests/risc-v/instructions";
+
 //------------------------------------------------------------------------------
 
 const char* instructions[38] = {
-    "add", "addi", "and", "andi", "auipc", "beq",  "bge", "bgeu",
-    "blt", "bltu", "bne", "jal",  "jalr",  "lb",   "lbu", "lh",
-    "lhu", "lui",  "lw",  "or",   "ori",   "sb",   "sh",  "simple",
-    "sll", "slli", "slt", "slti", "sltiu", "sltu", "sra", "srai",
-    "srl", "srli", "sub", "sw",   "xor",   "xori"};
+  "add", "addi", "and", "andi", "auipc", "beq",  "bge", "bgeu",
+  "blt", "bltu", "bne", "jal",  "jalr",  "lb",   "lbu", "lh",
+  "lhu", "lui",  "lw",  "or",   "ori",   "sb",   "sh",  "simple",
+  "sll", "slli", "slt", "slti", "sltiu", "sltu", "sra", "srai",
+  "srl", "srli", "sub", "sw",   "xor",   "xori"
+};
 
 //------------------------------------------------------------------------------
 
@@ -27,8 +30,8 @@ TestResults test_instruction(const char* test_name, const int reps,
 
   char code_filename[256];
   char data_filename[256];
-  sprintf(code_filename, "tests/risc-v/instructions/%s.code.vh", test_name);
-  sprintf(data_filename, "tests/risc-v/instructions/%s.data.vh", test_name);
+  sprintf(code_filename, "%s/%s.code.vh", build_path, test_name);
+  sprintf(data_filename, "%s/%s.data.vh", build_path, test_name);
 
   int elapsed_cycles = 0;
   int test_result = -1;

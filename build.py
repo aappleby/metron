@@ -133,7 +133,7 @@ def metronize_files(src_paths, dst_dir):
 
 # ------------------------------------------------------------------------------
 
-def verilate_dir(src_top, out_dir):
+def verilate_dir(src_top, out_dir, params = {}):
     """
     Run Verilator on "src_top" and put the results in "out_dir".
     Returns the full paths of "V<src_top>.h" and "V<src_top>__ALL.obj" in the
@@ -148,11 +148,19 @@ def verilate_dir(src_top, out_dir):
     verilated_hdr  = path.join(out_dir, f"V{src_core}.h")
     verilated_obj  = path.join(out_dir, f"V{src_core}__ALL.o")
 
+    params_merged = ""
+    for key, val in params.items():
+        if isinstance(val, str):
+            val = f"\\\"{val}\\\""
+        params_merged = params_merged + f"-G{key}={val}"
+
+
     # Verilate and generate makefile + header
     ninja.build(rule="verilator",
                 inputs=src_top,
                 outputs=[verilated_make, verilated_hdr],
-                includes=[f"-I{src_dir}"])
+                includes=[f"-I{src_dir}"],
+                params=params_merged)
 
     # Compile via makefile to generate object file
     ninja.build(rule="make", inputs=verilated_make, outputs=verilated_obj)
@@ -388,7 +396,13 @@ def build_uart():
     )
 
     uart_srcs = metronize_files(files, "build/examples/uart")
-    uart_vhdr, uart_vobj = verilate_dir("build/examples/uart/uart_top.sv", "build/examples/uart")
+
+    uart_vhdr, uart_vobj = verilate_dir(
+        "build/examples/uart/uart_top.sv",
+        "build/examples/uart",
+        params = {"message_file" : "examples/uart/message.hex"}
+    )
+
 
     cpp_binary(
         bin_name="build/examples/uart/uart_vl",
@@ -419,7 +433,9 @@ def build_uart():
                 inputs="examples/uart/uart_test_ice40.sv",
                 implicit=uart_srcs + ["examples/uart/SB_PLL40_CORE.v"],
                 outputs="build/examples/uart/uart_test_ice40.json",
-                includes=uart_includes)
+                includes=uart_includes,
+                params = "chparam -set message_file \"examples/uart/message.hex\" uart_test_ice40;",
+                top = "uart_test_ice40")
 
     ninja.build(rule="nextpnr-ice40",
                 inputs="build/examples/uart/uart_test_ice40.json",

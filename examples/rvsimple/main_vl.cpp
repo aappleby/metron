@@ -33,8 +33,8 @@ TestResults test_instruction(const char* test_name, const int reps,
 
   char code_filename[256];
   char data_filename[256];
-  sprintf(code_filename, "tests/risc-v/instructions/%s.code.vh", test_name);
-  sprintf(data_filename, "tests/risc-v/instructions/%s.data.vh", test_name);
+  sprintf(code_filename, "build/debug/metron/tests/risc-v/instructions/%s.code.vh", test_name);
+  sprintf(data_filename, "build/debug/metron/tests/risc-v/instructions/%s.data.vh", test_name);
 
   auto& text = top.rootp->toplevel__DOT__text_memory_bus__DOT__text_memory__DOT__mem_;
   auto& data = top.rootp->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__mem_;

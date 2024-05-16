@@ -1,0 +1,64 @@
+import hancho
+import glob
+
+def sorted_glob(*args, **kwargs):
+    return sorted(glob.glob(*args, **kwargs))
+
+#---------------------------------------------------------------------------------------------------
+
+emcc = hancho.Config(
+  command = "emcc {flags} {includes} -c {rel(in_src)} -o {rel(out_obj)}",
+  flags = "-std=c++20 -O0 -g3 -gsource-map -MMD -sNO_DISABLE_EXCEPTION_CATCHING",
+  includes = [
+    "-I.",
+    "-I{repo_path}",
+    "-I{repo_path}/symlinks",
+    "-I{repo_path}/symlinks/metrolib",
+    "-I{repo_path}/symlinks/matcheroni",
+    "-I{repo_path}/symlinks/CLI11/include"
+  ],
+  out_obj = "{swap_ext(in_src, '.o')}",
+)
+
+emld = hancho.Config(
+  command = "emcc {flags} {rel(in_objs)} -o {out_js}",
+  flags = [
+    "-sEXPORT_ES6",
+    "-sEXPORTED_RUNTIME_METHODS=['FS','callMain']",
+    "-sNO_DISABLE_EXCEPTION_CATCHING",
+    "-sTOTAL_STACK=32MB",
+    "-sINITIAL_MEMORY=256MB",
+    "-sALLOW_MEMORY_GROWTH",
+    "-sFORCE_FILESYSTEM"
+  ],
+)
+
+copy = hancho.Config(command = "cp {in_file} {out_file}")
+
+#---------------------------------------------------------------------------------------------------
+
+metron_js_src = [
+  sorted_glob("*.cpp"),
+  sorted_glob("main/*.cpp"),
+  sorted_glob("nodes/*.cpp"),
+  "{repo_path}/symlinks/metrolib/metrolib/core/Platform.cpp",
+  "{repo_path}/symlinks/metrolib/metrolib/core/Utils.cpp",
+  "{repo_path}/symlinks/metrolib/metrolib/core/Err.cpp",
+]
+
+metron_objs = [emcc(in_src=file, build_tag = "wasm") for file in hancho.flatten(metron_js_src)]
+
+metron_js = emld(
+  in_objs   = metron_objs,
+  out_js    = "metron.js",
+  out_wasm  = "metron.wasm",
+  build_tag = "wasm"
+)
+
+copy(in_file   = metron_js.promise("out_js"),
+     out_file  = "{repo_path}/docs/app/{path.basename(in_file)}")
+
+copy(in_file   = metron_js.promise("out_wasm"),
+     out_file  = "{repo_path}/docs/app/{path.basename(in_file)}")
+
+#---------------------------------------------------------------------------------------------------

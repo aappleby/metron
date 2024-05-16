@@ -28,114 +28,38 @@ deps.metron   = hancho.load("metron/metron.hancho", **deps)
 tests    = hancho.load("tests/tests.hancho", **deps)
 examples = hancho.load("examples/examples.hancho", **deps)
 
+hancho.load("metron/metron_wasm.hancho", **deps)
+
+#---------------------------------------------------------------------------------------------------
+# Bundled headers for demo & tutorial
+
 def sorted_glob(*args, **kwargs):
     return sorted(glob.glob(*args, **kwargs))
-
-all_test_headers = sorted_glob("tests/metron/**/*.h", recursive=True)
-all_example_headers = sorted_glob("examples/**/*.h", recursive=True)
-#all_tutorial_headers = sorted_glob("examples/tutorial/*.h"),
 
 examples_data = hancho.Task(
   command  = "python3 $EMSDK/upstream/emscripten/tools/file_packager.py {out_data} {flags} --js-output={out_js} --preload {preloads} --exclude {excludes}",
   flags    = "--no-node",
-  preloads = "examples tests/metron/pass tests/metron/fail",
+  preloads = "examples tests/metron",
   excludes = "*.cpp *.sv *.MD *.hex *.pcf *.v *.txt *.hancho",
+
+  in_examples = sorted_glob("examples/**/*.h"),
+  in_tests    = sorted_glob("tests/metron/**/*.h"),
+
   out_data = "docs/demo/examples.data",
-  out_js   = "{swap_ext(out_data, '.js')}",
+  out_js   = "docs/demo/examples.js",
 )
 
+tutorial_data = hancho.Task(
+  command  = "python3 $EMSDK/upstream/emscripten/tools/file_packager.py {out_data} {flags} --js-output={out_js} --preload {preloads} --exclude {excludes}",
+  flags    = "--no-node",
+  preloads = "examples/tutorial examples/uart",
+  excludes = "*.cpp *.sv *.MD *.hex *.pcf *.v *.txt *.hancho",
 
+  in_tutorial = sorted_glob("examples/tutorial/**/*.h"),
+  in_uart     = sorted_glob("examples/uart/**/*.h"),
 
-
-
-
-
-
-
+  out_data = "docs/tutorial/tutorial_src.data",
+  out_js   = "docs/tutorial/tutorial_src.js",
+)
 
 #---------------------------------------------------------------------------------------------------
-
-emcc = hancho.Config(
-  command = "emcc {flags} {includes} -c {rel(in_src)} -o {rel(out_obj)}",
-  flags = "-std=c++20 -O0 -g3 -gsource-map -MMD -sNO_DISABLE_EXCEPTION_CATCHING",
-  includes = [
-    "-I.",
-    "-Isymlinks",
-    "-Isymlinks/metrolib",
-    "-Isymlinks/matcheroni",
-    "-Isymlinks/CLI11/include"
-  ],
-  out_obj = "{swap_ext(in_src, '.o')}",
-)
-
-emld = hancho.Config(
-  command = "emcc {flags} {rel(in_objs)} -o {out_js}",
-  flags = [
-    "-sEXPORT_ES6",
-    "-sEXPORTED_RUNTIME_METHODS=['FS','callMain']",
-    "-sNO_DISABLE_EXCEPTION_CATCHING",
-    "-sTOTAL_STACK=32MB",
-    "-sINITIAL_MEMORY=256MB",
-    "-sALLOW_MEMORY_GROWTH",
-    "-sFORCE_FILESYSTEM"
-  ],
-)
-
-copy = hancho.Config(command = "cp {in_file} {out_file}")
-
-#---------------------------------------------------------------------------------------------------
-
-metron_js_src = [
-  sorted_glob("metron/main/*.cpp"),
-  sorted_glob("metron/*.cpp"),
-  sorted_glob("metron/nodes/*.cpp"),
-  "{repo_path}/symlinks/metrolib/metrolib/core/Platform.cpp",
-  "{repo_path}/symlinks/metrolib/metrolib/core/Utils.cpp",
-  "{repo_path}/symlinks/metrolib/metrolib/core/Err.cpp",
-]
-
-metron_objs = [emcc(in_src=file, build_tag = "wasm") for file in hancho.flatten(metron_js_src)]
-
-metron_js = emld(
-  in_objs   = metron_objs,
-  out_js    = "metron/metron.js",
-  out_wasm  = "metron/metron.wasm",
-  build_tag = "wasm"
-)
-
-copy(in_file   = metron_js.promise("out_js"),
-     out_file  = "{repo_path}/docs/app/{path.basename(in_file)}")
-
-copy(in_file   = metron_js.promise("out_wasm"),
-     out_file  = "{repo_path}/docs/app/{path.basename(in_file)}")
-
-#---------------------------------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-"""
-build
-docs/demo/examples.data:
-
-python3 $EMSDK/upstream/emscripten/tools/file_packager.py
-docs/demo/examples.data
---no-node --js-output=docs/demo/examples.js --preload examples tests/metron/pass tests/metron/fail --exclude *.cpp *.sv *.MD *.hex *.pcf *.v *.txt *.hancho
-
-
-build
-docs/tutorial/tutorial_src.data:
-
-python3
-$EMSDK/upstream/emscripten/tools/file_packager.py
-docs/tutorial/tutorial_src.data
---no-node
---js-output=docs/tutorial/tutorial_src.js
---preload
-examples/tutorial
-examples/uart/metron
-"""

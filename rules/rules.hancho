@@ -120,6 +120,8 @@ exports.icepack = hancho.Config(
 
 exports.sv2v = hancho.Config(
   command = "symlinks/sv2v/bin/sv2v {join_prefix('-I', includes)} {rel(in_sv)} -w {rel(out_v)}",
+  includes = ["-I."],
+  out_v = "{swap_ext(in_sv, '.v')}",
 )
 
 def gen_ivparams(params):

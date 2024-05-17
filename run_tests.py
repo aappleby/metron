@@ -35,6 +35,7 @@ def sorted_glob(*args, **kwargs):
 
 ################################################################################
 
+metron_bin_path = "build/debug/metron/metron/metron"
 
 def main():
     print()
@@ -50,16 +51,18 @@ def main():
 
     print()
     print_b("Refreshing build")
-    os.system("./build.py")
+    if os.system("hancho"):
+        print("Build failed!")
+        return -1
 
-    if options.basic:
-        if os.system("ninja build/metron/metron"):
-            print("Build failed!")
-            return -1
-    else:
-        if os.system("ninja"):
-            print("Build failed!")
-            return -1
+    #if options.basic:
+    #    if os.system(f"ninja {metron_bin_path}"):
+    #        print("Build failed!")
+    #        return -1
+    #else:
+    #    if os.system("ninja"):
+    #        print("Build failed!")
+    #        return -1
 
     if options.coverage:
         print("Wiping old coverage run")
@@ -87,13 +90,13 @@ def main():
     print_b("Checking that all test cases in tests/metron/pass convert to SV cleanly")
     for file_in in metron_pass:
         file_out = "build/" + file_in.replace('/pass/', '/generated/').replace('.h', '.sv')
-        errors += check_cmd_good(f"build/metron/metron -c {file_in} -o {file_out}")
+        errors += check_cmd_good(f"{metron_bin_path} -c {file_in} -o {file_out}")
     print()
 
     print_b("Checking that all test cases in tests/metron/fail fail conversion")
     for file_in in metron_fail:
         file_out = "build/" + file_in.replace('/fail/', '/generated/').replace('.h', '.sv')
-        errors += check_cmd_bad(f"build/metron/metron -c {file_in} -o {file_out}")
+        errors += check_cmd_bad(f"{metron_bin_path} -c {file_in} -o {file_out}")
     print()
 
     print_b("Checking that all converted files match their golden version, if present")
@@ -175,8 +178,8 @@ def main():
         print_b("Running misc bad commands")
         errors += check_commands_bad(
             [
-                f"build/metron/metron skjdlsfjkhdfsjhdf.h",
-                f"build/metron/metron -c skjdlsfjkhdfsjhdf.h",
+                f"{metron_bin_path} skjdlsfjkhdfsjhdf.h",
+                f"{metron_bin_path} -c skjdlsfjkhdfsjhdf.h",
             ]
         )
         print()
@@ -184,13 +187,13 @@ def main():
         print_b("Running standalone tests")
         errors += check_commands_good(
             [
-                "build/tests/utils/test_logic",
-                "build/examples/uart/uart examples/uart/message.hex",
-                "build/examples/uart/uart_vl",
-                "build/examples/uart/uart_iv",
-                "build/examples/rvsimple/rvsimple",
-                "build/examples/rvsimple/rvsimple_vl",
-                "build/examples/rvsimple/rvsimple_ref",
+                "build/debug/metron/tests/utils/test_logic",
+                "build/debug/metron/examples/uart/uart_cpp examples/uart/message.hex",
+                "build/debug/metron/examples/uart/uart_vl",
+                "build/debug/metron/examples/uart/uart_iv",
+                "build/debug/metron/examples/rvsimple/rvsimple",
+                "build/debug/metron/examples/rvsimple/rvsimple_vl",
+                "build/debug/metron/examples/rvsimple/rvsimple_ref",
             ]
         )
         print()
@@ -279,13 +282,14 @@ def print_b(*args):
 def prep_cmd(cmd):
     cmd = cmd.strip()
     kcov_prefix = "kcov --exclude-region=KCOV_OFF:KCOV_ON --include-pattern=metron --exclude-pattern=submodules --exclude-line=debugbreak coverage"
-    if options.coverage and cmd.startswith("build/metron/metron "):
+    if options.coverage and cmd.startswith(f"{metron_bin_path} "):
         cmd = kcov_prefix + " " + cmd
     args = [arg for arg in shlex.split(cmd) if len(arg)]
     return args
 
 
 def check_cmd_good(cmd):
+    print(f"good: {cmd}")
     if options.verbose:
         print(cmd)
     else:
@@ -303,6 +307,7 @@ def check_cmd_good(cmd):
 
 
 def check_cmd_bad(cmd, expected_outputs=[], expected_errors=[]):
+    print(f"bad:  {cmd}")
     if options.verbose:
         print(cmd)
     else:
@@ -366,6 +371,7 @@ def check_verilator_fail(filenames):
 def check_yosys_pass(filenames):
     for filename in filenames:
         cmd = f"yosys -q -p 'read_verilog -I. -sv {filename};  dump; synth_ice40 -json /dev/null'"
+        print(f"yosys_pass: {cmd}")
         if options.verbose:
             print(cmd)
         else:
@@ -388,6 +394,7 @@ def check_yosys_pass(filenames):
 def check_yosys_fail(filenames):
     for filename in filenames:
         cmd = f"yosys -q -p 'read_verilog -I. -sv {filename};  dump; synth_ice40 -json /dev/null'"
+        print(f"yosys_fail: {cmd}")
         if options.verbose:
             print(cmd)
         else:
@@ -428,7 +435,7 @@ def check_icarus_fail(filenames):
 def check_bad_expected_errors(filename):
     lines = open(filename).readlines()
     expected_errors = [line[4:].strip() for line in lines if line.startswith("// X ")]
-    cmd = f"build/metron/metron -c {filename} -o {filename.replace('/pass/', '/generated/').replace('.h', '.sv')}"
+    cmd = f"{metron_bin_path} -c {filename} -o {filename.replace('/pass/', '/generated/').replace('.h', '.sv')}"
     return check_cmd_bad(cmd, expected_errors, [])
 
 
@@ -461,7 +468,7 @@ def build_lockstep(filename):
 
     errors = 0
 
-    cmd = f"build/metron/metron -q -c {mt_root}/{test_name}.h -o {sv_root}/{test_name}.sv"
+    cmd = f"{metron_bin_path} -q -c {mt_root}/{test_name}.h -o {sv_root}/{test_name}.sv"
     errors += check_cmd_good(cmd)
 
     cmd = f"verilator -Wno-width {includes} --cc {test_name}.sv -Mdir {vl_root}"
@@ -473,7 +480,7 @@ def build_lockstep(filename):
     cmd = f"g++ -O3 -std=gnu++2a -DMT_TOP={mt_top} -DVL_TOP={vl_top} -DMT_HEADER={mt_header} -DVL_HEADER={vl_header} {includes} -c {test_src} -o {test_obj}"
     errors += check_cmd_good(cmd)
 
-    cmd = f"g++ {test_obj} {vl_obj} build/symlinks/metrolib/metrolib/core/Utils.o build/verilator/verilated.o build/verilator/verilated_threads.o -o {test_bin}"
+    cmd = f"g++ {test_obj} {vl_obj} build/debug/metrolib/metrolib/core/Utils.o build/debug/metron/rules/verilator/verilated.o build/debug/metron/rules/verilator/verilated_threads.o -o {test_bin}"
     errors += check_cmd_good(cmd)
 
     return errors

@@ -3,21 +3,6 @@
 import hancho
 import glob
 
-#ems_opts_cpp = "-O0 -g3 -gsource-map -std=c++20 -sNO_DISABLE_EXCEPTION_CATCHING"
-#base_includes = "-I. -Isymlinks -Isymlinks/metrolib -Isymlinks/matcheroni"
-#libraries = "-lgcc -lc"
-
-# prefix with -s
-ems_opts_ld = [
-  "EXPORT_ES6",
-  "EXPORTED_RUNTIME_METHODS=['FS','callMain']",
-  "NO_DISABLE_EXCEPTION_CATCHING",
-  "TOTAL_STACK=32MB",
-  "INITIAL_MEMORY=256MB",
-  "ALLOW_MEMORY_GROWTH",
-  "FORCE_FILESYSTEM"
-]
-
 hancho.Config.build_tag = "debug"
 
 deps = hancho.Config()
@@ -76,7 +61,6 @@ test_yosys_v = hancho.Config(
   desc = "test yosys {rel(in_src)}",
   command = "yosys -q -p 'read_verilog {includes} -sv {rel(in_src)};' 2> /dev/null",
   includes = ["-I."],
-  #includes = ["-I.", "-Itests/metron/generated", "-Ibuild/tests/metron/generated"],
 )
 
 test_verilator = hancho.Config(
@@ -92,13 +76,6 @@ test_icarus = hancho.Config(
   command = "iverilog -g2012 -Wall {includes} -o /dev/null {rel(in_src)} 2> /dev/null",
   includes = ["-I."],
 )
-
-for file in glob.glob("tests/tools/pass/*.sv"):
-  test_icarus(in_src = file)
-  test_yosys(in_src = file)
-  test_verilator(in_src = file)
-
-#---------------------------------------------------------------------------------------------------
 
 test_syntax = hancho.Config(
   name = "test syntax",
@@ -128,19 +105,33 @@ test_sv2v = hancho.Config(
   out_v = "{swap_ext(in_src, '.v')}",
 )
 
+#---------------------------------------------------------------------------------------------------
+# Test tool quirks
+
+for file in glob.glob("tests/tools/pass/*.sv"):
+  test_icarus(in_src = file)
+  test_yosys(in_src = file)
+  test_verilator(in_src = file)
+
+for file in glob.glob("tests/tools/yosys/fail/*.sv"):
+  test_yosys(in_src = file, should_fail = True)
+
+#---------------------------------------------------------------------------------------------------
+# Test files in tests/metron/pass and tests/metron/fail
+
 for file in glob.glob("tests/metron/pass/*.h"):
   includes = ["-I.", "-I{build_path}/tests/metron/pass"]
 
   test_syntax(in_src = file)
-  out_sv = test_metron(in_src = file, should_fail = False).promise("out_sv")
-  out_v  = test_sv2v(in_src = out_sv, includes = includes).promise("out_v")
+  file_sv = test_metron(in_src = file, should_fail = False).promise("out_sv")
+  file_v  = test_sv2v(in_src = file_sv, includes = includes).promise("out_v")
 
   golden = file.replace("/pass/", "/golden/").replace(".h", ".sv")
-  test_diff(in_src_A = golden, in_src_B = out_sv)
+  test_diff(in_src_A = golden, in_src_B = file_sv)
 
-  test_verilator(in_src = out_sv, includes = includes)
-  test_icarus(in_src = out_sv, includes = includes)
-  test_yosys(in_src = out_v, includes = includes)
+  test_verilator(in_src = file_sv, includes = includes)
+  test_icarus(in_src = file_sv, includes = includes)
+  test_yosys(in_src = file_v, includes = includes)
 
 for file in glob.glob("tests/metron/fail/*.h"):
   test_syntax(in_src = file)
@@ -148,13 +139,6 @@ for file in glob.glob("tests/metron/fail/*.h"):
 
 #---------------------------------------------------------------------------------------------------
 # Lockstep tests
-
-#good: {metron_bin} -q -c tests/lockstep/counter.h -o build/tests/lockstep/counter.sv
-#good: verilator -Wno-width -I. -Isymlinks -Isymlinks/metrolib -Ibuild/tests/lockstep -I/usr/local/share/verilator/include --cc counter.sv -Mdir build/tests/lockstep
-#good: make -C build/tests/lockstep -f Vcounter.mk
-#good: g++ -O3 -std=gnu++2a -DMT_TOP=Module -DVL_TOP=Vcounter -DMT_HEADER=tests/lockstep/counter.h -DVL_HEADER=build/tests/lockstep/Vcounter.h -I. -Isymlinks -Isymlinks/metrolib -Ibuild/tests/lockstep -I/usr/local/share/verilator/include -c tests/lockstep/test_lockstep.cpp -o build/tests/lockstep/counter.o
-#good: g++ build/tests/lockstep/counter.o build/tests/lockstep/Vcounter__ALL.o build/debug/metrolib/metrolib/core/Utils.o build/debug/metron/rules/verilator/verilated.o build/debug/metron/rules/verilator/verilated_threads.o -o build/tests/lockstep/counter
-#good: build/tests/lockstep/counter
 
 def test_lockstep(file, should_fail = False):
   out_sv = test_metron(in_src = file).promise("out_sv")
@@ -194,3 +178,14 @@ for file in ["tests/lockstep/lfsr.h", "tests/lockstep/counter.h", "tests/lockste
 
 for file in ["tests/lockstep/timeout_bad.h", "tests/lockstep/lockstep_bad.h"]:
   test_lockstep(file, should_fail = True)
+
+#---------------------------------------------------------------------------------------------------
+# Standalone tests
+
+#good: build/debug/metron/tests/utils/test_logic
+#good: build/debug/metron/examples/uart/uart_cpp examples/uart/message.hex
+#good: build/debug/metron/examples/uart/uart_vl
+#good: build/debug/metron/examples/uart/uart_iv
+#good: build/debug/metron/examples/rvsimple/rvsimple
+#good: build/debug/metron/examples/rvsimple/rvsimple_vl
+#good: build/debug/metron/examples/rvsimple/rvsimple_ref

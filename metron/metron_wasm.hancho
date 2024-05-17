@@ -8,7 +8,14 @@ def sorted_glob(*args, **kwargs):
 
 emcc = hancho.Config(
   command = "emcc {flags} {includes} -c {rel(in_src)} -o {rel(out_obj)}",
-  flags = "-std=c++20 -O0 -g3 -gsource-map -MMD -sNO_DISABLE_EXCEPTION_CATCHING",
+  flags = [
+    "-std=c++20",
+    "-O0",
+    "-g3",
+    "-gsource-map",
+    "-MMD",
+    "-sNO_DISABLE_EXCEPTION_CATCHING"
+  ],
   includes = [
     "-I.",
     "-I{repo_path}",
@@ -33,8 +40,6 @@ emld = hancho.Config(
   ],
 )
 
-copy = hancho.Config(command = "cp {in_file} {out_file}")
-
 #---------------------------------------------------------------------------------------------------
 
 metron_js_src = [
@@ -54,6 +59,8 @@ metron_js = emld(
   out_wasm  = "metron.wasm",
   build_tag = "wasm"
 )
+
+copy = hancho.Config(command = "cp {in_file} {out_file}")
 
 copy(in_file   = metron_js.promise("out_js"),
      out_file  = "{repo_path}/docs/app/{path.basename(in_file)}")

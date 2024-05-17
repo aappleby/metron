@@ -4,6 +4,11 @@ metron   = imports.metron
 rules    = imports.rules
 metrolib = imports.metrolib
 
+run_test_bin = hancho.Config(
+  command = "{in_bin} {args}",
+  args = "",
+)
+
 ################################################################################
 
 uart_top_h = "uart_top.h"
@@ -56,7 +61,7 @@ uart_bin_vl = rules.cpp_bin(
 
 # Icarus Verilog testbench
 
-uart_iv = rules.iverilog(
+uart_bin_iv = rules.iverilog(
   name     = "uart_iv",
   in_sv    = "uart_test_iv.sv",
   in_deps  = [uart_sv, uart_top_sv],
@@ -88,9 +93,13 @@ uart_nextpnr = rules.nextpnr(
   pcf      = "ice40-hx8k-b-evn.pcf",
 )
 
-uart_bin = rules.icepack(
+uart_test_ice40_bin = rules.icepack(
   in_asc  = uart_nextpnr.promise("out_asc"),
   out_bin = "uart_test_ice40.bin",
 )
 
 ################################################################################
+
+run_test_bin(in_bin = uart_bin.promise("out_bin"), args = "message.hex")
+run_test_bin(in_bin = uart_bin_vl.promise("out_bin"))
+run_test_bin(in_bin = uart_bin_iv.promise("out_iv"))

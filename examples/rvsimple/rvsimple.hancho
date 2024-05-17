@@ -4,6 +4,11 @@ metrolib = imports.metrolib
 metron   = imports.metron
 rules    = imports.rules
 
+run_test_bin = hancho.Config(
+  command = "{in_bin} {args}",
+  args = "",
+)
+
 ################################################################################
 
 rvsimple_top_h = "toplevel.h"
@@ -54,6 +59,7 @@ rvsimple_bin = rules.cpp_bin(
   ],
   out_bin = "rvsimple"
 )
+
 
 rvsimple_vl_bin = rules.cpp_bin(
   name = "rvsimple_vl bin",
@@ -106,3 +112,11 @@ rvsimple_ref_bin = rules.cpp_bin(
     "/usr/local/share/verilator/include",
   ],
 )
+
+################################################################################
+
+run_test_bin(in_bin = rvsimple_bin.promise("out_bin"), command_path = "{repo_path}")
+run_test_bin(in_bin = rvsimple_vl_bin.promise("out_bin"), command_path = "{repo_path}")
+run_test_bin(in_bin = rvsimple_ref_bin.promise("out_bin"), command_path = "{repo_path}")
+
+################################################################################

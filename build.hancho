@@ -37,7 +37,7 @@ def sorted_glob(*args, **kwargs):
     return sorted(glob.glob(*args, **kwargs))
 
 examples_data = hancho.Task(
-  command  = "python3 $EMSDK/upstream/emscripten/tools/file_packager.py {out_data} {flags} --js-output={out_js} --preload {preloads} --exclude {excludes}",
+  command  = "python3 $EMSDK/upstream/emscripten/tools/file_packager.py {out_data} {flags} --js-output={out_js} --preload {preloads} --exclude {excludes} 2> /dev/null",
   flags    = "--no-node",
   preloads = "examples tests/metron",
   excludes = "*.cpp *.sv *.MD *.hex *.pcf *.v *.txt *.hancho",
@@ -50,7 +50,7 @@ examples_data = hancho.Task(
 )
 
 tutorial_data = hancho.Task(
-  command  = "python3 $EMSDK/upstream/emscripten/tools/file_packager.py {out_data} {flags} --js-output={out_js} --preload {preloads} --exclude {excludes}",
+  command  = "python3 $EMSDK/upstream/emscripten/tools/file_packager.py {out_data} {flags} --js-output={out_js} --preload {preloads} --exclude {excludes} 2> /dev/null",
   flags    = "--no-node",
   preloads = "examples/tutorial examples/uart",
   excludes = "*.cpp *.sv *.MD *.hex *.pcf *.v *.txt *.hancho",
@@ -67,14 +67,14 @@ tutorial_data = hancho.Task(
 test_yosys = hancho.Config(
   name = "test yosys",
   desc = "test yosys {rel(in_src)}",
-  command = "yosys -q -p 'read_verilog {includes} -sv {rel(in_src)};  dump; synth_ice40 -json /dev/null'",
+  command = "yosys -q -p 'read_verilog {includes} -sv {rel(in_src)};  dump; synth_ice40 -json /dev/null' 2> /dev/null",
   includes = ["-I."],
 )
 
 test_yosys_v = hancho.Config(
   name = "test yosys",
   desc = "test yosys {rel(in_src)}",
-  command = "yosys -q -p 'read_verilog {includes} -sv {rel(in_src)};'",
+  command = "yosys -q -p 'read_verilog {includes} -sv {rel(in_src)};' 2> /dev/null",
   includes = ["-I."],
   #includes = ["-I.", "-Itests/metron/generated", "-Ibuild/tests/metron/generated"],
 )
@@ -82,14 +82,14 @@ test_yosys_v = hancho.Config(
 test_verilator = hancho.Config(
   name = "test verilator",
   desc = "test verilator {rel(in_src)}",
-  command = "verilator -Wno-width {includes} --lint-only {rel(in_src)}",
+  command = "verilator -Wno-width {includes} --lint-only {rel(in_src)} > /dev/null",
   includes = ["-I."],
 )
 
 test_icarus = hancho.Config(
   name = "test icarus",
   desc = "test icarus {rel(in_src)}",
-  command = "iverilog -g2012 -Wall {includes} -o /dev/null {rel(in_src)}",
+  command = "iverilog -g2012 -Wall {includes} -o /dev/null {rel(in_src)} 2> /dev/null",
   includes = ["-I."],
 )
 
@@ -103,13 +103,13 @@ for file in glob.glob("tests/tools/pass/*.sv"):
 test_syntax = hancho.Config(
   name = "test syntax",
   desc = "test syntax {rel(in_src)}",
-  command = "g++ -I. --std=gnu++2a -fsyntax-only -c {rel(in_src)}"
+  command = "g++ -I. --std=gnu++2a -fsyntax-only -c {rel(in_src)} > /dev/null"
 )
 
 test_metron = hancho.Config(
   name = "test metron",
   desc = "test metron {rel(in_src)}",
-  command = "{metron_bin} -q -c {rel(in_src)} -o {rel(out_sv)}",
+  command = "{metron_bin} -q -c {rel(in_src)} -o {rel(out_sv)} > /dev/null",
   out_sv = "{swap_ext(in_src, '.sv')}",
   metron_bin = deps.metron.metron_bin,
 )
@@ -123,7 +123,7 @@ test_diff = hancho.Config(
 test_sv2v = hancho.Config(
   name = "test sv2v",
   desc = "test sv2v {rel(in_src)}",
-  command = "sv2v {includes} {rel(in_src)} -w {rel(out_v)}",
+  command = "sv2v {includes} {rel(in_src)} -w {rel(out_v)} > /dev/null",
   includes = ["-I."],
   out_v = "{swap_ext(in_src, '.v')}",
 )
@@ -156,7 +156,7 @@ for file in glob.glob("tests/metron/fail/*.h"):
 #good: g++ build/tests/lockstep/counter.o build/tests/lockstep/Vcounter__ALL.o build/debug/metrolib/metrolib/core/Utils.o build/debug/metron/rules/verilator/verilated.o build/debug/metron/rules/verilator/verilated_threads.o -o build/tests/lockstep/counter
 #good: build/tests/lockstep/counter
 
-for file in ["tests/lockstep/lfsr.h", "tests/lockstep/counter.h", "tests/lockstep/funcs_and_tasks.h"]:
+def test_lockstep(file, should_fail = False):
   out_sv = test_metron(in_src = file).promise("out_sv")
 
   out_vl = deps.rules.verilator(
@@ -171,13 +171,26 @@ for file in ["tests/lockstep/lfsr.h", "tests/lockstep/counter.h", "tests/lockste
     defines = "-DMT_TOP=Module -DVL_TOP=V{stem} -DMT_HEADER=tests/lockstep/{stem}.h -DVL_HEADER=build/debug/metron/tests/lockstep/V{stem}.h",
     in_src  = "tests/lockstep/test_lockstep.cpp",
     in_hdr  = file,
+    in_deps = out_vl.promise("out_header"),
     out_obj = "{swap_ext(in_hdr, '.o')}",
     stem    = "{path.splitext(path.basename(in_hdr))[0]}",
-  ).promise("out_obj")
+  )
 
-  hancho.Task(
+  lockstep_bin = hancho.Task(
     command = "g++ {in_obj} {in_lib} -o {rel(out_bin)}",
-    in_obj = lockstep_obj,
+    in_obj = lockstep_obj.promise("out_obj"),
     in_lib = [out_vl.promise("out_lib"), deps.metrolib.libcore],
     out_bin = "{swap_ext(in_obj, '')}",
   )
+
+  hancho.Task(
+    command = "{in_bin} > /dev/null",
+    in_bin = lockstep_bin.promise("out_bin"),
+    should_fail = should_fail,
+  )
+
+for file in ["tests/lockstep/lfsr.h", "tests/lockstep/counter.h", "tests/lockstep/funcs_and_tasks.h"]:
+  test_lockstep(file, should_fail = False)
+
+for file in ["tests/lockstep/timeout_bad.h", "tests/lockstep/lockstep_bad.h"]:
+  test_lockstep(file, should_fail = True)

@@ -7,7 +7,7 @@
 
 #include <stdio.h>
 
-const char* build_path = "build/debug/metron/tests/risc-v/instructions";
+const char* build_path = "build/test/metron/tests/risc-v/instructions";
 
 //------------------------------------------------------------------------------
 

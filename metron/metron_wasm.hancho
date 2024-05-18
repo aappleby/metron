@@ -7,6 +7,7 @@ def sorted_glob(*args, **kwargs):
 #---------------------------------------------------------------------------------------------------
 
 emcc = hancho.Config(
+  desc = "Compile Emscripten'd {rel(in_src)}",
   command = "emcc {flags} {includes} -c {rel(in_src)} -o {rel(out_obj)}",
   flags = [
     "-std=c++20",
@@ -28,6 +29,7 @@ emcc = hancho.Config(
 )
 
 emld = hancho.Config(
+  desc = "Link Emscripten'd {rel(out_js)}",
   command = "emcc {flags} {rel(in_objs)} -o {out_js}",
   flags = [
     "-sEXPORT_ES6",

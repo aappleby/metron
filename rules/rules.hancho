@@ -102,6 +102,7 @@ def gen_chparams(c):
   return result
 
 exports.yosys = hancho.Config(
+  desc = "Run yosys on {rel(in_sv)}",
   command = "yosys -q -p 'read_verilog -defer {join_prefix('-I', includes)} -sv {rel(in_sv)}; dump; {gen_chparams(params)} synth_ice40 -top {top} -json {rel(out_json)};'",
   gen_chparams = gen_chparams,
   top = "{path.splitext(path.basename(in_sv))[0]}",
@@ -110,15 +111,18 @@ exports.yosys = hancho.Config(
 )
 
 exports.nextpnr = hancho.Config(
+  desc = "Run nextpnr-ice40 on {rel(in_json)}",
   command = "nextpnr-ice40 {flags} -q --{chip} --package {package} --json {rel(in_json)} --asc {rel(out_asc)} --pcf {pcf}",
   flags = "",
 )
 
 exports.icepack = hancho.Config(
+  desc = "Run icepack on {rel(in_asc)}",
   command = "icepack {rel(in_asc)} {rel(out_bin)}",
 )
 
 exports.sv2v = hancho.Config(
+  desc = "Run sv2v on {rel(in_sv)}",
   command = "symlinks/sv2v/bin/sv2v {join_prefix('-I', includes)} {rel(in_sv)} -w {rel(out_v)}",
   includes = ["-I."],
   out_v = "{swap_ext(in_sv, '.v')}",
@@ -134,6 +138,7 @@ def gen_ivparams(params):
   return result
 
 exports.iverilog = hancho.Config(
+  desc = "Run iverilog on {rel(in_sv)}",
   command = "iverilog {gen_ivparams(params)} -s{top} -g2012 {defines} {join_prefix('-I', includes)} {rel(in_sv)} -o {rel(out_iv)}",
   gen_ivparams = gen_ivparams,
 )

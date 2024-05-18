@@ -5,7 +5,8 @@ metron   = imports.metron
 rules    = imports.rules
 
 run_test_bin = hancho.Config(
-  command = "{in_bin} {args}",
+  command = "{in_bin} {args} > {out_pass}.temp && mv {out_pass}.temp {out_pass}",
+  out_pass = "{in_bin}.pass",
   args = "",
 )
 

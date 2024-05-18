@@ -7,6 +7,8 @@
 #include "CLI11/include/CLI/Config.hpp"
 #include "CLI11/include/CLI/Formatter.hpp"
 
+const char* build_path = "build/test/metron/tests/risc-v/instructions";
+
 //------------------------------------------------------------------------------
 
 const char* instructions[38] = {
@@ -27,8 +29,8 @@ TestResults test_instruction(const char* test_name, const int reps,
 
   char buf1[256];
   char buf2[256];
-  sprintf(buf1, "+text_file=build/debug/metron/tests/risc-v/instructions/%s.code.vh", test_name);
-  sprintf(buf2, "+data_file=build/debug/metron/tests/risc-v/instructions/%s.data.vh", test_name);
+  sprintf(buf1, "+text_file=%s/%s.code.vh", build_path, test_name);
+  sprintf(buf2, "+data_file=%s/%s.data.vh", build_path, test_name);
   const char* argv2[2] = {buf1, buf2};
 
   Verilated::commandArgs(2, argv2);

@@ -17,7 +17,8 @@ build_rv_hex = hancho.Config(
   out_code_bin = "{stem}.code.bin",
   out_data_bin = "{stem}.data.bin",
   out_code_vh = "{stem}.code.vh",
-  out_data_vh = "{stem}.data.vh"
+  out_data_vh = "{stem}.data.vh",
+  build_tag = "test",
 )
 
 for file in glob.glob("*.S"):

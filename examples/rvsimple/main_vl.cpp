@@ -9,6 +9,8 @@
 #include "CLI11/include/CLI/Formatter.hpp"
 #include "metron/metron_tools.h"
 
+const char* build_path = "build/test/metron/tests/risc-v/instructions";
+
 //------------------------------------------------------------------------------
 
 const char* instructions[38] = {
@@ -33,8 +35,8 @@ TestResults test_instruction(const char* test_name, const int reps,
 
   char code_filename[256];
   char data_filename[256];
-  sprintf(code_filename, "build/debug/metron/tests/risc-v/instructions/%s.code.vh", test_name);
-  sprintf(data_filename, "build/debug/metron/tests/risc-v/instructions/%s.data.vh", test_name);
+  sprintf(code_filename, "%s/%s.code.vh", build_path, test_name);
+  sprintf(data_filename, "%s/%s.data.vh", build_path, test_name);
 
   auto& text = top.rootp->toplevel__DOT__text_memory_bus__DOT__text_memory__DOT__mem_;
   auto& data = top.rootp->toplevel__DOT__data_memory_bus__DOT__data_memory__DOT__mem_;

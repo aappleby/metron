@@ -5,11 +5,15 @@ test_logic = imports.rules.cpp_bin(
   in_srcs = ["utils/test_logic.cpp"],
   in_objs = [imports.metrolib.libcore],
   out_bin = ["utils/test_logic"],
+  build_tag = "test",
 )
 
-hancho.Task(
-  command = "{in_bin}",
-  in_bin = test_logic.promise("out_bin")
+run_test_bin = hancho.Config(
+  command = "{in_bin} {args} > {out_pass}.temp 2>&1 && mv {out_pass}.temp {out_pass}",
+  out_pass = "{in_bin}.pass",
+  args = "",
 )
+
+run_test_bin(in_bin = test_logic.promise("out_bin"))
 
 hancho.load("risc-v/instructions/instructions.hancho")

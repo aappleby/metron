@@ -11,13 +11,12 @@ build_rv_hex = hancho.Config(
     "srec_cat {out_data_bin} -binary -byte-swap 4 -O {out_data_vh} -VMem 32"
   ],
   in_linkerscript = "link.ld",
-  stem = "{swap_ext(in_src, '')}",
-  out_o = "{stem}.o",
-  out_elf = "{stem}.elf",
-  out_code_bin = "{stem}.code.bin",
-  out_data_bin = "{stem}.data.bin",
-  out_code_vh = "{stem}.code.vh",
-  out_data_vh = "{stem}.data.vh",
+  out_o = "{stem(in_src)}.o",
+  out_elf = "{stem(in_src)}.elf",
+  out_code_bin = "{stem(in_src)}.code.bin",
+  out_data_bin = "{stem(in_src)}.data.bin",
+  out_code_vh = "{stem(in_src)}.code.vh",
+  out_data_vh = "{stem(in_src)}.data.vh",
   build_tag = "test",
 )
 

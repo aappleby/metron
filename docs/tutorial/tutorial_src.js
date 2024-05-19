@@ -18,7 +18,7 @@
         // web worker
         PACKAGE_PATH = encodeURIComponent(location.pathname.toString().substring(0, location.pathname.toString().lastIndexOf('/')) + '/');
       }
-      var PACKAGE_NAME = 'docs/tutorial/tutorial_src.data';
+      var PACKAGE_NAME = '/home/aappleby/repos/metron/docs/tutorial/tutorial_src.data';
       var REMOTE_PACKAGE_BASE = 'tutorial_src.data';
       if (typeof Module['locateFilePackage'] === 'function' && !Module['locateFile']) {
         Module['locateFile'] = Module['locateFilePackage'];
@@ -99,6 +99,7 @@ var REMOTE_PACKAGE_SIZE = metadata['remote_package_size'];
       }
 Module['FS_createPath']("/", "examples", true, true);
 Module['FS_createPath']("/examples", "tutorial", true, true);
+Module['FS_createPath']("/examples", "uart", true, true);
 
       /** @constructor */
       function DataRequest(start, end, audio) {
@@ -142,10 +143,10 @@ Module['FS_createPath']("/examples", "tutorial", true, true);
           var files = metadata['files'];
           for (var i = 0; i < files.length; ++i) {
             DataRequest.prototype.requests[files[i].filename].onload();
-          }          Module['removeRunDependency']('datafile_docs/tutorial/tutorial_src.data');
+          }          Module['removeRunDependency']('datafile_/home/aappleby/repos/metron/docs/tutorial/tutorial_src.data');
 
       };
-      Module['addRunDependency']('datafile_docs/tutorial/tutorial_src.data');
+      Module['addRunDependency']('datafile_/home/aappleby/repos/metron/docs/tutorial/tutorial_src.data');
 
       if (!Module.preloadResults) Module.preloadResults = {};
 
@@ -166,6 +167,6 @@ Module['FS_createPath']("/examples", "tutorial", true, true);
     }
 
     }
-    loadPackage({"files": [{"filename": "/examples/tutorial/adder.h", "start": 0, "end": 180}, {"filename": "/examples/tutorial/bit_twiddling.h", "start": 180, "end": 1168}, {"filename": "/examples/tutorial/blockram.h", "start": 1168, "end": 1700}, {"filename": "/examples/tutorial/checksum.h", "start": 1700, "end": 2442}, {"filename": "/examples/tutorial/clocked_adder.h", "start": 2442, "end": 2849}, {"filename": "/examples/tutorial/counter.h", "start": 2849, "end": 3000}, {"filename": "/examples/tutorial/declaration_order.h", "start": 3000, "end": 3826}, {"filename": "/examples/tutorial/functions_and_tasks.h", "start": 3826, "end": 4785}, {"filename": "/examples/tutorial/nonblocking.h", "start": 4785, "end": 4911}, {"filename": "/examples/tutorial/submodules.h", "start": 4911, "end": 6011}, {"filename": "/examples/tutorial/templates.h", "start": 6011, "end": 6494}, {"filename": "/examples/tutorial/tutorial2.h", "start": 6494, "end": 6562}, {"filename": "/examples/tutorial/tutorial3.h", "start": 6562, "end": 6603}, {"filename": "/examples/tutorial/tutorial4.h", "start": 6603, "end": 6644}, {"filename": "/examples/tutorial/tutorial5.h", "start": 6644, "end": 6685}, {"filename": "/examples/tutorial/vga.h", "start": 6685, "end": 7865}], "remote_package_size": 7865});
+    loadPackage({"files": [{"filename": "/examples/tutorial/adder.h", "start": 0, "end": 180}, {"filename": "/examples/tutorial/bit_twiddling.h", "start": 180, "end": 1168}, {"filename": "/examples/tutorial/blockram.h", "start": 1168, "end": 1700}, {"filename": "/examples/tutorial/checksum.h", "start": 1700, "end": 2442}, {"filename": "/examples/tutorial/clocked_adder.h", "start": 2442, "end": 2849}, {"filename": "/examples/tutorial/counter.h", "start": 2849, "end": 3000}, {"filename": "/examples/tutorial/declaration_order.h", "start": 3000, "end": 3826}, {"filename": "/examples/tutorial/functions_and_tasks.h", "start": 3826, "end": 4785}, {"filename": "/examples/tutorial/nonblocking.h", "start": 4785, "end": 4911}, {"filename": "/examples/tutorial/submodules.h", "start": 4911, "end": 6011}, {"filename": "/examples/tutorial/templates.h", "start": 6011, "end": 6494}, {"filename": "/examples/tutorial/tutorial.hancho", "start": 6494, "end": 6494}, {"filename": "/examples/tutorial/tutorial2.h", "start": 6494, "end": 6562}, {"filename": "/examples/tutorial/tutorial3.h", "start": 6562, "end": 6603}, {"filename": "/examples/tutorial/tutorial4.h", "start": 6603, "end": 6644}, {"filename": "/examples/tutorial/tutorial5.h", "start": 6644, "end": 6685}, {"filename": "/examples/tutorial/vga.h", "start": 6685, "end": 7865}, {"filename": "/examples/uart/README.md", "start": 7865, "end": 8109}, {"filename": "/examples/uart/uart.hancho", "start": 8109, "end": 10786}, {"filename": "/examples/uart/uart_hello.h", "start": 10786, "end": 13454}, {"filename": "/examples/uart/uart_rx.h", "start": 13454, "end": 16145}, {"filename": "/examples/uart/uart_top.h", "start": 16145, "end": 18021}, {"filename": "/examples/uart/uart_tx.h", "start": 18021, "end": 21078}], "remote_package_size": 21078});
 
   })();

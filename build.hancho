@@ -2,7 +2,9 @@ import hancho
 import glob
 
 #./build.hancho
+
 #./docs/build.hancho
+
 #./examples/examples.hancho
 #./examples/gb_spu/gb_spu.hancho
 #./examples/ibex/ibex.hancho
@@ -12,13 +14,13 @@ import glob
 #./examples/rvsimple/rvsimple.hancho
 #./examples/tutorial/tutorial.hancho
 #./examples/uart/uart.hancho
-#./metron/emscripten.hancho
+
 #./metron/metron_wasm.hancho
 #./metron/metron.hancho
+
 #./rules/rules.hancho
 #./tests/risc-v/instructions/instructions.hancho
 #./tests/tests.hancho
-#./tests/utils/build.hancho
 
 hancho.Config.build_tag = "debug"
 

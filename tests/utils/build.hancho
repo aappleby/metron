@@ -1,3 +1,0 @@
-from hancho import *
-
-rules = load("../../symlinks/metrolib/rules/rules.hancho")

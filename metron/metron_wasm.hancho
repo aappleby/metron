@@ -57,17 +57,9 @@ metron_objs = [emcc(in_src=file, build_tag = "wasm") for file in hancho.flatten(
 
 metron_js = emld(
   in_objs   = metron_objs,
-  out_js    = "metron.js",
-  out_wasm  = "metron.wasm",
+  out_js    = "{repo_path}/docs/app/metron.js",
+  out_wasm  = "{repo_path}/docs/app/metron.wasm",
   build_tag = "wasm"
 )
-
-copy = hancho.Config(command = "cp {in_file} {out_file}")
-
-copy(in_file   = metron_js.promise("out_js"),
-     out_file  = "{repo_path}/docs/app/{path.basename(in_file)}")
-
-copy(in_file   = metron_js.promise("out_wasm"),
-     out_file  = "{repo_path}/docs/app/{path.basename(in_file)}")
 
 #---------------------------------------------------------------------------------------------------

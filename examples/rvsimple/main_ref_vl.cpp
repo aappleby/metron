@@ -7,8 +7,6 @@
 #include "CLI11/include/CLI/Config.hpp"
 #include "CLI11/include/CLI/Formatter.hpp"
 
-const char* build_path = "build/test/metron/tests/risc-v/instructions";
-
 //------------------------------------------------------------------------------
 
 const char* instructions[38] = {
@@ -23,14 +21,18 @@ const char* instructions[38] = {
 uint64_t total_tocks = 0;
 uint64_t total_time = 0;
 
-TestResults test_instruction(const char* test_name, const int reps,
-                             const int max_cycles) {
+TestResults test_instruction(
+  std::string& inst_path,
+  const char* test_name,
+  const int reps,
+  const int max_cycles
+) {
   TEST_INIT("Testing op %6s, %d reps", test_name, reps);
 
   char buf1[256];
   char buf2[256];
-  sprintf(buf1, "+text_file=%s/%s.code.vh", build_path, test_name);
-  sprintf(buf2, "+data_file=%s/%s.data.vh", build_path, test_name);
+  sprintf(buf1, "+text_file=%s/%s.code.vh", inst_path.c_str(), test_name);
+  sprintf(buf2, "+data_file=%s/%s.data.vh", inst_path.c_str(), test_name);
   const char* argv2[2] = {buf1, buf2};
 
   Verilated::commandArgs(2, argv2);
@@ -80,9 +82,11 @@ TestResults test_instruction(const char* test_name, const int reps,
 int main(int argc, const char** argv) {
   CLI::App app{"Simple test and benchmark for rvsimple"};
 
+  std::string inst_path;
   int reps = 1;
   int max_cycles = 1000;
 
+  app.add_option("inst_path", inst_path, "Path to the compiled instructions");
   app.add_option("-r,--reps", reps, "How many times to repeat the test");
   app.add_option("-m,--max_cycles", max_cycles,
                  "Maximum # cycles to simulate before timeout");
@@ -96,7 +100,7 @@ int main(int argc, const char** argv) {
   LOG_B("Testing...\n");
   TestResults results;
   for (int i = 0; i < 38; i++) {
-    results << test_instruction(instructions[i], reps, max_cycles);
+    results << test_instruction(inst_path, instructions[i], reps, max_cycles);
   }
 
   double rate = double(total_tocks) / double(total_time);

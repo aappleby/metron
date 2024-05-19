@@ -15,8 +15,8 @@ import glob
 #./examples/tutorial/tutorial.hancho
 #./examples/uart/uart.hancho
 
-#./metron/metron_wasm.hancho
 #./metron/metron.hancho
+#./metron/metron_wasm.hancho
 
 #./rules/rules.hancho
 #./tests/risc-v/instructions/instructions.hancho

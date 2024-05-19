@@ -116,8 +116,8 @@ rvsimple_ref_bin = rules.cpp_bin(
 
 ################################################################################
 
-run_test_bin(in_bin = rvsimple_bin.promise("out_bin"), command_path = "{repo_path}")
-run_test_bin(in_bin = rvsimple_vl_bin.promise("out_bin"), command_path = "{repo_path}")
-run_test_bin(in_bin = rvsimple_ref_bin.promise("out_bin"), command_path = "{repo_path}")
+run_test_bin(in_bin = rvsimple_bin.promise("out_bin"), in_insts = imports.rv_inst.tasks, command_path = "{repo_path}")
+run_test_bin(in_bin = rvsimple_vl_bin.promise("out_bin"), in_insts = imports.rv_inst.tasks, command_path = "{repo_path}")
+run_test_bin(in_bin = rvsimple_ref_bin.promise("out_bin"), in_insts = imports.rv_inst.tasks, command_path = "{repo_path}")
 
 ################################################################################

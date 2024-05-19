@@ -8,7 +8,7 @@ module Module
 #(
   parameter data_len = 1024,
   parameter blarp = 0,
-  parameter /*const char**/ filename = ""
+  parameter /*const char**/ message_file = ""
 )
 (
   // global clock
@@ -21,7 +21,7 @@ module Module
 /*public:*/
 
   initial begin
-    if (filename) $readmemh(filename, data_);
+    if (message_file) $readmemh(message_file, data_);
   end
 
   always_comb begin : tock
@@ -70,7 +70,7 @@ module Top
     .data_len(7777),
     .blarp(8383),
     // Constructor Parameters
-    .filename("examples/uart/message.hex")
+    .message_file("")
   ) submod(
     // Global clock
     .clock(clock),

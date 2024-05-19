@@ -6,8 +6,8 @@ template<int data_len = 1024, int blarp = 7>
 class Module {
 public:
 
-  Module(const char* filename = "examples/uart/message.hex") {
-    readmemh(filename, data_);
+  Module(const char* message_file = nullptr) {
+    if (message_file) readmemh(message_file, data_);
   }
 
   void tock(logic<10> addr_) {

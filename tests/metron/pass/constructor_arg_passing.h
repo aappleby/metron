@@ -8,8 +8,8 @@ template<int data_len = 1024, int blarp = 0>
 class Module {
 public:
 
-  Module(const char* filename = nullptr) {
-    if (filename) readmemh(filename, data_);
+  Module(const char* message_file = nullptr) {
+    if (message_file) readmemh(message_file, data_);
   }
 
   void tock(logic<10> new_addr) {
@@ -35,7 +35,7 @@ private:
 
 class Top {
 public:
-  Top() : submod("examples/uart/message.hex"), derp(7) {
+  Top() : submod(nullptr), derp(7) {
   }
 
   void tock(logic<10> addr) {

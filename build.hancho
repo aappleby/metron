@@ -8,9 +8,11 @@ deps.metrolib = hancho.repo("symlinks/metrolib/build.hancho", **deps)
 deps.rules    = hancho.load("rules/rules.hancho", **deps)
 deps.metron   = hancho.load("metron/metron.hancho", **deps)
 
+deps.rv_inst = hancho.load("tests/risc-v/instructions/instructions.hancho")
+
 hancho.load("metron/metron_wasm.hancho", **deps)
 hancho.load("examples/examples.hancho",  **deps)
-hancho.load("test.hancho", **deps)
+hancho.load("tests/tests.hancho", **deps)
 
 #---------------------------------------------------------------------------------------------------
 # Bundled headers for demo & tutorial

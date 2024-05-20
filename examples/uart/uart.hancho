@@ -92,9 +92,3 @@ uart_test_ice40_bin = rules.icepack(
   in_asc  = uart_nextpnr.promise("out_asc"),
   out_bin = "uart_test_ice40.bin",
 )
-
-################################################################################
-
-rules.run_test_bin(in_bin = exports.uart_bin.promise("out_bin"), args = "message.hex")
-rules.run_test_bin(in_bin = exports.uart_bin_vl.promise("out_bin"))
-rules.run_test_bin(in_bin = exports.uart_bin_iv.promise("out_iv"))

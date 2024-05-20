@@ -1,35 +1,14 @@
 import hancho
-import glob
 
-#./build.hancho
-
-#./examples/examples.hancho
-#./examples/gb_spu/gb_spu.hancho
-#./examples/ibex/ibex.hancho
-#./examples/j1/j1.hancho
-#./examples/picorv32/picorv32.hancho
-#./examples/pong/pong.hancho
-#./examples/rvsimple/rvsimple.hancho
-#./examples/tutorial/tutorial.hancho
-#./examples/uart/uart.hancho
-
-#./metron/metron.hancho
-#./metron/metron_wasm.hancho
-
-#./rules/rules.hancho
-#./tests/risc-v/instructions/instructions.hancho
-#./tests/tests.hancho
 
 hancho.Config.build_tag = "debug"
 
-deps = hancho.Config()
-deps.metrolib = hancho.repo("symlinks/metrolib/build.hancho", **deps)
-deps.rules    = hancho.load("rules/rules.hancho", **deps)
-deps.metron   = hancho.load("metron/metron.hancho", **deps)
+exports.metrolib = hancho.repo("symlinks/metrolib/build.hancho", **exports)
 
-deps.rv_inst = hancho.load("tests/risc-v/instructions/instructions.hancho")
-
-hancho.load("metron/metron_wasm.hancho", **deps)
-hancho.load("examples/examples.hancho",  **deps)
-hancho.load("tests/tests.hancho", **deps)
-hancho.load("docs/docs.hancho", **deps)
+exports.rules    = hancho.load("rules/rules.hancho", **exports)
+exports.metron   = hancho.load("metron/metron.hancho", **exports)
+exports.wasm     = hancho.load("metron/metron_wasm.hancho", **exports)
+exports.rv_inst  = hancho.load("tests/risc-v/instructions/instructions.hancho", **exports)
+exports.examples = hancho.load("examples/examples.hancho",  **exports)
+exports.tests    = hancho.load("tests/tests.hancho", **exports)
+exports.docs     = hancho.load("docs/docs.hancho", **exports)

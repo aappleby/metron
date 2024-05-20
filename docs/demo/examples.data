@@ -705,24 +705,18 @@ private:
 #endif // METRO_BOY_SPU2_H
 import hancho
 
-metrolib = imports.metrolib
-metron   = imports.metron
-rules    = imports.rules
-
-################################################################################
-
-gb_spu_sv = metron.convert(
+gb_spu_sv = imports.metron.convert(
   name     = "GBSPU metronize",
   in_src   = "MetroBoySPU2.h",
 )
 
-gb_spu_vl = rules.verilator(
+gb_spu_vl = imports.rules.verilator(
   name     = "GBSPU verilate",
   in_top   = gb_spu_sv.promise("out_sv"),
   includes = ["{repo_path}"],
 )
 
-gb_spu_main = rules.cpp_bin(
+gb_spu_main = imports.rules.cpp_bin(
   name     = "GBSPU bin",
   in_srcs  = "gb_spu_main.cpp",
   in_deps  = gb_spu_vl.promise("out_header"),
@@ -7044,9 +7038,7 @@ rules    = imports.rules
 exports.rvsimple_bin = rules.cpp_bin(
   name = "rvsimple bin",
   in_srcs = "main.cpp",
-  in_libs = [
-    metrolib.libcore,
-  ],
+  in_libs = metrolib.libcore,
   out_bin = "rvsimple"
 )
 
@@ -7141,29 +7133,6 @@ exports.rvsimple_ref_bin = rules.cpp_bin(
     "{build_path}",
     "/usr/local/share/verilator/include",
   ],
-)
-
-################################################################################
-
-rules.run_test_bin(
-  in_bin = exports.rvsimple_bin.promise("out_bin"),
-  in_insts = imports.rv_inst.tasks,
-  command_path = "{repo_path}",
-  args = "build/test/metron/tests/risc-v/instructions",
-)
-
-rules.run_test_bin(
-  in_bin = exports.rvsimple_vl_bin.promise("out_bin"),
-  in_insts = imports.rv_inst.tasks,
-  command_path = "{repo_path}",
-  args = "build/test/metron/tests/risc-v/instructions",
-)
-
-rules.run_test_bin(
-  in_bin = exports.rvsimple_ref_bin.promise("out_bin"),
-  in_insts = imports.rv_inst.tasks,
-  command_path = "{repo_path}",
-  args = "build/test/metron/tests/risc-v/instructions",
 )
 
 ################################################################################
@@ -8200,12 +8169,6 @@ uart_test_ice40_bin = rules.icepack(
   in_asc  = uart_nextpnr.promise("out_asc"),
   out_bin = "uart_test_ice40.bin",
 )
-
-################################################################################
-
-rules.run_test_bin(in_bin = exports.uart_bin.promise("out_bin"), args = "message.hex")
-rules.run_test_bin(in_bin = exports.uart_bin_vl.promise("out_bin"))
-rules.run_test_bin(in_bin = exports.uart_bin_iv.promise("out_iv"))
 #ifndef UART_HELLO_H
 #define UART_HELLO_H
 

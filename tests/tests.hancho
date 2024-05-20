@@ -1,25 +1,55 @@
 import hancho
 import glob
 
+################################################################################
+
+test_rvsimple = hancho.Config(
+  command_path = "{repo_path}",
+  command = "{in_bin} build/test/metron/tests/risc-v/instructions",
+  out_log = "{stem(in_bin)}.test",
+  deps    = imports.rv_inst.tasks,
+  is_test = True,
+  build_tag = "test",
+)
+
+test_rvsimple(in_bin  = imports.examples.rvsimple.rvsimple_bin)
+test_rvsimple(in_bin  = imports.examples.rvsimple.rvsimple_vl_bin)
+test_rvsimple(in_bin  = imports.examples.rvsimple.rvsimple_ref_bin)
+
+################################################################################
+
+test_uart = hancho.Config(
+  command_path = "{repo_path}",
+  command = "{in_bin} examples/uart/message.hex",
+  out_log = "{stem(in_bin)}.test",
+  is_test = True,
+  build_tag = "test",
+)
+
+test_uart(in_bin = imports.examples.uart.uart_bin)
+test_uart(in_bin = imports.examples.uart.uart_bin_vl)
+test_uart(in_bin = imports.examples.uart.uart_bin_iv)
+
 #---------------------------------------------------------------------------------------------------
 
 test_logic = imports.rules.cpp_bin(
   name    = "utils/test_logic",
-  in_srcs = ["utils/test_logic.cpp"],
-  in_objs = [imports.metrolib.libcore],
-  out_bin = ["utils/test_logic"],
+  in_srcs = "utils/test_logic.cpp",
+  in_objs = imports.metrolib.libcore,
+  out_bin = "utils/test_logic",
   build_tag = "test",
 )
 
-imports.rules.run_test_bin(in_bin = test_logic.promise("out_bin"))
-
-#---------------------------------------------------------------------------------------------------
-
-test_helpers = hancho.Config(
-  suffix_pass = "{out_pass}.temp 2>&1 &&  mv {out_pass}.temp {out_pass}",
-  suffix_fail = "{out_pass}.temp 2>&1 || (mv {out_pass}.temp {out_pass} && (exit 255))",
+hancho.Task(
+  command     = "{in_test}",
+  in_test     = test_logic.promise("out_bin"),
+  out_log     = "{stem(in_test)}.test",
+  is_test     = True,
+  should_fail = False,
   build_tag   = "test",
 )
+
+#---------------------------------------------------------------------------------------------------
 
 def gen_chparams(c):
   result = []
@@ -29,80 +59,80 @@ def gen_chparams(c):
     result.append(f"chparam -set {key} {val} {{top}};")
   return result
 
-test_yosys_synth = test_helpers.extend(
-  desc = "test yosys synth pass {rel(in_src)}",
-  command = "yosys -q -p 'read_verilog {includes} -sv {rel(in_src)}; {gen_chparams(params)} synth_ice40 -json /dev/null' > {suffix_pass}",
+test_helpers = hancho.Config(
+  is_test = True,
+  build_tag = "test",
   gen_chparams = gen_chparams,
   params = {},
   includes = ["-I."],
-  out_pass = "{in_src}.yosys_synth.pass",
+  should_fail = False,
+)
+
+test_yosys_synth_pass = test_helpers.extend(
+  desc = "test yosys synth pass {rel(in_src)}",
+  command = "yosys -q -p 'read_verilog {includes} -sv {rel(in_src)}; {gen_chparams(params)} synth_ice40 -json /dev/null'",
+  out_log = "{in_src}.yosys_synth.test",
 )
 
 test_yosys_synth_fail = test_helpers.extend(
   desc = "test yosys synth fail {rel(in_src)}",
-  command = "yosys -q -p 'read_verilog {includes} -sv {rel(in_src)}; {gen_chparams(params)} synth_ice40 -json /dev/null' > {suffix_fail}",
-  gen_chparams = gen_chparams,
-  params = {},
-  includes = ["-I."],
-  out_pass = "{in_src}.yosys_synth.pass",
+  command = "yosys -q -p 'read_verilog {includes} -sv {rel(in_src)}; {gen_chparams(params)} synth_ice40 -json /dev/null'",
+  out_log = "{in_src}.yosys_synth.test",
+  should_fail = True,
 )
 
 test_yosys_parse = test_helpers.extend(
   desc = "test yosys parse {rel(in_src)}",
-  command = "yosys -q -p 'read_verilog {includes} -sv {rel(in_src)};' > {suffix_pass}",
-  includes = ["-I."],
-  out_pass = "{in_src}.yosys_parse.pass",
+  command = "yosys -q -p 'read_verilog {includes} -sv {rel(in_src)};'",
+  out_log = "{in_src}.yosys_parse.test",
 )
 
 test_verilator = test_helpers.extend(
   desc = "test verilator {rel(in_src)}",
-  command = "verilator -Wno-width {includes} --lint-only {rel(in_src)} > {suffix_pass}",
-  includes = ["-I."],
-  out_pass = "{in_src}.verilator.pass",
+  command = "verilator -Wno-width {includes} --lint-only {rel(in_src)}",
+  out_log = "{in_src}.verilator.test",
 )
 
 test_icarus = test_helpers.extend(
   desc = "test icarus {rel(in_src)}",
-  command = "iverilog -g2012 -Wall {includes} -o /dev/null {rel(in_src)} > {suffix_pass}",
-  includes = ["-I."],
-  out_pass = "{in_src}.icarus.pass",
+  command = "iverilog -g2012 -Wall {includes} -o /dev/null {rel(in_src)}",
+  out_log = "{in_src}.icarus.test",
 )
 
 test_syntax = test_helpers.extend(
   desc = "test c++ syntax {rel(in_src)}",
-  command = "g++ -I. -I{repo_path} --std=gnu++2a -fsyntax-only -c {rel(in_src)} > {suffix_pass}",
-  out_pass = "{in_src}.syntax.pass"
+  command = "g++ -I. -I{repo_path} --std=gnu++2a -fsyntax-only -c {rel(in_src)}",
+  out_log = "{in_src}.syntax.test"
 )
 
-test_metron = test_helpers.extend(
+test_metron_pass = test_helpers.extend(
   desc = "test metron {rel(in_src)}",
-  command = "{metron_bin} -q -c {rel(in_src)} -o {rel(out_sv)} > {suffix_pass}",
+  command = "{metron_bin} -q -c {rel(in_src)} -o {rel(out_sv)}",
   out_sv = "{swap_ext(in_src, '.sv')}",
   metron_bin = imports.metron.metron_bin,
-  out_pass = "{in_src}.metron.pass"
+  out_log = "{in_src}.metron.test"
 )
 
 test_metron_fail = test_helpers.extend(
   desc = "test metron fails {rel(in_src)}",
-  command = "{metron_bin} -q -c {rel(in_src)} -o /dev/null > {suffix_fail}",
+  command = "{metron_bin} -q -c {rel(in_src)} -o /dev/null",
   metron_bin = imports.metron.metron_bin,
-  out_pass = "{in_src}.metron.pass",
+  out_log = "{in_src}.metron.test",
   should_fail = True
 )
 
 test_diff = test_helpers.extend(
   desc = "test diff {rel(in_src_A)} {rel(in_src_B)}",
-  command = "diff {rel(in_src_A)} {rel(in_src_B)} > {suffix_pass}",
-  out_pass = "{in_src_A}.diff.pass"
+  command = "diff {rel(in_src_A)} {rel(in_src_B)}",
+  out_log = "{in_src_A}.diff.test"
 )
 
 test_sv2v = test_helpers.extend(
   desc = "test sv2v {rel(in_src)}",
-  command = "sv2v {includes} {rel(in_src)} -w {rel(out_v)} > {suffix_pass}",
+  command = "sv2v {includes} {rel(in_src)} -w {rel(out_v)}",
   includes = ["-I.", "-I{repo_path}"],
   out_v = "{swap_ext(in_src, '.v')}",
-  out_pass = "{in_src}.sv2v.pass",
-  #debug = True
+  out_log = "{in_src}.sv2v.test",
 )
 
 #---------------------------------------------------------------------------------------------------
@@ -110,11 +140,11 @@ test_sv2v = test_helpers.extend(
 
 for file in glob.glob("tools/pass/*.sv"):
   test_icarus(in_src = file)
-  test_yosys_synth(in_src = file)
+  test_yosys_synth_pass(in_src = file)
   test_verilator(in_src = file)
 
 for file in glob.glob("tools/yosys/fail/*.sv"):
-  test_yosys_synth_fail(in_src = file, should_fail = True)
+  test_yosys_synth_fail(in_src = file)
 
 #---------------------------------------------------------------------------------------------------
 # Test files in metron/pass and metron/fail
@@ -130,7 +160,7 @@ for file in glob.glob("metron/pass/*.h"):
   includes = ["-I.", "-I{repo_path}", "-I{build_path}/metron/pass"]
 
   test_syntax(in_src = file)
-  file_sv = test_metron(in_src = file, should_fail = False).promise("out_sv")
+  file_sv = test_metron_pass(in_src = file, should_fail = False).promise("out_sv")
 
   temp = test_sv2v(in_src = file_sv, includes = includes)
   file_v = temp.promise("out_v")
@@ -144,7 +174,7 @@ for file in glob.glob("metron/pass/*.h"):
     includes = includes
   )
   test_icarus(in_src = file_sv, includes = includes)
-  test_yosys_synth(in_src = file_v, includes = includes)
+  test_yosys_synth_pass(in_src = file_v, includes = includes)
 
 for file in glob.glob("metron/fail/*.h"):
   test_syntax(in_src = file)
@@ -154,7 +184,7 @@ for file in glob.glob("metron/fail/*.h"):
 # Lockstep tests
 
 def test_lockstep(file, should_fail = False):
-  out_sv = test_metron(in_src = file).promise("out_sv")
+  out_sv = test_metron_pass(in_src = file).promise("out_sv")
 
   includes = [
     ".",
@@ -177,15 +207,14 @@ def test_lockstep(file, should_fail = False):
     includes = includes,
     defines = [
       "MT_TOP=Module",
-      "VL_TOP=V{stem}",
+      "VL_TOP=V{stem(in_hdr)}",
       "MT_HEADER={in_hdr}",
-      "VL_HEADER={build_path}/lockstep/V{stem}.h",
+      "VL_HEADER={build_path}/lockstep/V{stem(in_hdr)}.h",
     ],
     in_src  = "lockstep/test_lockstep.cpp",
     in_hdr  = file,
     in_deps = out_vl.promise("out_header"),
     out_obj = "{swap_ext(in_hdr, '.o')}",
-    stem    = "{path.splitext(path.basename(in_hdr))[0]}",
     build_tag = "test",
   )
 
@@ -197,22 +226,14 @@ def test_lockstep(file, should_fail = False):
     build_tag = "test",
   )
 
-  if should_fail:
-    hancho.Task(
-      command  = "{in_bin} > {out_pass}.temp 2>&1 || (mv {out_pass}.temp {out_pass} && (exit 255))",
-      in_bin   = lockstep_bin.promise("out_bin"),
-      out_pass = "{in_bin}.pass",
-      should_fail = should_fail,
-      build_tag = "test",
-    )
-  else:
-    hancho.Task(
-      command  = "{in_bin} > {out_pass}.temp 2>&1 && mv {out_pass}.temp {out_pass}",
-      in_bin   = lockstep_bin.promise("out_bin"),
-      out_pass = "{in_bin}.pass",
-      should_fail = should_fail,
-      build_tag = "test",
-    )
+  hancho.Task(
+    command  = "{in_bin}",
+    in_bin   = lockstep_bin.promise("out_bin"),
+    out_log  = "{in_bin}.test",
+    is_test  = True,
+    should_fail = should_fail,
+    build_tag = "test",
+  )
 
 for file in ["lockstep/lfsr.h", "lockstep/counter.h", "lockstep/funcs_and_tasks.h"]:
   test_lockstep(file, should_fail = False)

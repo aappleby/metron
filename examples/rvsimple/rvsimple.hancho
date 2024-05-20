@@ -9,9 +9,7 @@ rules    = imports.rules
 exports.rvsimple_bin = rules.cpp_bin(
   name = "rvsimple bin",
   in_srcs = "main.cpp",
-  in_libs = [
-    metrolib.libcore,
-  ],
+  in_libs = metrolib.libcore,
   out_bin = "rvsimple"
 )
 
@@ -106,29 +104,6 @@ exports.rvsimple_ref_bin = rules.cpp_bin(
     "{build_path}",
     "/usr/local/share/verilator/include",
   ],
-)
-
-################################################################################
-
-rules.run_test_bin(
-  in_bin = exports.rvsimple_bin.promise("out_bin"),
-  in_insts = imports.rv_inst.tasks,
-  command_path = "{repo_path}",
-  args = "build/test/metron/tests/risc-v/instructions",
-)
-
-rules.run_test_bin(
-  in_bin = exports.rvsimple_vl_bin.promise("out_bin"),
-  in_insts = imports.rv_inst.tasks,
-  command_path = "{repo_path}",
-  args = "build/test/metron/tests/risc-v/instructions",
-)
-
-rules.run_test_bin(
-  in_bin = exports.rvsimple_ref_bin.promise("out_bin"),
-  in_insts = imports.rv_inst.tasks,
-  command_path = "{repo_path}",
-  args = "build/test/metron/tests/risc-v/instructions",
 )
 
 ################################################################################

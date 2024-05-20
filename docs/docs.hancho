@@ -1,0 +1,40 @@
+import hancho
+import glob
+from os import path
+
+#---------------------------------------------------------------------------------------------------
+# Bundled headers for demo & tutorial
+
+def sorted_glob(*args, **kwargs):
+    results = glob.glob(*args, **kwargs)
+    results = [path.abspath(p) for p in results]
+    return sorted(results)
+
+ems_package = hancho.Config(
+  desc     = "Package {rel(out_data)}",
+  command  = [
+    "rm -f {out_data}",
+    "rm -f {out_js}",
+    "python3 $EMSDK/upstream/emscripten/tools/file_packager.py {out_data} {flags} --js-output={out_js} --preload {preloads} --exclude {excludes} 2> /dev/null",
+  ],
+  flags    = "--no-node",
+  excludes = "*.cpp *.sv *.MD *.hex *.pcf *.v *.txt *.hancho",
+)
+
+examples_data = ems_package(
+  base_path   = "{repo_path}",
+  preloads    = "examples tests/metron",
+  in_examples = sorted_glob("../examples/**/*.h"),
+  in_tests    = sorted_glob("../tests/metron/**/*.h"),
+  out_data    = "{repo_path}/docs/demo/examples.data",
+  out_js      = "{repo_path}/docs/demo/examples.js",
+)
+
+tutorial_data = ems_package(
+  base_path   = "{repo_path}",
+  preloads    = "examples/tutorial examples/uart",
+  in_tutorial = sorted_glob("../examples/tutorial/*.h"),
+  in_uart     = sorted_glob("../examples/uart/*.h"),
+  out_data    = "{repo_path}/docs/tutorial/tutorial_src.data",
+  out_js      = "{repo_path}/docs/tutorial/tutorial_src.js",
+)

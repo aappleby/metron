@@ -8,7 +8,7 @@ def sorted_glob(*args, **kwargs):
 
 emcc = hancho.Config(
   desc = "Compile Emscripten'd {rel(in_src)}",
-  command = "emcc {flags} {includes} -c {rel(in_src)} -o {rel(out_obj)}",
+  command = "emcc {flags} {join_prefix('-I', includes)} -c {rel(in_src)} -o {rel(out_obj)}",
   flags = [
     "-std=c++20",
     "-O0",
@@ -19,12 +19,12 @@ emcc = hancho.Config(
     "-Wno-deprecated-declarations",
   ],
   includes = [
-    "-I.",
-    "-I{repo_path}",
-    "-I{repo_path}/symlinks",
-    "-I{repo_path}/symlinks/metrolib",
-    "-I{repo_path}/symlinks/matcheroni",
-    "-I{repo_path}/symlinks/CLI11/include"
+    ".",
+    "{repo_path}",
+    "{repo_path}/symlinks",
+    "{repo_path}/symlinks/metrolib",
+    "{repo_path}/symlinks/matcheroni",
+    "{repo_path}/symlinks/CLI11/include"
   ],
   out_obj = "{swap_ext(in_src, '.o')}",
 )

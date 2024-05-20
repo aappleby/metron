@@ -4,12 +4,6 @@ metron   = imports.metron
 rules    = imports.rules
 metrolib = imports.metrolib
 
-run_test_bin = hancho.Config(
-  command = "{in_bin} {args} > {out_pass}.temp && mv {out_pass}.temp {out_pass}",
-  out_pass = "{in_bin}.pass",
-  args = "",
-)
-
 ################################################################################
 
 uart_top_h = "uart_top.h"
@@ -32,7 +26,7 @@ uart_top_sv = metron.convert(in_src = uart_top_h)
 
 # C++ testbench
 
-uart_bin = rules.cpp_bin(
+exports.uart_bin = rules.cpp_bin(
   name     = "uart_cpp",
   in_srcs  = "main.cpp",
   includes = includes,
@@ -51,7 +45,7 @@ uart_top_vl = rules.verilator(
   in_message = "message.hex",
 )
 
-uart_bin_vl = rules.cpp_bin(
+exports.uart_bin_vl = rules.cpp_bin(
   name     = "uart_vl",
   in_srcs  = "main_vl.cpp",
   includes = includes,
@@ -62,7 +56,7 @@ uart_bin_vl = rules.cpp_bin(
 
 # Icarus Verilog testbench
 
-uart_bin_iv = rules.iverilog(
+exports.uart_bin_iv = rules.iverilog(
   name     = "uart_iv",
   in_sv    = "uart_test_iv.sv",
   in_deps  = [uart_sv, uart_top_sv],
@@ -101,6 +95,6 @@ uart_test_ice40_bin = rules.icepack(
 
 ################################################################################
 
-run_test_bin(in_bin = uart_bin.promise("out_bin"), args = "message.hex")
-run_test_bin(in_bin = uart_bin_vl.promise("out_bin"))
-run_test_bin(in_bin = uart_bin_iv.promise("out_iv"))
+rules.run_test_bin(in_bin = exports.uart_bin.promise("out_bin"), args = "message.hex")
+rules.run_test_bin(in_bin = exports.uart_bin_vl.promise("out_bin"))
+rules.run_test_bin(in_bin = exports.uart_bin_iv.promise("out_iv"))

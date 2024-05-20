@@ -3,8 +3,6 @@ import glob
 
 #./build.hancho
 
-#./docs/build.hancho
-
 #./examples/examples.hancho
 #./examples/gb_spu/gb_spu.hancho
 #./examples/ibex/ibex.hancho
@@ -34,4 +32,4 @@ deps.rv_inst = hancho.load("tests/risc-v/instructions/instructions.hancho")
 hancho.load("metron/metron_wasm.hancho", **deps)
 hancho.load("examples/examples.hancho",  **deps)
 hancho.load("tests/tests.hancho", **deps)
-hancho.load("docs/build.hancho", **deps)
+hancho.load("docs/docs.hancho", **deps)

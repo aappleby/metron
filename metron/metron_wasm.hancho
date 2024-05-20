@@ -15,7 +15,8 @@ emcc = hancho.Config(
     "-g3",
     "-gsource-map",
     "-MMD",
-    "-sNO_DISABLE_EXCEPTION_CATCHING"
+    "-sNO_DISABLE_EXCEPTION_CATCHING",
+    "-Wno-deprecated-declarations",
   ],
   includes = [
     "-I.",

@@ -1,13 +1,13 @@
 import hancho
 
-hancho.load("gb_spu/gb_spu.hancho", **imports)
-hancho.load("ibex/ibex.hancho", **imports)
-hancho.load("j1/j1.hancho", **imports)
-hancho.load("picorv32/picorv32.hancho", **imports)
-hancho.load("pong/pong.hancho", **imports)
-hancho.load("rvsimple/rvsimple.hancho", **imports)
-hancho.load("tutorial/tutorial.hancho", **imports)
-hancho.load("uart/uart.hancho", **imports)
+exports.gb_spu   = hancho.load("gb_spu/gb_spu.hancho", **imports)
+exports.ibex     = hancho.load("ibex/ibex.hancho", **imports)
+exports.j1       = hancho.load("j1/j1.hancho", **imports)
+exports.picorv32 = hancho.load("picorv32/picorv32.hancho", **imports)
+exports.pong     = hancho.load("pong/pong.hancho", **imports)
+exports.rvsimple = hancho.load("rvsimple/rvsimple.hancho", **imports)
+exports.tutorial = hancho.load("tutorial/tutorial.hancho", **imports)
+exports.uart     = hancho.load("uart/uart.hancho", **imports)
 #ifndef METRO_BOY_SPU2_H
 #define METRO_BOY_SPU2_H
 #include "metron/metron_tools.h"
@@ -7039,10 +7039,15 @@ metrolib = imports.metrolib
 metron   = imports.metron
 rules    = imports.rules
 
-run_test_bin = hancho.Config(
-  command = "{in_bin} {args} > {out_pass}.temp && mv {out_pass}.temp {out_pass}",
-  out_pass = "{in_bin}.pass",
-  args = "",
+################################################################################
+
+exports.rvsimple_bin = rules.cpp_bin(
+  name = "rvsimple bin",
+  in_srcs = "main.cpp",
+  in_libs = [
+    metrolib.libcore,
+  ],
+  out_bin = "rvsimple"
 )
 
 ################################################################################
@@ -7087,17 +7092,7 @@ rvsimple_top_vl = rules.verilator(
   includes = ["{repo_path}"]
 )
 
-rvsimple_bin = rules.cpp_bin(
-  name = "rvsimple bin",
-  in_srcs = "main.cpp",
-  in_libs = [
-    metrolib.libcore,
-  ],
-  out_bin = "rvsimple"
-)
-
-
-rvsimple_vl_bin = rules.cpp_bin(
+exports.rvsimple_vl_bin = rules.cpp_bin(
   name = "rvsimple_vl bin",
   in_srcs = "main_vl.cpp",
   in_deps = rvsimple_top_vl.promise("out_header"), # must be here
@@ -7117,7 +7112,6 @@ rvsimple_vl_bin = rules.cpp_bin(
 )
 
 ################################################################################
-# Verilate examples/rvsimple/reference_sv/toplevel.sv -> build/examples/rvsimple/reference_sv
 
 rvsimple_ref_vl = rules.verilator(
   name     = "rvsimple_ref verilator",
@@ -7130,7 +7124,7 @@ rvsimple_ref_vl = rules.verilator(
   ],
 )
 
-rvsimple_ref_bin = rules.cpp_bin(
+exports.rvsimple_ref_bin = rules.cpp_bin(
   name = "rvsimple_ref bin",
   in_srcs = "main_ref_vl.cpp",
   in_deps = rvsimple_ref_vl.promise("out_header"), # must be here
@@ -7151,22 +7145,22 @@ rvsimple_ref_bin = rules.cpp_bin(
 
 ################################################################################
 
-run_test_bin(
-  in_bin = rvsimple_bin.promise("out_bin"),
+rules.run_test_bin(
+  in_bin = exports.rvsimple_bin.promise("out_bin"),
   in_insts = imports.rv_inst.tasks,
   command_path = "{repo_path}",
   args = "build/test/metron/tests/risc-v/instructions",
 )
 
-run_test_bin(
-  in_bin = rvsimple_vl_bin.promise("out_bin"),
+rules.run_test_bin(
+  in_bin = exports.rvsimple_vl_bin.promise("out_bin"),
   in_insts = imports.rv_inst.tasks,
   command_path = "{repo_path}",
   args = "build/test/metron/tests/risc-v/instructions",
 )
 
-run_test_bin(
-  in_bin = rvsimple_ref_bin.promise("out_bin"),
+rules.run_test_bin(
+  in_bin = exports.rvsimple_ref_bin.promise("out_bin"),
   in_insts = imports.rv_inst.tasks,
   command_path = "{repo_path}",
   args = "build/test/metron/tests/risc-v/instructions",
@@ -8118,12 +8112,6 @@ metron   = imports.metron
 rules    = imports.rules
 metrolib = imports.metrolib
 
-run_test_bin = hancho.Config(
-  command = "{in_bin} {args} > {out_pass}.temp && mv {out_pass}.temp {out_pass}",
-  out_pass = "{in_bin}.pass",
-  args = "",
-)
-
 ################################################################################
 
 uart_top_h = "uart_top.h"
@@ -8146,7 +8134,7 @@ uart_top_sv = metron.convert(in_src = uart_top_h)
 
 # C++ testbench
 
-uart_bin = rules.cpp_bin(
+exports.uart_bin = rules.cpp_bin(
   name     = "uart_cpp",
   in_srcs  = "main.cpp",
   includes = includes,
@@ -8165,7 +8153,7 @@ uart_top_vl = rules.verilator(
   in_message = "message.hex",
 )
 
-uart_bin_vl = rules.cpp_bin(
+exports.uart_bin_vl = rules.cpp_bin(
   name     = "uart_vl",
   in_srcs  = "main_vl.cpp",
   includes = includes,
@@ -8176,7 +8164,7 @@ uart_bin_vl = rules.cpp_bin(
 
 # Icarus Verilog testbench
 
-uart_bin_iv = rules.iverilog(
+exports.uart_bin_iv = rules.iverilog(
   name     = "uart_iv",
   in_sv    = "uart_test_iv.sv",
   in_deps  = [uart_sv, uart_top_sv],
@@ -8215,9 +8203,9 @@ uart_test_ice40_bin = rules.icepack(
 
 ################################################################################
 
-run_test_bin(in_bin = uart_bin.promise("out_bin"), args = "message.hex")
-run_test_bin(in_bin = uart_bin_vl.promise("out_bin"))
-run_test_bin(in_bin = uart_bin_iv.promise("out_iv"))
+rules.run_test_bin(in_bin = exports.uart_bin.promise("out_bin"), args = "message.hex")
+rules.run_test_bin(in_bin = exports.uart_bin_vl.promise("out_bin"))
+rules.run_test_bin(in_bin = exports.uart_bin_iv.promise("out_iv"))
 #ifndef UART_HELLO_H
 #define UART_HELLO_H
 

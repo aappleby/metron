@@ -34,6 +34,10 @@ module uart_test_ice40
   logic pll_clock;
   logic pll_lock;
 
+  assign SER_DSRn = 1;
+  assign SER_DCDn = 1;
+  assign SER_CTSn = 1;
+
   /**
    * PLL configuration
    *
@@ -46,19 +50,18 @@ module uart_test_ice40
    * Achieved output frequency:    24.000 MHz
    */
   SB_PLL40_CORE #(
-                  .FEEDBACK_PATH("SIMPLE"),
-                  .DIVR(4'b0000),         // DIVR =  0
-                  .DIVF(7'b0111111),      // DIVF = 63
-                  .DIVQ(3'b101),          // DIVQ =  5
-                  .FILTER_RANGE(3'b001)   // FILTER_RANGE = 1
-          ) uut (
-                  .LOCK(pll_lock),
-                  .RESETB(1'b1),
-                  .BYPASS(1'b0),
-                  .REFERENCECLK(CLK),
-                  .PLLOUTCORE(pll_clock)
-                  );
-
+    .FEEDBACK_PATH("SIMPLE"),
+    .DIVR(4'b0000),         // DIVR =  0
+    .DIVF(7'b0111111),      // DIVF = 63
+    .DIVQ(3'b101),          // DIVQ =  5
+    .FILTER_RANGE(3'b001)   // FILTER_RANGE = 1
+  ) uut (
+    .LOCK(pll_lock),
+    .RESETB(1'b1),
+    .BYPASS(1'b0),
+    .REFERENCECLK(CLK),
+    .PLLOUTCORE(pll_clock)
+  );
 
   localparam pll_clock_rate = 24000000;
   localparam ser_clock_rate = 1200;

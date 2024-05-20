@@ -1,10 +1,10 @@
 import hancho
 
-hancho.load("gb_spu/gb_spu.hancho", **imports)
-hancho.load("ibex/ibex.hancho", **imports)
-hancho.load("j1/j1.hancho", **imports)
-hancho.load("picorv32/picorv32.hancho", **imports)
-hancho.load("pong/pong.hancho", **imports)
-hancho.load("rvsimple/rvsimple.hancho", **imports)
-hancho.load("tutorial/tutorial.hancho", **imports)
-hancho.load("uart/uart.hancho", **imports)
+exports.gb_spu   = hancho.load("gb_spu/gb_spu.hancho", **imports)
+exports.ibex     = hancho.load("ibex/ibex.hancho", **imports)
+exports.j1       = hancho.load("j1/j1.hancho", **imports)
+exports.picorv32 = hancho.load("picorv32/picorv32.hancho", **imports)
+exports.pong     = hancho.load("pong/pong.hancho", **imports)
+exports.rvsimple = hancho.load("rvsimple/rvsimple.hancho", **imports)
+exports.tutorial = hancho.load("tutorial/tutorial.hancho", **imports)
+exports.uart     = hancho.load("uart/uart.hancho", **imports)

@@ -39,8 +39,6 @@ verilated_threads_o = exports.compile_cpp(
   out_obj = "verilator/verilated_threads.o",
 )
 
-# "-G<name>=<value>"
-
 def gen_vlparams(c):
   result = []
   for key, val in c.items():
@@ -58,8 +56,6 @@ verilator_cmd = hancho.Config(
   gen_vlparams = gen_vlparams,
   params = {},
 )
-
-#---------------------------------------------------------------------------------------------------
 
 def verilator(*, name, in_top, includes = [], **kwargs):
   verilated = verilator_cmd(
@@ -94,6 +90,13 @@ exports.verilator = hancho.Config(call = verilator)
 
 #---------------------------------------------------------------------------------------------------
 
+exports.sv2v = hancho.Config(
+  desc = "Run sv2v on {rel(in_sv)}",
+  command = "symlinks/sv2v/bin/sv2v {join_prefix('-I', includes)} {rel(in_sv)} -w {rel(out_v)}",
+  includes = ["-I."],
+  out_v = "{swap_ext(in_sv, '.v')}",
+)
+
 def gen_chparams(c):
   result = []
   for key, val in c.items():
@@ -122,12 +125,7 @@ exports.icepack = hancho.Config(
   command = "icepack {rel(in_asc)} {rel(out_bin)}",
 )
 
-exports.sv2v = hancho.Config(
-  desc = "Run sv2v on {rel(in_sv)}",
-  command = "symlinks/sv2v/bin/sv2v {join_prefix('-I', includes)} {rel(in_sv)} -w {rel(out_v)}",
-  includes = ["-I."],
-  out_v = "{swap_ext(in_sv, '.v')}",
-)
+#---------------------------------------------------------------------------------------------------
 
 def gen_ivparams(params):
   result = []
@@ -143,3 +141,5 @@ exports.iverilog = hancho.Config(
   command = "iverilog {gen_ivparams(params)} -s{top} -g2012 {defines} {join_prefix('-I', includes)} {rel(in_sv)} -o {rel(out_iv)}",
   gen_ivparams = gen_ivparams,
 )
+
+#---------------------------------------------------------------------------------------------------

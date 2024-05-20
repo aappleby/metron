@@ -17,7 +17,6 @@ exports.compile_cpp = hancho.Config(metrolib.rules.compile_cpp, exports.cpp_sett
 exports.cpp_bin     = hancho.Config(metrolib.rules.cpp_bin,     exports.cpp_settings)
 exports.cpp_lib     = hancho.Config(metrolib.rules.cpp_lib,     exports.cpp_settings)
 exports.make        = metrolib.rules.make
-exports.check_pass  = metrolib.rules.check_pass
 
 exports.check_cpp_syntax = hancho.Config(
   command = "g++ -I. -I{repo_path} -fsyntax-only -c {rel_source_files} && touch {rel_build_files}.ok",

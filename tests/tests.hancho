@@ -1,21 +1,6 @@
 import hancho
 import glob
 
-################################################################################
-
-test_rvsimple = hancho.Config(
-  command_path = "{repo_path}",
-  command = "{in_bin} build/test/metron/tests/risc-v/instructions",
-  out_log = "{stem(in_bin)}.test",
-  deps    = imports.rv_inst.tasks,
-  is_test = True,
-  build_tag = "test",
-)
-
-test_rvsimple(in_bin  = imports.examples.rvsimple.rvsimple_bin)
-test_rvsimple(in_bin  = imports.examples.rvsimple.rvsimple_vl_bin)
-test_rvsimple(in_bin  = imports.examples.rvsimple.rvsimple_ref_bin)
-
 #---------------------------------------------------------------------------------------------------
 
 test_logic = imports.rules.cpp_bin(

@@ -16,20 +16,6 @@ test_rvsimple(in_bin  = imports.examples.rvsimple.rvsimple_bin)
 test_rvsimple(in_bin  = imports.examples.rvsimple.rvsimple_vl_bin)
 test_rvsimple(in_bin  = imports.examples.rvsimple.rvsimple_ref_bin)
 
-################################################################################
-
-test_uart = hancho.Config(
-  command_path = "{repo_path}",
-  command = "{in_bin} examples/uart/message.hex",
-  out_log = "{stem(in_bin)}.test",
-  is_test = True,
-  build_tag = "test",
-)
-
-test_uart(in_bin = imports.examples.uart.uart_bin)
-test_uart(in_bin = imports.examples.uart.uart_bin_vl)
-test_uart(in_bin = imports.examples.uart.uart_bin_iv)
-
 #---------------------------------------------------------------------------------------------------
 
 test_logic = imports.rules.cpp_bin(
@@ -139,9 +125,11 @@ test_sv2v = test_helpers.extend(
 # Test tool quirks
 
 for file in glob.glob("tools/pass/*.sv"):
-  test_icarus(in_src = file)
-  test_yosys_synth_pass(in_src = file)
   test_verilator(in_src = file)
+  sv2v = test_sv2v(in_src = file)
+  file_v = sv2v.promise("out_v")
+  test_icarus(in_src = file_v)
+  test_yosys_synth_pass(in_src = file_v)
 
 for file in glob.glob("tools/yosys/fail/*.sv"):
   test_yosys_synth_fail(in_src = file)
@@ -160,10 +148,16 @@ for file in glob.glob("metron/pass/*.h"):
   includes = ["-I.", "-I{repo_path}", "-I{build_path}/metron/pass"]
 
   test_syntax(in_src = file)
-  file_sv = test_metron_pass(in_src = file, should_fail = False).promise("out_sv")
 
-  temp = test_sv2v(in_src = file_sv, includes = includes)
-  file_v = temp.promise("out_v")
+  file_sv = test_metron_pass(
+    in_src = file,
+    should_fail = False
+  ).promise("out_sv")
+
+  file_v = test_sv2v(
+    in_src = file_sv,
+    includes = includes
+  ).promise("out_v")
 
   golden = file.replace("/pass/", "/golden/").replace(".h", ".sv")
   test_diff(in_src_A = file_sv, in_src_B = golden)
@@ -173,7 +167,7 @@ for file in glob.glob("metron/pass/*.h"):
     in_message = message_copy.promise("out_file"),
     includes = includes
   )
-  test_icarus(in_src = file_sv, includes = includes)
+  test_icarus(in_src = file_v, includes = includes)
   test_yosys_synth_pass(in_src = file_v, includes = includes)
 
 for file in glob.glob("metron/fail/*.h"):

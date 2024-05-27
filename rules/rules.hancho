@@ -91,7 +91,7 @@ exports.verilator = hancho.Config(call = verilator)
 
 exports.sv2v = hancho.Config(
   desc = "Run sv2v on {rel(in_sv)}",
-  command = "symlinks/sv2v/bin/sv2v {join_prefix('-I', includes)} {rel(in_sv)} -w {rel(out_v)}",
+  command = "{repo_path}/symlinks/sv2v/bin/sv2v {join_prefix('-I', includes)} {rel(in_sv)} -w {rel(out_v)}",
   includes = ["-I."],
   out_v = "{swap_ext(in_sv, '.v')}",
 )

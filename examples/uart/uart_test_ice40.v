@@ -2,7 +2,7 @@
 `define UART_BENCH_SV
 `default_nettype none
 
-`include "uart_top.sv"
+`include "uart_top.v"
 `include "SB_PLL40_CORE.v"
 
 //==============================================================================

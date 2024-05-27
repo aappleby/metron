@@ -24,6 +24,19 @@ includes = [
 uart_sv     = [metron.convert(in_src = src) for src in uart_h]
 uart_top_sv = metron.convert(in_src = uart_top_h)
 
+uart_v = [
+  rules.sv2v(
+    in_sv = task.promise("out_sv"),
+    includes = ["{repo_path}"]
+  )
+  for task in uart_sv
+]
+
+uart_top_v = rules.sv2v(
+  in_sv = uart_top_sv.promise("out_sv"),
+  includes = ["{repo_path}"]
+)
+
 # C++ testbench
 
 exports.uart_bin = rules.cpp_bin(
@@ -58,8 +71,8 @@ exports.uart_bin_vl = rules.cpp_bin(
 
 exports.uart_bin_iv = rules.iverilog(
   name     = "uart_iv",
-  in_sv    = "uart_test_iv.sv",
-  in_deps  = [uart_sv, uart_top_sv],
+  in_sv    = "uart_test_iv.v",
+  in_deps  = [uart_v, uart_top_v],
   out_iv   = "uart_iv",
   includes = includes,
   defines  = "-DIVERILOG",
@@ -70,9 +83,9 @@ exports.uart_bin_iv = rules.iverilog(
 
 # Synthesizable version of UART
 
-uart_yosys = rules.yosys(
-  in_sv    = "uart_test_ice40.sv",
-  in_deps  = [uart_sv, uart_top_sv],
+exports.uart_yosys = rules.yosys(
+  in_sv    = "uart_test_ice40.v",
+  in_deps  = [uart_v, uart_top_v],
   out_json = "{swap_ext(in_sv, '.json')}",
   top      = "uart_test_ice40",
   includes = includes,
@@ -80,15 +93,29 @@ uart_yosys = rules.yosys(
   in_message = "message.hex",
 )
 
-uart_nextpnr = rules.nextpnr(
-  in_json  = uart_yosys.promise("out_json"),
+exports.uart_nextpnr = rules.nextpnr(
+  in_json  = exports.uart_yosys.promise("out_json"),
   out_asc  = "uart_test_ice40.asc",
   chip     = "hx8k",
   package  = "ct256",
   pcf      = "ice40-hx8k-b-evn.pcf",
 )
 
-uart_test_ice40_bin = rules.icepack(
-  in_asc  = uart_nextpnr.promise("out_asc"),
+exports.uart_test_ice40_bin = rules.icepack(
+  in_asc  = exports.uart_nextpnr.promise("out_asc"),
   out_bin = "uart_test_ice40.bin",
 )
+
+################################################################################
+
+test_uart = hancho.Config(
+  command_path = "{repo_path}",
+  command = "{in_bin} examples/uart/message.hex",
+  out_log = "{stem(in_bin)}.test",
+  is_test = True,
+  build_tag = "test",
+)
+
+test_uart(in_bin = exports.uart_bin)
+test_uart(in_bin = exports.uart_bin_vl)
+test_uart(in_bin = exports.uart_bin_iv)

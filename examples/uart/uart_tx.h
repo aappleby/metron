@@ -20,7 +20,7 @@ public:
   }
 
   // True if the transmitter is ready to accept another byte.
-  logic<1> get_clear_to_send() const {
+  logic<1> get_ready() const {
     return ((bit_count_ == bit_count_done) && (bit_delay_ == bit_delay_max)) ||
            (bit_count_ > bit_count_done);
   }

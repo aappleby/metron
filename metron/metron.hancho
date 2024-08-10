@@ -4,9 +4,8 @@ import glob
 metron_lib = imports.rules.cpp_lib(
   name    = "metron_lib",
   in_srcs = glob.glob("*.cpp") + glob.glob("nodes/*.cpp"),
-  out_lib = "libmetron.a"
+  out_lib = "libmetron.a",
 )
-
 
 metron_bin = imports.rules.cpp_bin(
   name    = "metron_bin",
@@ -15,7 +14,7 @@ metron_bin = imports.rules.cpp_bin(
   out_bin = "metron",
 )
 
-exports.convert = hancho.Config(
+exports.convert = hancho.Command(
   command = "{in_binary} -q -v -e -c {rel(in_src)} -o {rel(out_sv)}",
   in_binary = metron_bin,
   out_sv = "{swap_ext(in_src, '.sv')}",

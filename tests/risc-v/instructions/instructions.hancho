@@ -1,7 +1,7 @@
 import hancho
 import glob
 
-build_rv_hex = hancho.Config(
+build_rv_hex = hancho.Command(
   command = [
     "riscv64-unknown-elf-gcc -mabi=ilp32 -march=rv32i -c {in_src} -o {out_o}",
     "riscv64-unknown-elf-ld -T{in_linkerscript} -melf32lriscv {out_o} -o {out_elf}",

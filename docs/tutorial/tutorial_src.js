@@ -6,10 +6,12 @@
   }
 
   Module.expectedDataFileDownloads++;
-  (function() {
+  (() => {
     // Do not attempt to redownload the virtual filesystem data when in a pthread or a Wasm Worker context.
-    if (Module['ENVIRONMENT_IS_PTHREAD'] || Module['$ww']) return;
-    var loadPackage = function(metadata) {
+    var isPthread = typeof ENVIRONMENT_IS_PTHREAD != 'undefined' && ENVIRONMENT_IS_PTHREAD;
+    var isWasmWorker = typeof ENVIRONMENT_IS_WASM_WORKER != 'undefined' && ENVIRONMENT_IS_WASM_WORKER;
+    if (isPthread || isWasmWorker) return;
+    function loadPackage(metadata) {
 
       var PACKAGE_PATH = '';
       if (typeof window === 'object') {
@@ -167,6 +169,6 @@ Module['FS_createPath']("/examples", "uart", true, true);
     }
 
     }
-    loadPackage({"files": [{"filename": "/examples/tutorial/adder.h", "start": 0, "end": 180}, {"filename": "/examples/tutorial/bit_twiddling.h", "start": 180, "end": 1168}, {"filename": "/examples/tutorial/blockram.h", "start": 1168, "end": 1700}, {"filename": "/examples/tutorial/checksum.h", "start": 1700, "end": 2442}, {"filename": "/examples/tutorial/clocked_adder.h", "start": 2442, "end": 2849}, {"filename": "/examples/tutorial/counter.h", "start": 2849, "end": 3000}, {"filename": "/examples/tutorial/declaration_order.h", "start": 3000, "end": 3826}, {"filename": "/examples/tutorial/functions_and_tasks.h", "start": 3826, "end": 4785}, {"filename": "/examples/tutorial/nonblocking.h", "start": 4785, "end": 4911}, {"filename": "/examples/tutorial/submodules.h", "start": 4911, "end": 6011}, {"filename": "/examples/tutorial/templates.h", "start": 6011, "end": 6494}, {"filename": "/examples/tutorial/tutorial.hancho", "start": 6494, "end": 6494}, {"filename": "/examples/tutorial/tutorial2.h", "start": 6494, "end": 6562}, {"filename": "/examples/tutorial/tutorial3.h", "start": 6562, "end": 6603}, {"filename": "/examples/tutorial/tutorial4.h", "start": 6603, "end": 6644}, {"filename": "/examples/tutorial/tutorial5.h", "start": 6644, "end": 6685}, {"filename": "/examples/tutorial/vga.h", "start": 6685, "end": 7865}, {"filename": "/examples/uart/README.md", "start": 7865, "end": 8109}, {"filename": "/examples/uart/uart.hancho", "start": 8109, "end": 11029}, {"filename": "/examples/uart/uart_hello.h", "start": 11029, "end": 13697}, {"filename": "/examples/uart/uart_rx.h", "start": 13697, "end": 16388}, {"filename": "/examples/uart/uart_top.h", "start": 16388, "end": 18264}, {"filename": "/examples/uart/uart_tx.h", "start": 18264, "end": 21321}], "remote_package_size": 21321});
+    loadPackage({"files": [{"filename": "/examples/tutorial/adder.h", "start": 0, "end": 180}, {"filename": "/examples/tutorial/bit_twiddling.h", "start": 180, "end": 1168}, {"filename": "/examples/tutorial/blockram.h", "start": 1168, "end": 1700}, {"filename": "/examples/tutorial/checksum.h", "start": 1700, "end": 2442}, {"filename": "/examples/tutorial/clocked_adder.h", "start": 2442, "end": 2849}, {"filename": "/examples/tutorial/counter.h", "start": 2849, "end": 3000}, {"filename": "/examples/tutorial/declaration_order.h", "start": 3000, "end": 3826}, {"filename": "/examples/tutorial/functions_and_tasks.h", "start": 3826, "end": 4785}, {"filename": "/examples/tutorial/nonblocking.h", "start": 4785, "end": 4911}, {"filename": "/examples/tutorial/submodules.h", "start": 4911, "end": 6011}, {"filename": "/examples/tutorial/templates.h", "start": 6011, "end": 6494}, {"filename": "/examples/tutorial/tutorial.hancho", "start": 6494, "end": 6494}, {"filename": "/examples/tutorial/tutorial2.h", "start": 6494, "end": 6562}, {"filename": "/examples/tutorial/tutorial3.h", "start": 6562, "end": 6603}, {"filename": "/examples/tutorial/tutorial4.h", "start": 6603, "end": 6644}, {"filename": "/examples/tutorial/tutorial5.h", "start": 6644, "end": 6685}, {"filename": "/examples/tutorial/vga.h", "start": 6685, "end": 7865}, {"filename": "/examples/uart/README.md", "start": 7865, "end": 8109}, {"filename": "/examples/uart/uart.hancho", "start": 8109, "end": 11030}, {"filename": "/examples/uart/uart_hello.h", "start": 11030, "end": 13698}, {"filename": "/examples/uart/uart_rx.h", "start": 13698, "end": 16389}, {"filename": "/examples/uart/uart_top.h", "start": 16389, "end": 18241}, {"filename": "/examples/uart/uart_tx.h", "start": 18241, "end": 21290}], "remote_package_size": 21290});
 
   })();

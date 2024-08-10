@@ -36,4 +36,4 @@ j1_dpram_sv = metron.convert(
 
 #j1_sv = metron(j1_h)
 
-#hancho.rules.check_cpp_syntax("j1/metron/j1.h")
+#imports.rules.check_cpp_syntax(in_src = "j1.h")

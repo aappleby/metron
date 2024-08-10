@@ -108,7 +108,7 @@ exports.rvsimple_ref_bin = rules.cpp_bin(
 
 ################################################################################
 
-test_rvsimple = hancho.Config(
+test_rvsimple = hancho.Command(
   command_path = "{repo_path}",
   command   = "{in_bin} build/test/metron/tests/risc-v/instructions",
   in_tests  = imports.rv_inst.tasks,

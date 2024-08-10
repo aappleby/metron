@@ -1,0 +1,141 @@
+import hancho
+
+rules = hancho.load("symlinks/hancho/rules.hancho")
+
+exports.update(rules)
+
+verilated_o = rules.compile_cpp(
+  name    = "verilated.o",
+  in_src  = "/usr/local/share/verilator/include/verilated.cpp",
+  out_obj = "verilator/verilated.o",
+)
+
+verilated_threads_o = rules.compile_cpp(
+  name    = "verilated_threads.o",
+  in_src  = "/usr/local/share/verilator/include/verilated_threads.cpp",
+  out_obj = "verilator/verilated_threads.o",
+)
+
+def gen_vlparams(c):
+  result = []
+  for key, val in c.items():
+    if isinstance(val, str):
+      val = f"\\\"{val}\\\""
+    result.append(f"-G{key}={val}")
+  return result
+
+verilator_cmd = hancho.Command(
+  desc = "Run Verilator on {rel(in_top)}",
+  command = "verilator -Wno-width --public {gen_vlparams(params)} {join_prefix('-I', includes)} --cc {rel(in_top)} -Mdir {path.dirname(rel(out_makefile))}",
+  out_makefile = r"{re.sub(r'([^/\\]+).sv', r'V\1.mk', in_top)}",
+  out_header   = r"{re.sub(r'([^/\\]+).sv', r'V\1.h',  in_top)}",
+  includes = ["."],
+  gen_vlparams = gen_vlparams,
+  params = {},
+)
+
+def verilator(*, name, in_top, includes = [], **kwargs):
+  verilated = verilator_cmd(
+    kwargs,
+    in_top = in_top,
+    includes = includes,
+  )
+
+  compiled = rules.make(
+    kwargs,
+    in_makefile = verilated.promise("out_makefile"),
+    out_obj     = "{swap_ext(in_makefile, '__ALL.o')}",
+    flags = [
+      "-B",
+    ],
+  )
+
+  lib = rules.cpp_lib(
+    kwargs,
+    name    = f"{name} lib",
+    in_top  = in_top,
+    in_objs = [verilated_threads_o, verilated_o, compiled],
+    out_lib = "{swap_ext(in_top, '.a')}",
+  )
+
+  return hancho.Task(
+    out_lib    = lib.promise("out_lib"),
+    out_header = verilated.promise("out_header"),
+  )
+
+exports.verilator = hancho.Command(call = verilator)
+
+
+exports.sv2v = hancho.Command(
+  desc = "Run sv2v on {rel(in_sv)}",
+  command = "{repo_path}/symlinks/sv2v/bin/sv2v {join_prefix('-I', includes)} {rel(in_sv)} -w {rel(out_v)}",
+  includes = ["-I."],
+  out_v = "{swap_ext(in_sv, '.v')}",
+)
+
+def gen_chparams(c):
+  result = []
+  for key, val in c.items():
+    if isinstance(val, str):
+      val = f"\"{val}\""
+    result.append(f"chparam -set {key} {val} {{top}};")
+  return result
+
+exports.yosys = hancho.Command(
+  desc = "Run yosys on {rel(in_sv)}",
+  command = "yosys -q -p 'read_verilog -defer {join_prefix('-I', includes)} -sv {rel(in_sv)}; dump; {gen_chparams(params)} synth_ice40 -top {top} -json {rel(out_json)};'",
+  gen_chparams = gen_chparams,
+  top = "{path.splitext(path.basename(in_sv))[0]}",
+  params = {},
+  includes = [],
+)
+
+exports.nextpnr = hancho.Command(
+  desc = "Run nextpnr-ice40 on {rel(in_json)}",
+  command = "nextpnr-ice40 {flags} -q --{chip} --package {package} --json {rel(in_json)} --asc {rel(out_asc)} --pcf {pcf}",
+  flags = "",
+)
+
+exports.icepack = hancho.Command(
+  desc = "Run icepack on {rel(in_asc)}",
+  command = "icepack {rel(in_asc)} {rel(out_bin)}",
+)
+
+#---------------------------------------------------------------------------------------------------
+
+def gen_ivparams(params):
+  result = []
+  for key, val in params.items():
+    if isinstance(val, str):
+      # Why Icarus wants string params to have escaped quotes is a mystery.
+      val = f"\\\"{val}\\\""
+    result.append(f"-P{{top}}.{key}={val}")
+  return result
+
+exports.iverilog = hancho.Command(
+  desc = "Run iverilog on {rel(in_sv)}",
+  command = "iverilog {gen_ivparams(params)} -s{top} -g2012 {defines} {join_prefix('-I', includes)} {rel(in_sv)} -o {rel(out_iv)}",
+  gen_ivparams = gen_ivparams,
+)
+
+#---------------------------------------------------------------------------------------------------
+
+exports.ems_package = hancho.Command(
+  desc     = "Package {rel(out_data)}",
+  command  = [
+    "rm -f {out_data}",
+    "rm -f {out_js}",
+    "python3 $EMSDK/upstream/emscripten/tools/file_packager.py {out_data} {flags} --js-output={out_js} --preload {preloads} --exclude {excludes} 2> /dev/null",
+  ],
+  flags    = "--no-node",
+  excludes = "*.cpp *.sv *.MD *.hex *.pcf *.v *.txt *.hancho",
+)
+
+#---------------------------------------------------------------------------------------------------
+
+exports.check_cpp_syntax = hancho.Command(
+  command = "g++ -I. -I{repo_path} -fsyntax-only -c {rel(in_src)} && touch {out_src}",
+  out_ok = "{rel(in_src)}.ok",
+)
+
+#---------------------------------------------------------------------------------------------------

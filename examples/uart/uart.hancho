@@ -108,7 +108,7 @@ exports.uart_test_ice40_bin = rules.icepack(
 
 ################################################################################
 
-test_uart = hancho.Config(
+test_uart = hancho.Command(
   command_path = "{repo_path}",
   command = "{in_bin} examples/uart/message.hex",
   out_log = "{stem(in_bin)}.test",

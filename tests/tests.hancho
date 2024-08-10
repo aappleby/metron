@@ -30,7 +30,7 @@ def gen_chparams(c):
     result.append(f"chparam -set {key} {val} {{top}};")
   return result
 
-test_helpers = hancho.Config(
+test_helpers = hancho.Command(
   is_test = True,
   build_tag = "test",
   gen_chparams = gen_chparams,
@@ -122,7 +122,7 @@ for file in glob.glob("tools/yosys/fail/*.sv"):
 #---------------------------------------------------------------------------------------------------
 # Test files in metron/pass and metron/fail
 
-copy = hancho.Config(command = "cp {in_file} {out_file}")
+copy = hancho.Command(command = "cp {in_file} {out_file}")
 
 message_copy = copy(
   in_file = "{repo_path}/tests/metron/pass/message.hex",

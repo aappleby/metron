@@ -2527,7 +2527,7 @@ j1_dpram_sv = metron.convert(
 
 #j1_sv = metron(j1_h)
 
-#hancho.rules.check_cpp_syntax("j1/metron/j1.h")
+#imports.rules.check_cpp_syntax(in_src = "j1.h")
 #include "metron/metron_tools.h"
 
 // PicoRV32 -- A Small RISC-V (RV32I) Processor Core
@@ -7137,7 +7137,7 @@ exports.rvsimple_ref_bin = rules.cpp_bin(
 
 ################################################################################
 
-test_rvsimple = hancho.Config(
+test_rvsimple = hancho.Command(
   command_path = "{repo_path}",
   command   = "{in_bin} build/test/metron/tests/risc-v/instructions",
   in_tests  = imports.rv_inst.tasks,
@@ -8200,7 +8200,7 @@ exports.uart_test_ice40_bin = rules.icepack(
 
 ################################################################################
 
-test_uart = hancho.Config(
+test_uart = hancho.Command(
   command_path = "{repo_path}",
   command = "{in_bin} examples/uart/message.hex",
   out_log = "{stem(in_bin)}.test",
@@ -8450,11 +8450,11 @@ public:
     logic<1> request = hello_.get_request();
 
     logic<1> serial = tx_.get_serial();
-    logic<1> clear_to_send = tx_.get_clear_to_send();
+    logic<1> ready = tx_.get_ready();
     logic<1> idle = tx_.get_idle();
 
     // Tick all submodules.
-    hello_.tick(reset, clear_to_send, idle);
+    hello_.tick(reset, ready, idle);
     tx_.tick(reset, data, request);
     rx_.tick(reset, serial);
   }
@@ -8494,7 +8494,7 @@ public:
   }
 
   // True if the transmitter is ready to accept another byte.
-  logic<1> get_clear_to_send() const {
+  logic<1> get_ready() const {
     return ((bit_count_ == bit_count_done) && (bit_delay_ == bit_delay_max)) ||
            (bit_count_ > bit_count_done);
   }

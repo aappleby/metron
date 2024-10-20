@@ -12,7 +12,7 @@ pong_sv = metron.convert(
 pong_vl = rules.verilator(
   name     = "pong vl",
   in_top   = pong_sv.promise("out_sv"),
-  includes = ["{repo_path}"]
+  includes = ["{repo_dir}"]
 )
 
 pong_bin = rules.cpp_bin(

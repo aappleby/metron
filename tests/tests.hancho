@@ -75,7 +75,7 @@ test_icarus = test_helpers.extend(
 
 test_syntax = test_helpers.extend(
   desc = "test c++ syntax {rel(in_src)}",
-  command = "g++ -I. -I{repo_path} --std=gnu++2a -fsyntax-only -c {rel(in_src)}",
+  command = "g++ -I. -I{repo_dir} --std=gnu++2a -fsyntax-only -c {rel(in_src)}",
   out_log = "{in_src}.syntax.test"
 )
 
@@ -104,7 +104,7 @@ test_diff = test_helpers.extend(
 test_sv2v = test_helpers.extend(
   desc = "test sv2v {rel(in_src)}",
   command = "sv2v {includes} {rel(in_src)} -w {rel(out_v)}",
-  includes = ["-I.", "-I{repo_path}"],
+  includes = ["-I.", "-I{repo_dir}"],
   out_v = "{swap_ext(in_src, '.v')}",
   out_log = "{in_src}.sv2v.test",
 )
@@ -128,12 +128,12 @@ for file in glob.glob("tools/yosys/fail/*.sv"):
 copy = hancho.Command(command = "cp {in_file} {out_file}")
 
 message_copy = copy(
-  in_file = "{repo_path}/tests/metron/pass/message.hex",
+  in_file = "{repo_dir}/tests/metron/pass/message.hex",
   out_file = "message.hex"
 )
 
 for file in glob.glob("metron/pass/*.h"):
-  includes = ["-I.", "-I{repo_path}", "-I{build_path}/metron/pass"]
+  includes = ["-I.", "-I{repo_dir}", "-I{build_dir}/metron/pass"]
 
   test_syntax(in_src = file)
 
@@ -170,10 +170,10 @@ def test_lockstep(lockstep_file, should_fail = False):
 
   lockstep_includes = [
     ".",
-    "{repo_path}",
-    "{repo_path}/symlinks",
-    "{repo_path}/symlinks/metrolib",
-    "{build_path}/lockstep",
+    "{repo_dir}",
+    "{repo_dir}/symlinks",
+    "{repo_dir}/symlinks/metrolib",
+    "{build_dir}/lockstep",
     "/usr/local/share/verilator/include",
   ]
 
@@ -191,7 +191,7 @@ def test_lockstep(lockstep_file, should_fail = False):
       "MT_TOP=Module",
       "VL_TOP=V{stem(in_hdr)}",
       "MT_HEADER={in_hdr}",
-      "VL_HEADER={build_path}/lockstep/V{stem(in_hdr)}.h",
+      "VL_HEADER={build_dir}/lockstep/V{stem(in_hdr)}.h",
     ],
     in_src  = "lockstep/test_lockstep.cpp",
     in_hdr  = lockstep_file,

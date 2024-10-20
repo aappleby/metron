@@ -1,23 +1,19 @@
-import hancho
+hancho.build_tag = "debug"
 
-hancho.Config.build_tag = "debug"
+hancho.rules = hancho.load("rules.hancho")
 
-cpp_settings = hancho.Config(
+hancho.cpp_config = hancho.Config(
   cpp_flags = ["-rdynamic", "-ggdb3"],
-  includes  = [".", "{repo_path}", "{repo_path}/symlinks", "{repo_path}/symlinks/metrolib", "{repo_path}/symlinks/matcheroni"],
+  includes  = [".", "{repo_dir}", "{repo_dir}/symlinks", "{repo_dir}/symlinks/metrolib", "{repo_dir}/symlinks/matcheroni"],
   warnings  = ["all", "error", "suggest-override", "no-unused-function", "no-sign-compare", "no-unused-variable", "no-unused-but-set-variable"],
   sys_libs  = ["gcc", "c", "SDL2"],
 )
 
-exports.rules = hancho.load("rules.hancho")
-exports.rules.compile_cpp.update(cpp_settings)
-exports.rules.cpp_bin.update(cpp_settings)
-exports.rules.cpp_lib.update(cpp_settings)
+hancho.metrolib = hancho.repo("symlinks/metrolib/build.hancho")
 
-exports.metrolib = hancho.repo("symlinks/metrolib/build.hancho", exports)
-exports.metron   = hancho.load("metron/metron.hancho", exports)
-exports.wasm     = hancho.load("metron/metron_wasm.hancho", exports)
-exports.rv_inst  = hancho.load("tests/risc-v/instructions/instructions.hancho", exports)
-exports.examples = hancho.load("examples/examples.hancho",  exports)
-exports.tests    = hancho.load("tests/tests.hancho", exports)
-exports.docs     = hancho.load("docs/docs.hancho", exports)
+hancho.metron   = hancho.load("metron/metron.hancho")
+#wasm     = hancho.load("metron/metron_wasm.hancho")
+#rv_inst  = hancho.load("tests/risc-v/instructions/instructions.hancho")
+examples = hancho.load("examples/examples.hancho")
+#tests    = hancho.load("tests/tests.hancho")
+#docs     = hancho.load("docs/docs.hancho")

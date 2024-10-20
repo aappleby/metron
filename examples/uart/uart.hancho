@@ -15,9 +15,9 @@ uart_h = [
 
 includes = [
   ".",
-  "{repo_path}",
-  "{repo_path}/symlinks/metrolib",
-  "{build_path}",
+  "{repo_dir}",
+  "{repo_dir}/symlinks/metrolib",
+  "{build_dir}",
   "/usr/local/share/verilator/include",
 ]
 
@@ -27,14 +27,14 @@ uart_top_sv = metron.convert(in_src = uart_top_h)
 uart_v = [
   rules.sv2v(
     in_sv = task.promise("out_sv"),
-    includes = ["{repo_path}"]
+    includes = ["{repo_dir}"]
   )
   for task in uart_sv
 ]
 
 uart_top_v = rules.sv2v(
   in_sv = uart_top_sv.promise("out_sv"),
-  includes = ["{repo_path}"]
+  includes = ["{repo_dir}"]
 )
 
 # C++ testbench
@@ -109,7 +109,7 @@ exports.uart_test_ice40_bin = rules.icepack(
 ################################################################################
 
 test_uart = hancho.Command(
-  command_path = "{repo_path}",
+  command_path = "{repo_dir}",
   command = "{in_bin} examples/uart/message.hex",
   out_log = "{stem(in_bin)}.test",
   is_test = True,

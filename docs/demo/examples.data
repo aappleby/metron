@@ -713,7 +713,7 @@ gb_spu_sv = imports.metron.convert(
 gb_spu_vl = imports.rules.verilator(
   name     = "GBSPU verilate",
   in_top   = gb_spu_sv.promise("out_sv"),
-  includes = ["{repo_path}"],
+  includes = ["{repo_dir}"],
 )
 
 gb_spu_main = imports.rules.cpp_bin(
@@ -723,8 +723,8 @@ gb_spu_main = imports.rules.cpp_bin(
   in_objs  = gb_spu_vl.promise("out_lib"),
   out_bin  = "gb_spu",
   includes = [
-    "{repo_path}",   # for metron/metron_tools.h
-    "{build_path}",  # for gb_spu/VMetroBoySPU2.h
+    "{repo_dir}",   # for metron/metron_tools.h
+    "{build_dir}",  # for gb_spu/VMetroBoySPU2.h
     "/usr/local/share/verilator/include",
   ],
 )
@@ -2521,7 +2521,7 @@ j1_dpram_sv = metron.convert(
 #  config,
 #  name = "J1 verilate",
 #  in_top = j1_top_sv.promise("out_sv"),
-#  includes = ["{repo_path}"],
+#  includes = ["{repo_dir}"],
 #)
 
 
@@ -5994,7 +5994,7 @@ pong_sv = metron.convert(
 pong_vl = rules.verilator(
   name     = "pong vl",
   in_top   = pong_sv.promise("out_sv"),
-  includes = ["{repo_path}"]
+  includes = ["{repo_dir}"]
 )
 
 pong_bin = rules.cpp_bin(
@@ -7081,7 +7081,7 @@ rvsimple_top_vl = rules.verilator(
   name     = "rvsimple verilator",
   in_top   = rvsimple_top_sv.promise("out_sv"),
   in_deps  = rvsimple_sv,
-  includes = ["{repo_path}"]
+  includes = ["{repo_dir}"]
 )
 
 exports.rvsimple_vl_bin = rules.cpp_bin(
@@ -7095,10 +7095,10 @@ exports.rvsimple_vl_bin = rules.cpp_bin(
   out_bin = "rvsimple_vl",
   includes = [
     ".",
-    "{repo_path}",
-    "{repo_path}/symlinks",
-    "{repo_path}/symlinks/metrolib",
-    "{build_path}",
+    "{repo_dir}",
+    "{repo_dir}/symlinks",
+    "{repo_dir}/symlinks/metrolib",
+    "{build_dir}",
     "/usr/local/share/verilator/include",
   ]
 )
@@ -7109,9 +7109,9 @@ rvsimple_ref_vl = rules.verilator(
   name     = "rvsimple_ref verilator",
   in_top   = "toplevel.sv",
   in_path  = "{base_path}/reference_sv",
-  out_path = "{build_path}/reference_sv",
+  out_path = "{build_dir}/reference_sv",
   includes = [
-    "{repo_path}",
+    "{repo_dir}",
     "reference_sv"
   ],
 )
@@ -7127,10 +7127,10 @@ exports.rvsimple_ref_bin = rules.cpp_bin(
   out_bin = "rvsimple_ref",
   includes = [
     ".",
-    "{repo_path}",
-    "{repo_path}/symlinks",
-    "{repo_path}/symlinks/metrolib",
-    "{build_path}",
+    "{repo_dir}",
+    "{repo_dir}/symlinks",
+    "{repo_dir}/symlinks/metrolib",
+    "{build_dir}",
     "/usr/local/share/verilator/include",
   ],
 )
@@ -7138,7 +7138,7 @@ exports.rvsimple_ref_bin = rules.cpp_bin(
 ################################################################################
 
 test_rvsimple = hancho.Command(
-  command_path = "{repo_path}",
+  command_path = "{repo_dir}",
   command   = "{in_bin} build/test/metron/tests/risc-v/instructions",
   in_tests  = imports.rv_inst.tasks,
   out_log   = "{stem(in_bin)}.test",
@@ -8107,9 +8107,9 @@ uart_h = [
 
 includes = [
   ".",
-  "{repo_path}",
-  "{repo_path}/symlinks/metrolib",
-  "{build_path}",
+  "{repo_dir}",
+  "{repo_dir}/symlinks/metrolib",
+  "{build_dir}",
   "/usr/local/share/verilator/include",
 ]
 
@@ -8119,14 +8119,14 @@ uart_top_sv = metron.convert(in_src = uart_top_h)
 uart_v = [
   rules.sv2v(
     in_sv = task.promise("out_sv"),
-    includes = ["{repo_path}"]
+    includes = ["{repo_dir}"]
   )
   for task in uart_sv
 ]
 
 uart_top_v = rules.sv2v(
   in_sv = uart_top_sv.promise("out_sv"),
-  includes = ["{repo_path}"]
+  includes = ["{repo_dir}"]
 )
 
 # C++ testbench
@@ -8201,7 +8201,7 @@ exports.uart_test_ice40_bin = rules.icepack(
 ################################################################################
 
 test_uart = hancho.Command(
-  command_path = "{repo_path}",
+  command_path = "{repo_dir}",
   command = "{in_bin} examples/uart/message.hex",
   out_log = "{stem(in_bin)}.test",
   is_test = True,

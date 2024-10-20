@@ -52,7 +52,7 @@ rvsimple_top_vl = rules.verilator(
   name     = "rvsimple verilator",
   in_top   = rvsimple_top_sv.promise("out_sv"),
   in_deps  = rvsimple_sv,
-  includes = ["{repo_path}"]
+  includes = ["{repo_dir}"]
 )
 
 exports.rvsimple_vl_bin = rules.cpp_bin(
@@ -66,10 +66,10 @@ exports.rvsimple_vl_bin = rules.cpp_bin(
   out_bin = "rvsimple_vl",
   includes = [
     ".",
-    "{repo_path}",
-    "{repo_path}/symlinks",
-    "{repo_path}/symlinks/metrolib",
-    "{build_path}",
+    "{repo_dir}",
+    "{repo_dir}/symlinks",
+    "{repo_dir}/symlinks/metrolib",
+    "{build_dir}",
     "/usr/local/share/verilator/include",
   ]
 )
@@ -80,9 +80,9 @@ rvsimple_ref_vl = rules.verilator(
   name     = "rvsimple_ref verilator",
   in_top   = "toplevel.sv",
   in_path  = "{base_path}/reference_sv",
-  out_path = "{build_path}/reference_sv",
+  out_path = "{build_dir}/reference_sv",
   includes = [
-    "{repo_path}",
+    "{repo_dir}",
     "reference_sv"
   ],
 )
@@ -98,10 +98,10 @@ exports.rvsimple_ref_bin = rules.cpp_bin(
   out_bin = "rvsimple_ref",
   includes = [
     ".",
-    "{repo_path}",
-    "{repo_path}/symlinks",
-    "{repo_path}/symlinks/metrolib",
-    "{build_path}",
+    "{repo_dir}",
+    "{repo_dir}/symlinks",
+    "{repo_dir}/symlinks/metrolib",
+    "{build_dir}",
     "/usr/local/share/verilator/include",
   ],
 )
@@ -109,7 +109,7 @@ exports.rvsimple_ref_bin = rules.cpp_bin(
 ################################################################################
 
 test_rvsimple = hancho.Command(
-  command_path = "{repo_path}",
+  command_path = "{repo_dir}",
   command   = "{in_bin} build/test/metron/tests/risc-v/instructions",
   in_tests  = imports.rv_inst.tasks,
   out_log   = "{stem(in_bin)}.test",

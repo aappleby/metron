@@ -1,4 +1,3 @@
-import hancho
 import glob
 
 build_rv_hex = hancho.Command(
@@ -20,8 +19,5 @@ build_rv_hex = hancho.Command(
   build_tag = "test",
 )
 
-tasks = []
 for file in glob.glob("*.S"):
-  tasks.append(build_rv_hex(in_src = file))
-
-exports.tasks = tasks
+  hancho(build_rv_hex, in_src = file)

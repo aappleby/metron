@@ -30,7 +30,7 @@ j1_dpram_sv = metron.convert(
 #  config,
 #  name = "J1 verilate",
 #  in_top = j1_top_sv.promise("out_sv"),
-#  includes = ["{repo_path}"],
+#  includes = ["{repo_dir}"],
 #)
 
 

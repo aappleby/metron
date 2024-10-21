@@ -10,8 +10,8 @@ hancho.cpp_config = hancho.Config(
 )
 
 hancho.metrolib = hancho.repo("symlinks/metrolib/build.hancho")
-
 hancho.metron   = hancho.load("metron/metron.hancho")
+
 #wasm     = hancho.load("metron/metron_wasm.hancho")
 #rv_inst  = hancho.load("tests/risc-v/instructions/instructions.hancho")
 examples = hancho.load("examples/examples.hancho")

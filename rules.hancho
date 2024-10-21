@@ -26,14 +26,14 @@ def gen_vlparams(c):
 verilator_cmd = hancho.Command(
   desc = "Run Verilator on {rel(in_top)}",
   command = "verilator -Wno-width --public {gen_vlparams(params)} {join_prefix('-I', includes)} --cc {rel(in_top)} -Mdir {path.dirname(rel(out_makefile))}",
-  out_makefile = r"{re.sub(r'([^/\\]+).sv', r'V\1.mk', in_top)}",
-  out_header   = r"{re.sub(r'([^/\\]+).sv', r'V\1.h',  in_top)}",
+  out_makefile = r"{re.sub(r'([^/\\]+)\.sv', r'V\1.mk', in_top)}",
+  out_header   = r"{re.sub(r'([^/\\]+)\.sv', r'V\1.h',  in_top)}",
   includes = ["."],
   gen_vlparams = gen_vlparams,
   params = {},
 )
 
-def verilator(hancho, /, name, in_top, includes = [], **kwargs):
+def verilator(hancho, /, in_top, includes = [], **kwargs):
   verilated = hancho(
     verilator_cmd,
     kwargs,
@@ -51,19 +51,19 @@ def verilator(hancho, /, name, in_top, includes = [], **kwargs):
     ],
   )
 
-  #lib = hancho(
-  #  rules.cpp_lib,
-  #  kwargs,
-  #  name    = f"{name} lib",
-  #  in_top  = in_top,
-  #  in_objs = [verilated_threads_o, verilated_o, compiled],
-  #  out_lib = "{swap_ext(in_top, '.a')}",
-  #)
-#
-  #return hancho.Task(
-  #  out_lib    = lib.promise("out_lib"),
-  #  out_header = verilated.promise("out_header"),
-  #)
+  lib = hancho(
+    rules.cpp_lib,
+    kwargs,
+    in_top  = in_top,
+    in_objs = [verilated_threads_o, verilated_o, compiled],
+    out_lib = "{swap_ext(in_top, '.a')}",
+  )
+
+  return hancho(
+    command    = None,
+    out_lib    = lib.promise("out_lib"),
+    out_header = verilated.promise("out_header"),
+  )
 
 
 sv2v = hancho.Command(

@@ -19,5 +19,7 @@ build_rv_hex = hancho.Command(
   build_tag = "test",
 )
 
+tasks = []
 for file in glob.glob("*.S"):
-  hancho(build_rv_hex, in_src = file)
+  task = hancho(build_rv_hex, in_src = file)
+  tasks.append(task)

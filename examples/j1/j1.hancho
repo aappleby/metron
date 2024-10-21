@@ -1,34 +1,37 @@
-import hancho
-
-metrolib = imports.metrolib
-metron   = imports.metron
-rules    = imports.rules
+metron   = hancho.metron
+rules    = hancho.rules
 
 ################################################################################
 
-j1_bin = rules.cpp_bin(
-  name    = "J1 bin",
+j1_bin = hancho(
+  rules.cpp_bin,
   in_srcs = "main.cpp",
-  out_bin = "j1"
+  out_bin = "j1",
+  includes = "{repo_dir}",
 )
 
 #j1_h = ["dpram.h", "j1.h"]
 
-j1_top_sv = metron.convert(
-  name = "J1 metronize",
+j1_top_sv = hancho(
+  metron.convert,
   in_src = "j1.h"
 )
 
-j1_dpram_sv = metron.convert(
-  name = "J1 metronize",
+j1_dpram_sv = hancho(
+  metron.convert,
   in_src = "dpram.h"
 )
 
 # doesn't currently compile
 
+#j1_top_vl = hancho(
+#  rules.verilator,
+#  in_top   = j1_top_sv.promise("out_sv"),
+#  includes = ["{repo_dir}"],
+#)
+
 #j1_top_vl = rules.verilator(
 #  config,
-#  name = "J1 verilate",
 #  in_top = j1_top_sv.promise("out_sv"),
 #  includes = ["{repo_dir}"],
 #)

@@ -4,7 +4,7 @@ hancho.rules = hancho.load("rules.hancho")
 
 hancho.cpp_config = hancho.Config(
   cpp_flags = ["-rdynamic", "-ggdb3"],
-  includes  = [".", "{repo_dir}", "{repo_dir}/symlinks", "{repo_dir}/symlinks/metrolib", "{repo_dir}/symlinks/matcheroni"],
+  includes  = ["{repo_dir}", "{repo_dir}/symlinks", "{repo_dir}/symlinks/metrolib", "{repo_dir}/symlinks/matcheroni"],
   warnings  = ["all", "error", "suggest-override", "no-unused-function", "no-sign-compare", "no-unused-variable", "no-unused-but-set-variable"],
   sys_libs  = ["gcc", "c", "SDL2"],
 )

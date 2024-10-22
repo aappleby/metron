@@ -28,7 +28,7 @@ verilator_cmd = hancho.Command(
   command = "verilator -Wno-width --public {gen_vlparams(params)} {join_prefix('-I', includes)} --cc {rel(in_top)} -Mdir {path.dirname(rel(out_makefile))}",
   out_makefile = r"{re.sub(r'([^/\\]+)\.sv', r'V\1.mk', in_top)}",
   out_header   = r"{re.sub(r'([^/\\]+)\.sv', r'V\1.h',  in_top)}",
-  includes = ["."],
+  includes = [],
   gen_vlparams = gen_vlparams,
   params = {},
 )
@@ -69,7 +69,7 @@ def verilator(hancho, /, in_top, includes = [], **kwargs):
 sv2v = hancho.Command(
   desc = "Run sv2v on {rel(in_sv)}",
   command = "{repo_dir}/symlinks/sv2v/bin/sv2v {join_prefix('-I', includes)} {rel(in_sv)} -w {rel(out_v)}",
-  includes = ["-I."],
+  includes = [],
   out_v = "{swap_ext(in_sv, '.v')}",
 )
 

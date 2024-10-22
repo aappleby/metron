@@ -13,7 +13,7 @@ def sorted_glob(*args, **kwargs):
 
 examples_data = hancho(
   rules.ems_package,
-  base_path   = "{repo_dir}",
+  task_dir    = "{repo_dir}",
   preloads    = "examples tests/metron",
   in_examples = sorted_glob("../examples/**/*.h"),
   in_tests    = sorted_glob("../tests/metron/**/*.h"),
@@ -23,7 +23,7 @@ examples_data = hancho(
 
 tutorial_data = hancho(
   rules.ems_package,
-  base_path   = "{repo_dir}",
+  task_dir    = "{repo_dir}",
   preloads    = "examples/tutorial examples/uart",
   in_tutorial = sorted_glob("../examples/tutorial/*.h"),
   in_uart     = sorted_glob("../examples/uart/*.h"),

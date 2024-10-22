@@ -1,13 +1,11 @@
-import hancho
-
-exports.gb_spu   = hancho.load("gb_spu/gb_spu.hancho", **imports)
-exports.ibex     = hancho.load("ibex/ibex.hancho", **imports)
-exports.j1       = hancho.load("j1/j1.hancho", **imports)
-exports.picorv32 = hancho.load("picorv32/picorv32.hancho", **imports)
-exports.pong     = hancho.load("pong/pong.hancho", **imports)
-exports.rvsimple = hancho.load("rvsimple/rvsimple.hancho", **imports)
-exports.tutorial = hancho.load("tutorial/tutorial.hancho", **imports)
-exports.uart     = hancho.load("uart/uart.hancho", **imports)
+gb_spu   = hancho.load("gb_spu/gb_spu.hancho")
+ibex     = hancho.load("ibex/ibex.hancho")
+j1       = hancho.load("j1/j1.hancho")
+picorv32 = hancho.load("picorv32/picorv32.hancho")
+pong     = hancho.load("pong/pong.hancho")
+rvsimple = hancho.load("rvsimple/rvsimple.hancho")
+tutorial = hancho.load("tutorial/tutorial.hancho")
+uart     = hancho.load("uart/uart.hancho")
 #ifndef METRO_BOY_SPU2_H
 #define METRO_BOY_SPU2_H
 #include "metron/metron_tools.h"
@@ -703,21 +701,23 @@ private:
 };
 
 #endif // METRO_BOY_SPU2_H
-import hancho
+MetroBoySPU2.sv: MetroBoySPU2.h
+metron   = hancho.metron
+rules    = hancho.rules
 
-gb_spu_sv = imports.metron.convert(
-  name     = "GBSPU metronize",
+gb_spu_sv = hancho(
+  metron.convert,
   in_src   = "MetroBoySPU2.h",
 )
 
-gb_spu_vl = imports.rules.verilator(
-  name     = "GBSPU verilate",
+gb_spu_vl = hancho(
+  rules.verilator,
   in_top   = gb_spu_sv.promise("out_sv"),
   includes = ["{repo_dir}"],
 )
 
-gb_spu_main = imports.rules.cpp_bin(
-  name     = "GBSPU bin",
+gb_spu_main = hancho(
+  rules.cpp_bin,
   in_srcs  = "gb_spu_main.cpp",
   in_deps  = gb_spu_vl.promise("out_header"),
   in_objs  = gb_spu_vl.promise("out_lib"),
@@ -2305,6 +2305,7 @@ public:
 private:
   logic<16> ram_[65536];
 };
+dpram.sv: dpram.h
 #include "metron/metron_tools.h"
 #include "dpram.h"
 
@@ -2489,37 +2490,40 @@ private:
   logic<5>  rsp_;
 
 };
-import hancho
-
-metrolib = imports.metrolib
-metron   = imports.metron
-rules    = imports.rules
+metron   = hancho.metron
+rules    = hancho.rules
 
 ################################################################################
 
-j1_bin = rules.cpp_bin(
-  name    = "J1 bin",
+j1_bin = hancho(
+  rules.cpp_bin,
   in_srcs = "main.cpp",
-  out_bin = "j1"
+  out_bin = "j1",
+  includes = "{repo_dir}",
 )
 
 #j1_h = ["dpram.h", "j1.h"]
 
-j1_top_sv = metron.convert(
-  name = "J1 metronize",
+j1_top_sv = hancho(
+  metron.convert,
   in_src = "j1.h"
 )
 
-j1_dpram_sv = metron.convert(
-  name = "J1 metronize",
+j1_dpram_sv = hancho(
+  metron.convert,
   in_src = "dpram.h"
 )
 
 # doesn't currently compile
 
+#j1_top_vl = hancho(
+#  rules.verilator,
+#  in_top   = j1_top_sv.promise("out_sv"),
+#  includes = ["{repo_dir}"],
+#)
+
 #j1_top_vl = rules.verilator(
 #  config,
-#  name = "J1 verilate",
 #  in_top = j1_top_sv.promise("out_sv"),
 #  includes = ["{repo_dir}"],
 #)
@@ -2528,6 +2532,8 @@ j1_dpram_sv = metron.convert(
 #j1_sv = metron(j1_h)
 
 #imports.rules.check_cpp_syntax(in_src = "j1.h")
+j1.sv: j1.h \
+ dpram.h
 #include "metron/metron_tools.h"
 
 // PicoRV32 -- A Small RISC-V (RV32I) Processor Core
@@ -5980,34 +5986,35 @@ class Pong {
 //------------------------------------------------------------------------------
 
 #endif
-import hancho
+metrolib = hancho.metrolib
+metron   = hancho.metron
+rules    = hancho.rules
 
-metrolib = imports.metrolib
-metron   = imports.metron
-rules    = imports.rules
-
-pong_sv = metron.convert(
-  name   = "pong metronize",
+pong_sv = hancho(
+  metron.convert,
   in_src = "pong.h"
 )
 
-pong_vl = rules.verilator(
-  name     = "pong vl",
+pong_vl = hancho(
+  rules.verilator,
   in_top   = pong_sv.promise("out_sv"),
   includes = ["{repo_dir}"]
 )
 
-pong_bin = rules.cpp_bin(
-  name = "pong bin",
+pong_bin = hancho(
+  rules.cpp_bin,
+  includes = ["{repo_dir}", "{repo_dir}/symlinks/metrolib"],
   in_srcs = "main.cpp",
   in_libs = [
     pong_vl.promise("out_lib"),
     metrolib.libcore
   ],
   out_bin = "pong",
+  sys_libs  = ["gcc", "c", "SDL2"],
 )
 
 # FIXME verilated version of pong
+pong.sv: pong.h
 Original source from https://www.fpga4fun.com/PongGame.html
 A port of riscv-simple-sv (https://github.com/tilk/riscv-simple-sv) to Metron.
 // RISC-V SiMPLE SV -- adder module
@@ -7027,26 +7034,30 @@ class riscv_core {
 };
 
 #endif // RISCV_CORE_H
-import hancho
-
-metrolib = imports.metrolib
-metron   = imports.metron
-rules    = imports.rules
+metrolib = hancho.metrolib
+metron   = hancho.metron
+rules    = hancho.rules
+rv_inst  = hancho.rv_inst
 
 ################################################################################
 
-exports.rvsimple_bin = rules.cpp_bin(
-  name = "rvsimple bin",
+rvsimple_bin = hancho(
+  rules.cpp_bin,
   in_srcs = "main.cpp",
   in_libs = metrolib.libcore,
-  out_bin = "rvsimple"
+  out_bin = "rvsimple",
+  includes = [
+    "{repo_dir}",
+    "{repo_dir}/symlinks",
+    "{repo_dir}/symlinks/metrolib",
+  ]
 )
 
 ################################################################################
 
-rvsimple_top_h = "toplevel.h"
+_rvsimple_top_h = "toplevel.h"
 
-rvsimple_h = [
+_rvsimple_h = [
   "adder.h",
   "alu_control.h",
   "alu.h",
@@ -7071,21 +7082,22 @@ rvsimple_h = [
   "singlecycle_datapath.h",
 ]
 
-rvsimple_sv = [metron.convert(in_src = src) for src in rvsimple_h]
+rvsimple_sv = [hancho(metron.convert, in_src = src) for src in _rvsimple_h]
 
-rvsimple_top_sv = metron.convert(
-  in_src = rvsimple_top_h
+rvsimple_top_sv = hancho(
+  metron.convert,
+  in_src = _rvsimple_top_h
 )
 
-rvsimple_top_vl = rules.verilator(
-  name     = "rvsimple verilator",
+rvsimple_top_vl = hancho(
+  rules.verilator,
   in_top   = rvsimple_top_sv.promise("out_sv"),
   in_deps  = rvsimple_sv,
   includes = ["{repo_dir}"]
 )
 
-exports.rvsimple_vl_bin = rules.cpp_bin(
-  name = "rvsimple_vl bin",
+rvsimple_vl_bin = hancho(
+  rules.cpp_bin,
   in_srcs = "main_vl.cpp",
   in_deps = rvsimple_top_vl.promise("out_header"), # must be here
   in_libs = [
@@ -7094,7 +7106,6 @@ exports.rvsimple_vl_bin = rules.cpp_bin(
   ],
   out_bin = "rvsimple_vl",
   includes = [
-    ".",
     "{repo_dir}",
     "{repo_dir}/symlinks",
     "{repo_dir}/symlinks/metrolib",
@@ -7105,19 +7116,17 @@ exports.rvsimple_vl_bin = rules.cpp_bin(
 
 ################################################################################
 
-rvsimple_ref_vl = rules.verilator(
-  name     = "rvsimple_ref verilator",
-  in_top   = "toplevel.sv",
-  in_path  = "{base_path}/reference_sv",
-  out_path = "{build_dir}/reference_sv",
+rvsimple_ref_vl = hancho(
+  rules.verilator,
+  in_top   = "reference_sv/toplevel.sv",
   includes = [
     "{repo_dir}",
     "reference_sv"
   ],
 )
 
-exports.rvsimple_ref_bin = rules.cpp_bin(
-  name = "rvsimple_ref bin",
+rvsimple_ref_bin = hancho(
+  rules.cpp_bin,
   in_srcs = "main_ref_vl.cpp",
   in_deps = rvsimple_ref_vl.promise("out_header"), # must be here
   in_libs = [
@@ -7126,7 +7135,6 @@ exports.rvsimple_ref_bin = rules.cpp_bin(
   ],
   out_bin = "rvsimple_ref",
   includes = [
-    ".",
     "{repo_dir}",
     "{repo_dir}/symlinks",
     "{repo_dir}/symlinks/metrolib",
@@ -7138,16 +7146,15 @@ exports.rvsimple_ref_bin = rules.cpp_bin(
 ################################################################################
 
 test_rvsimple = hancho.Command(
-  command_path = "{repo_dir}",
-  command   = "{in_bin} build/test/metron/tests/risc-v/instructions",
-  in_tests  = imports.rv_inst.tasks,
+  desc      = "Test rvsimple binary '{in_bin}'",
+  command   = "{in_bin} build/debug/tests/risc-v/instructions",
+  in_tests  = rv_inst.tasks,
   out_log   = "{stem(in_bin)}.test",
-  build_tag = "test",
 )
 
-test_rvsimple(in_bin  = exports.rvsimple_bin)
-test_rvsimple(in_bin  = exports.rvsimple_vl_bin)
-test_rvsimple(in_bin  = exports.rvsimple_ref_bin)
+hancho(test_rvsimple, in_bin = rvsimple_bin,     task_dir = "{repo_dir}")
+hancho(test_rvsimple, in_bin = rvsimple_vl_bin,  task_dir = "{repo_dir}")
+hancho(test_rvsimple, in_bin = rvsimple_ref_bin, task_dir = "{repo_dir}")
 
 ################################################################################
 // RISC-V SiMPLE SV -- single-cycle controller
@@ -8089,11 +8096,9 @@ A simple UART-based testbench for Metron that exercises translation to
 SystemVerilog, simulation via Icarus, translation back to C via Verilator,
 synthesis via Yosys, place+route via NextPNR, and uploading to a Lattice ICE40
 fpga via Icestorm.
-import hancho
-
-metron   = imports.metron
-rules    = imports.rules
-metrolib = imports.metrolib
+metron   = hancho.metron
+rules    = hancho.rules
+metrolib = hancho.metrolib
 
 ################################################################################
 
@@ -8112,25 +8117,28 @@ includes = [
   "/usr/local/share/verilator/include",
 ]
 
-uart_sv     = [metron.convert(in_src = src) for src in uart_h]
-uart_top_sv = metron.convert(in_src = uart_top_h)
+uart_sv     = [hancho(metron.convert, in_src = src) for src in uart_h]
+uart_top_sv = hancho(metron.convert, in_src = uart_top_h)
 
 uart_v = [
-  rules.sv2v(
+  hancho(
+    rules.sv2v,
     in_sv = task.promise("out_sv"),
-    includes = ["{repo_dir}"]
+    includes = "{repo_dir}"
   )
   for task in uart_sv
 ]
 
-uart_top_v = rules.sv2v(
+uart_top_v = hancho(
+  rules.sv2v,
   in_sv = uart_top_sv.promise("out_sv"),
   includes = ["{repo_dir}"]
 )
 
 # C++ testbench
 
-exports.uart_bin = rules.cpp_bin(
+uart_bin = hancho(
+  rules.cpp_bin,
   name     = "uart_cpp",
   in_srcs  = "main.cpp",
   includes = includes,
@@ -8140,7 +8148,8 @@ exports.uart_bin = rules.cpp_bin(
 
 # Verilator testbench
 
-uart_top_vl = rules.verilator(
+uart_top_vl = hancho(
+  rules.verilator,
   name     = "verilate uart_top",
   in_top   = uart_top_sv.promise("out_sv"), # FIXME has to be a promise, because has to be a string...
   in_deps  = uart_sv,
@@ -8149,7 +8158,8 @@ uart_top_vl = rules.verilator(
   in_message = "message.hex",
 )
 
-exports.uart_bin_vl = rules.cpp_bin(
+uart_bin_vl = hancho(
+  rules.cpp_bin,
   name     = "uart_vl",
   in_srcs  = "main_vl.cpp",
   includes = includes,
@@ -8160,7 +8170,8 @@ exports.uart_bin_vl = rules.cpp_bin(
 
 # Icarus Verilog testbench
 
-exports.uart_bin_iv = rules.iverilog(
+uart_bin_iv = hancho(
+  rules.iverilog,
   name     = "uart_iv",
   in_sv    = "uart_test_iv.v",
   in_deps  = [uart_v, uart_top_v],
@@ -8174,7 +8185,8 @@ exports.uart_bin_iv = rules.iverilog(
 
 # Synthesizable version of UART
 
-exports.uart_yosys = rules.yosys(
+uart_yosys = hancho(
+  rules.yosys,
   in_sv    = "uart_test_ice40.v",
   in_deps  = [uart_v, uart_top_v],
   out_json = "{swap_ext(in_sv, '.json')}",
@@ -8184,31 +8196,31 @@ exports.uart_yosys = rules.yosys(
   in_message = "message.hex",
 )
 
-exports.uart_nextpnr = rules.nextpnr(
-  in_json  = exports.uart_yosys.promise("out_json"),
+uart_nextpnr = hancho(
+  rules.nextpnr,
+  in_json  = uart_yosys.promise("out_json"),
   out_asc  = "uart_test_ice40.asc",
   chip     = "hx8k",
   package  = "ct256",
   pcf      = "ice40-hx8k-b-evn.pcf",
 )
 
-exports.uart_test_ice40_bin = rules.icepack(
-  in_asc  = exports.uart_nextpnr.promise("out_asc"),
+uart_test_ice40_bin = hancho(
+  rules.icepack,
+  in_asc  = uart_nextpnr.promise("out_asc"),
   out_bin = "uart_test_ice40.bin",
 )
 
 ################################################################################
 
 test_uart = hancho.Command(
-  command_path = "{repo_dir}",
   command = "{in_bin} examples/uart/message.hex",
   out_log = "{stem(in_bin)}.test",
-  build_tag = "test",
 )
 
-test_uart(in_bin = exports.uart_bin)
-test_uart(in_bin = exports.uart_bin_vl)
-test_uart(in_bin = exports.uart_bin_iv)
+hancho(test_uart, in_bin = uart_bin,    task_dir = "{repo_dir}")
+hancho(test_uart, in_bin = uart_bin_vl, task_dir = "{repo_dir}")
+hancho(test_uart, in_bin = uart_bin_iv, task_dir = "{repo_dir}")
 #ifndef UART_HELLO_H
 #define UART_HELLO_H
 

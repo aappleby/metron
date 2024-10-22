@@ -114,7 +114,6 @@ test_rvsimple = hancho.Command(
   command   = "{in_bin} build/debug/tests/risc-v/instructions",
   in_tests  = rv_inst.tasks,
   out_log   = "{stem(in_bin)}.test",
-  build_tag = "test",
 )
 
 hancho(test_rvsimple, in_bin = rvsimple_bin,     task_dir = "{repo_dir}")

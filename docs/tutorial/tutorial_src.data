@@ -533,7 +533,6 @@ test_uart = hancho.Command(
   command_path = "{repo_dir}",
   command = "{in_bin} examples/uart/message.hex",
   out_log = "{stem(in_bin)}.test",
-  is_test = True,
   build_tag = "test",
 )
 

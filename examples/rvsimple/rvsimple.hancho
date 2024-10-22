@@ -114,12 +114,11 @@ test_rvsimple = hancho.Command(
   command   = "{in_bin} build/debug/tests/risc-v/instructions",
   in_tests  = rv_inst.tasks,
   out_log   = "{stem(in_bin)}.test",
-  is_test   = True,
   build_tag = "test",
 )
 
-hancho(test_rvsimple, in_bin = rvsimple_bin, task_dir = "{repo_dir}", verbose=True)
-#hancho(test_rvsimple, in_bin = rvsimple_vl_bin)
-#hancho(test_rvsimple, in_bin = rvsimple_ref_bin)
+hancho(test_rvsimple, in_bin = rvsimple_bin,     task_dir = "{repo_dir}")
+hancho(test_rvsimple, in_bin = rvsimple_vl_bin,  task_dir = "{repo_dir}")
+hancho(test_rvsimple, in_bin = rvsimple_ref_bin, task_dir = "{repo_dir}")
 
 ################################################################################

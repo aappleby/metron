@@ -48,9 +48,6 @@ metron_js_src = [
   sorted_glob("*.cpp"),
   sorted_glob("main/*.cpp"),
   sorted_glob("nodes/*.cpp"),
-  "{repo_dir}/symlinks/metrolib/metrolib/core/Platform.cpp",
-  "{repo_dir}/symlinks/metrolib/metrolib/core/Utils.cpp",
-  "{repo_dir}/symlinks/metrolib/metrolib/core/Err.cpp",
 ]
 
 metron_objs = []
@@ -59,9 +56,27 @@ for file in hancho.flatten(metron_js_src):
   obj = hancho(emcc, in_src=file, build_tag = "wasm")
   metron_objs.append(obj)
 
+metrolib_js_src = [
+  "{repo_dir}/symlinks/metrolib/metrolib/core/Platform.cpp",
+  "{repo_dir}/symlinks/metrolib/metrolib/core/Utils.cpp",
+  "{repo_dir}/symlinks/metrolib/metrolib/core/Err.cpp",
+]
+
+metrolib_objs = []
+for file in hancho.flatten(metrolib_js_src):
+  obj = hancho(
+    emcc,
+    in_src=file,
+    repo_name = "metrolib",
+    build_tag = "wasm",
+    out_obj = "{swap_ext(path.basename(in_src), '.o')}",
+    build_dir = "{root_dir}/{build_root}/wasm/metrolib",
+  )
+  metrolib_objs.append(obj)
+
 metron_js = hancho(
   emld,
-  in_objs   = metron_objs,
+  in_objs   = metron_objs + metrolib_objs,
   out_js    = "{repo_dir}/docs/app/metron.js",
   out_wasm  = "{repo_dir}/docs/app/metron.wasm",
   build_tag = "wasm"

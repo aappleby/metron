@@ -16,7 +16,6 @@ build_rv_hex = hancho.Command(
   out_data_bin = "{stem(in_src)}.data.bin",
   out_code_vh = "{stem(in_src)}.code.vh",
   out_data_vh = "{stem(in_src)}.data.vh",
-  build_tag = "test",
 )
 
 tasks = []

@@ -1,8 +1,6 @@
-import hancho
-
-metron   = imports.metron
-rules    = imports.rules
-metrolib = imports.metrolib
+metron   = hancho.metron
+rules    = hancho.rules
+metrolib = hancho.metrolib
 
 ################################################################################
 
@@ -21,25 +19,28 @@ includes = [
   "/usr/local/share/verilator/include",
 ]
 
-uart_sv     = [metron.convert(in_src = src) for src in uart_h]
-uart_top_sv = metron.convert(in_src = uart_top_h)
+uart_sv     = [hancho(metron.convert, in_src = src) for src in uart_h]
+uart_top_sv = hancho(metron.convert, in_src = uart_top_h)
 
 uart_v = [
-  rules.sv2v(
+  hancho(
+    rules.sv2v,
     in_sv = task.promise("out_sv"),
-    includes = ["{repo_dir}"]
+    includes = "{repo_dir}"
   )
   for task in uart_sv
 ]
 
-uart_top_v = rules.sv2v(
+uart_top_v = hancho(
+  rules.sv2v,
   in_sv = uart_top_sv.promise("out_sv"),
   includes = ["{repo_dir}"]
 )
 
 # C++ testbench
 
-exports.uart_bin = rules.cpp_bin(
+uart_bin = hancho(
+  rules.cpp_bin,
   name     = "uart_cpp",
   in_srcs  = "main.cpp",
   includes = includes,
@@ -49,7 +50,8 @@ exports.uart_bin = rules.cpp_bin(
 
 # Verilator testbench
 
-uart_top_vl = rules.verilator(
+uart_top_vl = hancho(
+  rules.verilator,
   name     = "verilate uart_top",
   in_top   = uart_top_sv.promise("out_sv"), # FIXME has to be a promise, because has to be a string...
   in_deps  = uart_sv,
@@ -58,7 +60,8 @@ uart_top_vl = rules.verilator(
   in_message = "message.hex",
 )
 
-exports.uart_bin_vl = rules.cpp_bin(
+uart_bin_vl = hancho(
+  rules.cpp_bin,
   name     = "uart_vl",
   in_srcs  = "main_vl.cpp",
   includes = includes,
@@ -69,7 +72,8 @@ exports.uart_bin_vl = rules.cpp_bin(
 
 # Icarus Verilog testbench
 
-exports.uart_bin_iv = rules.iverilog(
+uart_bin_iv = hancho(
+  rules.iverilog,
   name     = "uart_iv",
   in_sv    = "uart_test_iv.v",
   in_deps  = [uart_v, uart_top_v],
@@ -83,7 +87,8 @@ exports.uart_bin_iv = rules.iverilog(
 
 # Synthesizable version of UART
 
-exports.uart_yosys = rules.yosys(
+uart_yosys = hancho(
+  rules.yosys,
   in_sv    = "uart_test_ice40.v",
   in_deps  = [uart_v, uart_top_v],
   out_json = "{swap_ext(in_sv, '.json')}",
@@ -93,29 +98,28 @@ exports.uart_yosys = rules.yosys(
   in_message = "message.hex",
 )
 
-exports.uart_nextpnr = rules.nextpnr(
-  in_json  = exports.uart_yosys.promise("out_json"),
+uart_nextpnr = hancho(
+  rules.nextpnr,
+  in_json  = uart_yosys.promise("out_json"),
   out_asc  = "uart_test_ice40.asc",
   chip     = "hx8k",
   package  = "ct256",
   pcf      = "ice40-hx8k-b-evn.pcf",
 )
 
-exports.uart_test_ice40_bin = rules.icepack(
-  in_asc  = exports.uart_nextpnr.promise("out_asc"),
+uart_test_ice40_bin = hancho(
+  rules.icepack,
+  in_asc  = uart_nextpnr.promise("out_asc"),
   out_bin = "uart_test_ice40.bin",
 )
 
 ################################################################################
 
 test_uart = hancho.Command(
-  command_path = "{repo_dir}",
   command = "{in_bin} examples/uart/message.hex",
   out_log = "{stem(in_bin)}.test",
-  is_test = True,
-  build_tag = "test",
 )
 
-test_uart(in_bin = exports.uart_bin)
-test_uart(in_bin = exports.uart_bin_vl)
-test_uart(in_bin = exports.uart_bin_iv)
+hancho(test_uart, in_bin = uart_bin,    task_dir = "{repo_dir}")
+hancho(test_uart, in_bin = uart_bin_vl, task_dir = "{repo_dir}")
+hancho(test_uart, in_bin = uart_bin_iv, task_dir = "{repo_dir}")

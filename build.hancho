@@ -1,19 +1,23 @@
-hancho.build_tag = "debug"
+if 'base_rules' not in hancho:
+    hancho.base_rules = hancho.load("symlinks/hancho/base_rules.hancho")
 
-hancho.rules = hancho.load("rules.hancho")
+if 'metrolib' not in hancho:
+    hancho.metrolib = hancho.repo("symlinks/metrolib/build.hancho")
 
-hancho.cpp_config = hancho.Config(
-  cpp_flags = ["-rdynamic", "-ggdb3"],
-  includes  = ["{repo_dir}", "{repo_dir}/symlinks", "{repo_dir}/symlinks/metrolib", "{repo_dir}/symlinks/matcheroni"],
-  warnings  = ["all", "error", "suggest-override", "no-unused-function", "no-sign-compare", "no-unused-variable", "no-unused-but-set-variable"],
-  sys_libs  = ["gcc", "c", "SDL2"],
+if 'metron_rules' not in hancho:
+    hancho.metron_rules = hancho.load("metron_rules.hancho")
+
+metron_config = hancho.Config(
+    cpp_flags = ["-rdynamic", "-ggdb3"],
+    includes  = ["{repo_dir}", "{repo_dir}/symlinks", "{repo_dir}/symlinks/metrolib", "{repo_dir}/symlinks/matcheroni"],
+    warnings  = ["all", "error", "suggest-override", "no-unused-function", "no-sign-compare", "no-unused-variable", "no-unused-but-set-variable"],
+    sys_libs  = ["gcc", "c", "SDL2"],
 )
 
-hancho.metrolib = hancho.repo("symlinks/metrolib/build.hancho")
-hancho.metron   = hancho.load("metron/metron.hancho")
-hancho.rv_inst  = hancho.load("tests/risc-v/instructions/instructions.hancho")
+metron  = hancho.load("metron/metron.hancho", metron_config=metron_config)
+rv_inst = hancho.load("tests/risc-v/instructions/instructions.hancho")
 
-examples = hancho.load("examples/examples.hancho")
+examples = hancho.load("examples/examples.hancho", metron=metron, rv_inst=rv_inst)
 wasm     = hancho.load("metron/metron_wasm.hancho")
-tests    = hancho.load("tests/tests.hancho")
+tests    = hancho.load("tests/tests.hancho", metron=metron)
 docs     = hancho.load("docs/docs.hancho")

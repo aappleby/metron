@@ -1,7 +1,7 @@
 import glob
 from os import path
 
-rules = hancho.rules
+rules = hancho.metron_rules
 
 #---------------------------------------------------------------------------------------------------
 # Bundled headers for demo & tutorial

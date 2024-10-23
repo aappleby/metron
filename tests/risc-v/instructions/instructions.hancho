@@ -1,5 +1,7 @@
 import glob
 
+build_dir = hancho.expand("{build_dir}")
+
 build_rv_hex = hancho.Command(
   command = [
     "riscv64-unknown-elf-gcc -mabi=ilp32 -march=rv32i -c {in_src} -o {out_o}",

@@ -1,217 +1,213 @@
 import glob
 
-rules    = hancho.rules
-metron   = hancho.metron
-metrolib = hancho.metrolib
-
 hancho.includes = [
-  "{repo_dir}",
-  "{build_dir}/metron/pass"
+    "{repo_dir}",
+    "{build_dir}/metron/pass"
 ]
 
 #---------------------------------------------------------------------------------------------------
 
 test_logic_bin = hancho(
-  rules.cpp_bin,
-  name    = "utils/test_logic",
-  in_srcs = "utils/test_logic.cpp",
-  in_objs = metrolib.libcore,
-  out_bin = "utils/test_logic",
-  includes = [
-    "{repo_dir}",
-    "{repo_dir}/symlinks/metrolib"
-  ],
+    hancho.base_rules.cpp_bin,
+    name    = "utils/test_logic",
+    in_srcs = "utils/test_logic.cpp",
+    in_objs = hancho.metrolib.libcore,
+    out_bin = "utils/test_logic",
+    includes = [
+        "{repo_dir}",
+        "{repo_dir}/symlinks/metrolib"
+    ],
 )
 
 test_logic = hancho(
-  command = [
-    "{in_test}",
-    "touch {out_pass}",
-  ],
-  in_test = test_logic_bin,
-  out_pass = "{stem(in_test)}.pass",
+    command = [
+        "{in_test}",
+        "touch {out_pass}",
+    ],
+    in_test = test_logic_bin,
+    out_pass = "{stem(in_test)}.pass",
 )
 
 #---------------------------------------------------------------------------------------------------
 
 def gen_chparams(c):
-  result = []
-  for key, val in c.items():
-    if isinstance(val, str):
-      val = f"\"{val}\""
-    result.append(f"chparam -set {key} {val} {{top}};")
-  return result
+    result = []
+    for key, val in c.items():
+        if isinstance(val, str):
+            val = f"\"{val}\""
+        result.append(f"chparam -set {key} {val} {{top}};")
+    return result
 
 test_helpers = hancho.Config(
-  gen_chparams = gen_chparams,
-  params = {},
+    gen_chparams = gen_chparams,
+    params = {},
 )
 
 test_yosys_synth = hancho.Command(
-  test_helpers,
-  desc = "test yosys synth {rel(in_src)}",
-  command = [
-    "yosys -q -p 'read_verilog {join_prefix('-I', includes)} -sv {rel(in_src)}; {gen_chparams(params)} synth_ice40 -json /dev/null'",
-    "touch {out_pass}",
-  ],
-  out_pass = "{in_src}.yosys_synth.pass",
+    test_helpers,
+    desc = "test yosys synth {rel(in_src)}",
+    command = [
+        "yosys -q -p 'read_verilog {join_prefix('-I', includes)} -sv {rel(in_src)}; {gen_chparams(params)} synth_ice40 -json /dev/null'",
+        "touch {out_pass}",
+    ],
+    out_pass = "{in_src}.yosys_synth.pass",
 )
 
 test_verilator = hancho.Command(
-  test_helpers,
-  desc = "test verilator {rel(in_src)}",
-  command = [
-    "verilator -Wno-width {join_prefix('-I', includes)} --lint-only {rel(in_src)}",
-    "touch {out_pass}",
-  ],
-  out_pass = "{in_src}.verilator.pass",
+    test_helpers,
+    desc = "test verilator {rel(in_src)}",
+    command = [
+        "verilator -Wno-width {join_prefix('-I', includes)} --lint-only {rel(in_src)}",
+        "touch {out_pass}",
+    ],
+    out_pass = "{in_src}.verilator.pass",
 )
 
 test_icarus = hancho.Command(
-  test_helpers,
-  desc = "test icarus {rel(in_src)}",
-  command = [
-    "iverilog -g2012 -Wall {join_prefix('-I', includes)} -o /dev/null {rel(in_src)}",
-    "touch {out_pass}",
-  ],
-  out_pass = "{in_src}.icarus.pass",
+    test_helpers,
+    desc = "test icarus {rel(in_src)}",
+    command = [
+        "iverilog -g2012 -Wall {join_prefix('-I', includes)} -o /dev/null {rel(in_src)}",
+        "touch {out_pass}",
+    ],
+    out_pass = "{in_src}.icarus.pass",
 )
 
 test_syntax = hancho.Command(
-  test_helpers,
-  desc = "test c++ syntax {rel(in_src)}",
-  command = [
-    "g++ -I{repo_dir} --std=gnu++2a -fsyntax-only -c {rel(in_src)}",
-    "touch {out_pass}",
-  ],
-  out_pass = "{in_src}.syntax.pass"
+    test_helpers,
+    desc = "test c++ syntax {rel(in_src)}",
+    command = [
+        "g++ -I{repo_dir} --std=gnu++2a -fsyntax-only -c {rel(in_src)}",
+        "touch {out_pass}",
+    ],
+    out_pass = "{in_src}.syntax.pass"
 )
 
 test_metron = hancho.Command(
-  test_helpers,
-  desc      = "test metron {rel(in_src)}",
-  command   = "{in_metron} -q -c {rel(in_src)} -o {rel(out_sv)}",
-  in_metron = metron.metron_bin,
-  out_sv    = "{swap_ext(in_src, '.sv')}",
-  #out_pass   = "{in_src}.metron.pass"
+    test_helpers,
+    desc      = "test metron {rel(in_src)}",
+    command   = "{in_metron} -q -c {rel(in_src)} -o {rel(out_sv)}",
+    in_metron = hancho.metron.metron_bin,
+    out_sv    = "{swap_ext(in_src, '.sv')}",
+    #out_pass   = "{in_src}.metron.pass"
 )
 
 test_diff = hancho.Command(
-  test_helpers,
-  desc    = "test diff {rel(in_src_A)} {rel(in_src_B)}",
-  command = [
-    "diff {rel(in_src_A)} {rel(in_src_B)}",
-    "touch {out_pass}",
-  ],
-  out_pass = "{in_src_A}.diff.pass"
+    test_helpers,
+    desc    = "test diff {rel(in_src_A)} {rel(in_src_B)}",
+    command = [
+        "diff {rel(in_src_A)} {rel(in_src_B)}",
+        "touch {out_pass}",
+    ],
+    out_pass = "{in_src_A}.diff.pass"
 )
 
 test_sv2v = hancho.Command(
-  test_helpers,
-  desc = "test sv2v {rel(in_src)}",
-  command = "sv2v {join_prefix('-I', includes)} {rel(in_src)} -w {rel(out_v)}",
-  out_v = "{swap_ext(in_src, '.v')}",
+    test_helpers,
+    desc = "test sv2v {rel(in_src)}",
+    command = "sv2v {join_prefix('-I', includes)} {rel(in_src)} -w {rel(out_v)}",
+    out_v = "{swap_ext(in_src, '.v')}",
 )
 
 #---------------------------------------------------------------------------------------------------
 # Test tool quirks
 
 for file_sv in glob.glob("tools/pass/*.sv"):
-  file_v = hancho(test_sv2v, in_src = file_sv)
-  hancho(test_verilator, in_src = file_sv)
-  hancho(test_icarus, in_src = file_v)
-  hancho(test_yosys_synth, in_src = file_v)
+    file_v = hancho(test_sv2v, in_src = file_sv)
+    hancho(test_verilator, in_src = file_sv)
+    hancho(test_icarus, in_src = file_v)
+    hancho(test_yosys_synth, in_src = file_v)
 
 for file in glob.glob("tools/yosys/fail/*.sv"):
-  hancho(test_yosys_synth, name = "test yosys synth fail", in_src = file, should_fail = True)
+    hancho(test_yosys_synth, name = "test yosys synth fail", in_src = file, should_fail = True)
 
 #---------------------------------------------------------------------------------------------------
 # Test files in metron/pass and metron/fail
 
 message_copy = hancho(
-  command  = "cp {in_file} {out_file}",
-  in_file  = "{repo_dir}/tests/metron/pass/message.hex",
-  out_file = "message.hex"
+    command  = "cp {in_file} {out_file}",
+    in_file  = "{repo_dir}/tests/metron/pass/message.hex",
+    out_file = "message.hex"
 )
 
 for file in glob.glob("metron/pass/*.h"):
-  hancho(test_syntax, in_src = file)
+    hancho(test_syntax, in_src = file)
 
-  file_sv = hancho(test_metron, in_src = file)
-  file_v  = hancho(test_sv2v, in_src = file_sv)
+    file_sv = hancho(test_metron, in_src = file)
+    file_v  = hancho(test_sv2v, in_src = file_sv)
 
-  golden = file.replace("/pass/", "/golden/").replace(".h", ".sv")
-  hancho(test_diff, in_src_A = file_sv, in_src_B = golden)
+    golden = file.replace("/pass/", "/golden/").replace(".h", ".sv")
+    hancho(test_diff, in_src_A = file_sv, in_src_B = golden)
 
-  hancho(
-    test_verilator,
-    in_src = file_sv,
-    in_message = message_copy,
-  )
-  hancho(test_icarus, in_src = file_v)
-  hancho(test_yosys_synth, in_src = file_v)
+    hancho(
+        test_verilator,
+        in_src = file_sv,
+        in_message = message_copy,
+    )
+    hancho(test_icarus, in_src = file_v)
+    hancho(test_yosys_synth, in_src = file_v)
 
 for file in glob.glob("metron/fail/*.h"):
-  hancho(test_syntax, in_src = file)
-  hancho(test_metron, in_src = file, should_fail = True)
+    hancho(test_syntax, in_src = file)
+    hancho(test_metron, in_src = file, should_fail = True)
 
 #---------------------------------------------------------------------------------------------------
 # Lockstep tests
 
 def test_lockstep(lockstep_file, should_fail = False):
-  out_sv = hancho(test_metron, in_src = lockstep_file).promise("out_sv")
+    out_sv = hancho(test_metron, in_src = lockstep_file).promise("out_sv")
 
-  lockstep_includes = [
-    "{repo_dir}",
-    "{repo_dir}/symlinks",
-    "{repo_dir}/symlinks/metrolib",
-    "{build_dir}/lockstep",
-    "/usr/local/share/verilator/include",
-  ]
+    lockstep_includes = [
+        "{repo_dir}",
+        "{repo_dir}/symlinks",
+        "{repo_dir}/symlinks/metrolib",
+        "{build_dir}/lockstep",
+        "/usr/local/share/verilator/include",
+    ]
 
-  out_vl = hancho(
-    rules.verilator,
-    name = "test lockstep",
-    in_top = out_sv,
-    includes = lockstep_includes,
-  )
+    out_vl = hancho(
+        hancho.metron_rules.verilator,
+        name = "test lockstep",
+        in_top = out_sv,
+        includes = lockstep_includes,
+    )
 
-  lockstep_obj = hancho(
-    command = "g++ -O3 -std=gnu++2a {join_prefix('-D', defines)} {join_prefix('-I', includes)} -c {rel(in_src)} -o {rel(out_obj)}",
-    includes = lockstep_includes,
-    defines = [
-      "MT_TOP=Module",
-      "VL_TOP=V{stem(in_hdr)}",
-      "MT_HEADER={in_hdr}",
-      "VL_HEADER={build_dir}/lockstep/V{stem(in_hdr)}.h",
-    ],
-    in_src  = "lockstep/test_lockstep.cpp",
-    in_hdr  = lockstep_file,
-    in_deps = out_vl.promise("out_header"),
-    out_obj = "{swap_ext(in_hdr, '.o')}",
-  )
+    lockstep_obj = hancho(
+        command = "g++ -O3 -std=gnu++2a {join_prefix('-D', defines)} {join_prefix('-I', includes)} -c {rel(in_src)} -o {rel(out_obj)}",
+        includes = lockstep_includes,
+        defines = [
+        "MT_TOP=Module",
+        "VL_TOP=V{stem(in_hdr)}",
+        "MT_HEADER={in_hdr}",
+        "VL_HEADER={build_dir}/lockstep/V{stem(in_hdr)}.h",
+        ],
+        in_src  = "lockstep/test_lockstep.cpp",
+        in_hdr  = lockstep_file,
+        in_deps = out_vl.promise("out_header"),
+        out_obj = "{swap_ext(in_hdr, '.o')}",
+    )
 
-  lockstep_bin = hancho(
-    command = "g++ {in_obj} {in_lib} -o {rel(out_bin)}",
-    in_obj  = lockstep_obj,
-    in_lib  = [out_vl.promise("out_lib"), metrolib.libcore],
-    out_bin = "{swap_ext(in_obj, '')}",
-  )
+    lockstep_bin = hancho(
+        command = "g++ {in_obj} {in_lib} -o {rel(out_bin)}",
+        in_obj  = lockstep_obj,
+        in_lib  = [out_vl.promise("out_lib"), hancho.metrolib.libcore],
+        out_bin = "{swap_ext(in_obj, '')}",
+    )
 
-  hancho(
-    command  = [
-      "{in_bin}",
-      "touch {out_pass}",
-    ],
-    in_bin   = lockstep_bin,
-    out_pass = "{in_bin}.lockstep.pass",
-    should_fail = should_fail,
-  )
+    hancho(
+        command  = [
+        "{in_bin}",
+        "touch {out_pass}",
+        ],
+        in_bin   = lockstep_bin,
+        out_pass = "{in_bin}.lockstep.pass",
+        should_fail = should_fail,
+    )
 
 for file in ["lockstep/lfsr.h", "lockstep/counter.h", "lockstep/funcs_and_tasks.h"]:
-  test_lockstep(file, should_fail = False)
+    test_lockstep(file, should_fail = False)
 
 for file in ["lockstep/timeout_bad.h", "lockstep/lockstep_bad.h"]:
-  test_lockstep(file, should_fail = True)
+    test_lockstep(file, should_fail = True)
 
 #---------------------------------------------------------------------------------------------------

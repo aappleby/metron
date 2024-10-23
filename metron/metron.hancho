@@ -1,23 +1,23 @@
 import glob
 
-rules      = hancho.pop('rules')
-metrolib   = hancho.pop('metrolib')
-cpp_config = hancho.pop('cpp_config')
+assert hancho.metron_rules
+assert hancho.metron_config
+assert hancho.metrolib
 
 metron_lib = hancho(
-  rules.cpp_lib,
-  cpp_config,
+  hancho.base_rules.cpp_lib,
+  hancho.metron_config,
   name    = "metron_lib",
   in_srcs = glob.glob("*.cpp") + glob.glob("nodes/*.cpp"),
   out_lib = "libmetron.a",
 )
 
 metron_bin = hancho(
-  rules.cpp_bin,
-  cpp_config,
+  hancho.base_rules.cpp_bin,
+  hancho.metron_config,
   name    = "metron_bin",
   in_srcs = glob.glob("main/*.cpp"),
-  in_objs = [metron_lib, metrolib.libcore],
+  in_objs = [metron_lib, hancho.metrolib.libcore],
   out_bin = "metron",
 )
 

@@ -1,10 +1,5 @@
-metron   = hancho.metron
-rules    = hancho.rules
-
-################################################################################
-
 j1_bin = hancho(
-  rules.cpp_bin,
+  hancho.base_rules.cpp_bin,
   in_srcs = "main.cpp",
   out_bin = "j1",
   includes = "{repo_dir}",
@@ -13,12 +8,12 @@ j1_bin = hancho(
 #j1_h = ["dpram.h", "j1.h"]
 
 j1_top_sv = hancho(
-  metron.convert,
+  hancho.metron.convert,
   in_src = "j1.h"
 )
 
 j1_dpram_sv = hancho(
-  metron.convert,
+  hancho.metron.convert,
   in_src = "dpram.h"
 )
 

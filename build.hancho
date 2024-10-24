@@ -21,3 +21,6 @@ examples = hancho.load("examples/examples.hancho", metron=metron, rv_inst=rv_ins
 wasm     = hancho.load("metron/metron_wasm.hancho")
 tests    = hancho.load("tests/tests.hancho", metron=metron)
 docs     = hancho.load("docs/docs.hancho")
+
+convert = metron.convert
+sv2v    = hancho.metron_rules.sv2v

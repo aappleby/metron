@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
   auto echo_opt    = app.add_flag  ("-e,--echo",       global_options.echo,         "Echo the converted source back to the terminal, with color-coding.");
   auto dump_opt    = app.add_flag  ("-d,--dump",       global_options.dump,         "Dump the syntax tree of the source file(s) to the console.");
   auto mono_opt    = app.add_flag  ("-m,--monochrome", global_options.monochrome,   "Monochrome mode, no color-coding");
-  auto inc_opt     = app.add_option("-i,--include",    global_options.inc_path,     "Include path");
+  auto inc_opt     = app.add_option("-i,-I,--include", global_options.inc_paths,    "Include path")->allow_extra_args();
   auto src_opt     = app.add_option("-c,--convert",    global_options.src_name,     "Full path to source file to translate from C++ to SystemVerilog");
   auto dst_opt     = app.add_option("-o,--output",     global_options.dst_name,     "Output file path. If not specified, will only check the source for convertibility.");
   // clang-format on

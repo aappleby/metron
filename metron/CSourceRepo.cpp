@@ -86,7 +86,11 @@ Err CSourceRepo::load_source(std::string filename, CSourceFile** out_source) {
 
   std::string absolute_path = resolve_filename(filename);
 
-  assert(!absolute_path.empty());
+
+  if (absolute_path.empty()) {
+    fprintf(stderr, "Could not find file %s\n", filename.c_str());
+    assert(!absolute_path.empty());
+  }
 
   if (auto f = get_file(absolute_path)) {
     if (out_source) *out_source = f;

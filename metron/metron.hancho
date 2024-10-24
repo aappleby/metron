@@ -23,7 +23,9 @@ metron_bin = hancho(
 
 convert = hancho.Command(
   desc = "Run Hancho on {rel(in_src)}",
-  command = "{in_binary} -q -v -e -c {rel(in_src)} -o {rel(out_sv)}",
+  command = "{in_binary} {joined_includes} -q -v -e -c {rel(in_src)} -o {rel(out_sv)}",
   in_binary = metron_bin,
   out_sv = "{swap_ext(in_src, '.sv')}",
+  joined_includes = "{join_prefix('-I', includes)}",
+  includes = [],
 )

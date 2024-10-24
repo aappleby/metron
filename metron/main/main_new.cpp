@@ -324,8 +324,8 @@ int main_new() {
   CSourceRepo repo;
 
   repo.search_paths.insert(".");
-  if (!global_options.inc_path.empty()) {
-    repo.search_paths.insert(global_options.inc_path);
+  for (auto& path : global_options.inc_paths) {
+    repo.search_paths.insert(path);
   }
 
   CSourceFile* root_file = nullptr;

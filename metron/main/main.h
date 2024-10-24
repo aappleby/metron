@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 //------------------------------------------------------------------------------
 
@@ -10,7 +11,7 @@ struct Options {
   bool echo = false;
   bool dump = false;
   bool monochrome = false;
-  std::string inc_path;
+  std::vector<std::string> inc_paths;
   std::string src_name;
   std::string dst_name;
 };

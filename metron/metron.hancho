@@ -1,8 +1,5 @@
 import glob
 
-assert hancho.metron_rules
-assert hancho.metrolib
-
 metron_config = hancho.Config(
     cpp_flags = ["-rdynamic", "-ggdb3"],
     includes  = ["{repo_dir}", "{repo_dir}/symlinks", "{repo_dir}/symlinks/metrolib", "{repo_dir}/symlinks/matcheroni"],

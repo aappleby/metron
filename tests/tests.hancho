@@ -47,30 +47,33 @@ test_yosys_synth = hancho.Command(
     test_helpers,
     desc = "test yosys synth {rel(in_src)}",
     command = [
-        "yosys -q -p 'read_verilog {join_prefix('-I', includes)} -sv {rel(in_src)}; {gen_chparams(params)} synth_ice40 -json /dev/null'",
+        "yosys -q -p 'read_verilog {joined_includes} -sv {rel(in_src)}; {gen_chparams(params)} synth_ice40 -json /dev/null'",
         "touch {out_pass}",
     ],
     out_pass = "{in_src}.yosys_synth.pass",
+    joined_includes = "{join_prefix('-I', get('includes', []))}"
 )
 
 test_verilator = hancho.Command(
     test_helpers,
     desc = "test verilator {rel(in_src)}",
     command = [
-        "verilator -Wno-width {join_prefix('-I', includes)} --lint-only {rel(in_src)}",
+        "verilator -Wno-width {joined_includes} --lint-only {rel(in_src)}",
         "touch {out_pass}",
     ],
     out_pass = "{in_src}.verilator.pass",
+    joined_includes = "{join_prefix('-I', get('includes', []))}"
 )
 
 test_icarus = hancho.Command(
     test_helpers,
     desc = "test icarus {rel(in_src)}",
     command = [
-        "iverilog -g2012 -Wall {join_prefix('-I', includes)} -o /dev/null {rel(in_src)}",
+        "iverilog -g2012 -Wall {joined_includes} -o /dev/null {rel(in_src)}",
         "touch {out_pass}",
     ],
     out_pass = "{in_src}.icarus.pass",
+    joined_includes = "{join_prefix('-I', get('includes', []))}"
 )
 
 test_syntax = hancho.Command(
@@ -105,8 +108,9 @@ test_diff = hancho.Command(
 test_sv2v = hancho.Command(
     test_helpers,
     desc = "test sv2v {rel(in_src)}",
-    command = "sv2v {join_prefix('-I', includes)} {rel(in_src)} -w {rel(out_v)}",
+    command = "sv2v {joined_includes} {rel(in_src)} -w {rel(out_v)}",
     out_v = "{swap_ext(in_src, '.v')}",
+    joined_includes = "{join_prefix('-I', get('includes', []))}"
 )
 
 #---------------------------------------------------------------------------------------------------
@@ -173,18 +177,20 @@ def test_lockstep(lockstep_file, should_fail = False):
     )
 
     lockstep_obj = hancho(
-        command = "g++ -O3 -std=gnu++2a {join_prefix('-D', defines)} {join_prefix('-I', includes)} -c {rel(in_src)} -o {rel(out_obj)}",
+        command = "g++ -O3 -std=gnu++2a {joined_defines} {joined_includes} -c {rel(in_src)} -o {rel(out_obj)}",
         includes = lockstep_includes,
         defines = [
-        "MT_TOP=Module",
-        "VL_TOP=V{stem(in_hdr)}",
-        "MT_HEADER={in_hdr}",
-        "VL_HEADER={build_dir}/lockstep/V{stem(in_hdr)}.h",
+            "MT_TOP=Module",
+            "VL_TOP=V{stem(in_hdr)}",
+            "MT_HEADER={in_hdr}",
+            "VL_HEADER={build_dir}/lockstep/V{stem(in_hdr)}.h",
         ],
         in_src  = "lockstep/test_lockstep.cpp",
         in_hdr  = lockstep_file,
         in_deps = out_vl.promise("out_header"),
         out_obj = "{swap_ext(in_hdr, '.o')}",
+        joined_defines  = "{join_prefix('-D', get('defines', []))}",
+        joined_includes = "{join_prefix('-I', get('includes', []))}",
     )
 
     lockstep_bin = hancho(

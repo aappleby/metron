@@ -7,7 +7,7 @@ def sorted_glob(*args, **kwargs):
 
 emcc = hancho.Command(
   desc = "Compile Emscripten'd {rel(in_src)}",
-  command = "emcc {flags} {join_prefix('-I', includes)} -c {rel(in_src)} -o {rel(out_obj)}",
+  command = "emcc {flags} {joined_includes} -c {rel(in_src)} -o {rel(out_obj)}",
   flags = [
     "-std=c++20",
     "-O0",
@@ -26,6 +26,7 @@ emcc = hancho.Command(
     "{repo_dir}/symlinks/CLI11/include"
   ],
   out_obj = "{swap_ext(in_src, '.o')}",
+  joined_includes = "{join_prefix('-I', get('includes', []))}"
 )
 
 emld = hancho.Command(

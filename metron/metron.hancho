@@ -1,6 +1,6 @@
 import glob
 
-metron_config = hancho.Config(
+_cpp_config = hancho.Config(
     cpp_flags = ["-rdynamic", "-ggdb3"],
     includes  = ["{repo_dir}", "{repo_dir}/symlinks", "{repo_dir}/symlinks/metrolib", "{repo_dir}/symlinks/matcheroni"],
     warnings  = ["all", "error", "suggest-override", "no-unused-function", "no-sign-compare", "no-unused-variable", "no-unused-but-set-variable"],
@@ -9,7 +9,7 @@ metron_config = hancho.Config(
 
 metron_lib = hancho(
     hancho.base_rules.cpp_lib,
-    metron_config,
+    _cpp_config,
     name    = "metron_lib",
     in_srcs = glob.glob("*.cpp") + glob.glob("nodes/*.cpp"),
     out_lib = "libmetron.a",
@@ -17,7 +17,7 @@ metron_lib = hancho(
 
 metron_bin = hancho(
     hancho.base_rules.cpp_bin,
-    metron_config,
+    _cpp_config,
     name    = "metron_bin",
     in_srcs = glob.glob("main/*.cpp"),
     in_objs = [metron_lib, hancho.metrolib.libcore],
@@ -29,6 +29,5 @@ convert = hancho.Command(
     command = "{in_binary} {joined_includes} -q -v -e -c {rel(in_src)} -o {rel(out_sv)}",
     in_binary = metron_bin,
     out_sv = "{swap_ext(in_src, '.sv')}",
-    joined_includes = "{join_prefix('-I', includes)}",
-    includes = [],
+    joined_includes = "{join_prefix('-I', get('includes', []))}",
 )

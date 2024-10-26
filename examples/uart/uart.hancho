@@ -7,7 +7,7 @@ uart_h = [
   "uart_tx.h",
 ]
 
-includes = [
+hancho.config.includes = [
   ".",
   "{repo_dir}",
   "{repo_dir}/symlinks/metrolib",
@@ -39,7 +39,6 @@ uart_bin = hancho(
   hancho.base_rules.cpp_bin,
   name     = "uart_cpp",
   in_srcs  = "main.cpp",
-  includes = includes,
   in_libs  = [hancho.metrolib.libcore],
   out_bin  = "uart_cpp",
 )
@@ -51,7 +50,6 @@ uart_top_vl = hancho(
   name     = "verilate uart_top",
   in_top   = uart_top_sv.promise("out_sv"), # FIXME has to be a promise, because has to be a string...
   in_deps  = uart_sv,
-  includes = includes,
   params   = {"message_file": "{in_message}"},
   in_message = "message.hex",
 )
@@ -60,7 +58,6 @@ uart_bin_vl = hancho(
   hancho.base_rules.cpp_bin,
   name     = "uart_vl",
   in_srcs  = "main_vl.cpp",
-  includes = includes,
   in_deps  = uart_top_vl.promise("out_lib"), # needed so that the compile task depends on uart_top_vl
   in_libs  = [hancho.metrolib.libcore, uart_top_vl.promise("out_lib")],
   out_bin  = "uart_vl",
@@ -74,7 +71,6 @@ uart_bin_iv = hancho(
   in_sv    = "uart_test_iv.v",
   in_deps  = [uart_v, uart_top_v],
   out_iv   = "uart_iv",
-  includes = includes,
   defines  = "-DIVERILOG",
   top      = "uart_test",
   params   = {"message_file": "{in_message}"},
@@ -89,7 +85,6 @@ uart_yosys = hancho(
   in_deps  = [uart_v, uart_top_v],
   out_json = "{swap_ext(in_sv, '.json')}",
   top      = "uart_test_ice40",
-  includes = includes,
   params   = {"message_file": "{in_message}"},
   in_message = "message.hex",
 )

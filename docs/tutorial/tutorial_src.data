@@ -419,6 +419,14 @@ A simple UART-based testbench for Metron that exercises translation to
 SystemVerilog, simulation via Icarus, translation back to C via Verilator,
 synthesis via Yosys, place+route via NextPNR, and uploading to a Lattice ICE40
 fpga via Icestorm.
+main.o: main.cpp \
+ /home/aappleby/repos/metron/symlinks/metrolib/metrolib/core/Platform.h \
+ /home/aappleby/repos/metron/symlinks/metrolib/metrolib/core/Utils.h \
+ /home/aappleby/repos/metron/symlinks/metrolib/metrolib/core/Tests.h \
+ /home/aappleby/repos/metron/symlinks/metrolib/metrolib/core/Log.h \
+ /home/aappleby/repos/metron/symlinks/metrolib/metrolib/core/Constants.h \
+ uart_top.h /home/aappleby/repos/metron/metron/metron_tools.h \
+ uart_hello.h uart_rx.h uart_tx.h
 ################################################################################
 
 uart_top_h = "uart_top.h"

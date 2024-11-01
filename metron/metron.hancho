@@ -24,7 +24,7 @@ metron_bin = hancho(
     out_bin = "metron",
 )
 
-convert = hancho.Command(
+convert = hancho.Config(
     desc = "Run Hancho on {rel(in_src)}",
     command = "{in_binary} {joined_includes} -q -v -e -c {rel(in_src)} -o {rel(out_sv)}",
     in_binary = metron_bin,

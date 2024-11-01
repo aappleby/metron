@@ -104,7 +104,7 @@ rvsimple_ref_bin = hancho(
 
 ################################################################################
 
-test_rvsimple = hancho.Command(
+test_rvsimple = hancho.Config(
     desc      = "Test rvsimple binary '{in_bin}'",
     command   = "{in_bin} {inst_dir}",
     in_tests  = hancho.rv_inst.tasks,

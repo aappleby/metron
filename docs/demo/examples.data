@@ -7171,7 +7171,7 @@ rvsimple_ref_bin = hancho(
 
 ################################################################################
 
-test_rvsimple = hancho.Command(
+test_rvsimple = hancho.Config(
     desc      = "Test rvsimple binary '{in_bin}'",
     command   = "{in_bin} {inst_dir}",
     in_tests  = hancho.rv_inst.tasks,
@@ -8239,7 +8239,7 @@ uart_test_ice40_bin = hancho(
 
 ################################################################################
 
-test_uart = hancho.Command(
+test_uart = hancho.Config(
   command = "{in_bin} examples/uart/message.hex",
   out_log = "{stem(in_bin)}.test",
 )

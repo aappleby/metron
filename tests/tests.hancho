@@ -43,7 +43,7 @@ test_helpers = hancho.Config(
     params = {},
 )
 
-test_yosys_synth = hancho.Command(
+test_yosys_synth = hancho.Config(
     test_helpers,
     desc = "test yosys synth {rel(in_src)}",
     command = [
@@ -54,7 +54,7 @@ test_yosys_synth = hancho.Command(
     joined_includes = "{join_prefix('-I', get('includes', []))}"
 )
 
-test_verilator = hancho.Command(
+test_verilator = hancho.Config(
     test_helpers,
     desc = "test verilator {rel(in_src)}",
     command = [
@@ -65,7 +65,7 @@ test_verilator = hancho.Command(
     joined_includes = "{join_prefix('-I', get('includes', []))}"
 )
 
-test_icarus = hancho.Command(
+test_icarus = hancho.Config(
     test_helpers,
     desc = "test icarus {rel(in_src)}",
     command = [
@@ -76,7 +76,7 @@ test_icarus = hancho.Command(
     joined_includes = "{join_prefix('-I', get('includes', []))}"
 )
 
-test_syntax = hancho.Command(
+test_syntax = hancho.Config(
     test_helpers,
     desc = "test c++ syntax {rel(in_src)}",
     command = [
@@ -86,7 +86,7 @@ test_syntax = hancho.Command(
     out_pass = "{in_src}.syntax.pass"
 )
 
-test_metron = hancho.Command(
+test_metron = hancho.Config(
     test_helpers,
     desc      = "test metron {rel(in_src)}",
     command   = "{in_metron} -q -c {rel(in_src)} -o {rel(out_sv)}",
@@ -95,7 +95,7 @@ test_metron = hancho.Command(
     #out_pass   = "{in_src}.metron.pass"
 )
 
-test_diff = hancho.Command(
+test_diff = hancho.Config(
     test_helpers,
     desc    = "test diff {rel(in_src_A)} {rel(in_src_B)}",
     command = [
@@ -105,7 +105,7 @@ test_diff = hancho.Command(
     out_pass = "{in_src_A}.diff.pass"
 )
 
-test_sv2v = hancho.Command(
+test_sv2v = hancho.Config(
     test_helpers,
     desc = "test sv2v {rel(in_src)}",
     command = "sv2v {joined_includes} {rel(in_src)} -w {rel(out_v)}",

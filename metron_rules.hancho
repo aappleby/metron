@@ -18,7 +18,7 @@ def gen_vlparams(c):
         result.append(f"-G{key}={val}")
     return result
 
-verilator_cmd = hancho.Command(
+verilator_cmd = hancho.Config(
     desc = "Run Verilator on {rel(in_top)}",
     command = "verilator -Wno-width --public {gen_vlparams(params)} {joined_includes} --cc {rel(in_top)} -Mdir {path.dirname(rel(out_makefile))}",
     out_makefile = r"{re.sub(r'([^/\\]+)\.sv', r'V\1.mk', in_top)}",
@@ -60,7 +60,7 @@ def verilator(hancho, /, in_top, **kwargs):
     )
 
 
-sv2v = hancho.Command(
+sv2v = hancho.Config(
     desc = "Run sv2v on {rel(in_sv)}",
     command = "{repo_dir}/symlinks/sv2v/bin/sv2v {joined_includes} {rel(in_sv)} -w {rel(out_v)}",
     joined_includes = "{join_prefix('-I', get('includes', []))}",
@@ -75,7 +75,7 @@ def gen_chparams(c):
         result.append(f"chparam -set {key} {val} {{top}};")
     return result
 
-yosys = hancho.Command(
+yosys = hancho.Config(
     desc = "Run yosys on {rel(in_sv)}",
     command = "yosys -q -p 'read_verilog -defer {joined_includes} -sv {rel(in_sv)}; dump; {gen_chparams(params)} synth_ice40 -top {top} -json {rel(out_json)};'",
     gen_chparams = gen_chparams,
@@ -84,13 +84,13 @@ yosys = hancho.Command(
     joined_includes = "{join_prefix('-I', get('includes', []))}",
 )
 
-nextpnr = hancho.Command(
+nextpnr = hancho.Config(
     desc = "Run nextpnr-ice40 on {rel(in_json)}",
     command = "nextpnr-ice40 {flags} -q --{chip} --package {package} --json {rel(in_json)} --asc {rel(out_asc)} --pcf {pcf}",
     flags = "",
 )
 
-icepack = hancho.Command(
+icepack = hancho.Config(
     desc = "Run icepack on {rel(in_asc)}",
     command = "icepack {rel(in_asc)} {rel(out_bin)}",
 )
@@ -106,7 +106,7 @@ def gen_ivparams(params):
         result.append(f"-P{{top}}.{key}={val}")
     return result
 
-iverilog = hancho.Command(
+iverilog = hancho.Config(
     desc = "Run iverilog on {rel(in_sv)}",
     command = "iverilog {gen_ivparams(params)} -s{top} -g2012 {defines} {joined_includes} {rel(in_sv)} -o {rel(out_iv)}",
     gen_ivparams = gen_ivparams,
@@ -115,7 +115,7 @@ iverilog = hancho.Command(
 
 #---------------------------------------------------------------------------------------------------
 
-ems_package = hancho.Command(
+ems_package = hancho.Config(
     desc     = "Package {rel(out_data)}",
     command  = [
         "rm -f {out_data}",
@@ -128,7 +128,7 @@ ems_package = hancho.Command(
 
 #---------------------------------------------------------------------------------------------------
 
-check_cpp_syntax = hancho.Command(
+check_cpp_syntax = hancho.Config(
     command = "g++ -I. -I{repo_dir} -fsyntax-only -c {rel(in_src)} && touch {out_src}",
     out_ok = "{rel(in_src)}.ok",
 )

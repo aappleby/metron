@@ -5,7 +5,7 @@ def sorted_glob(*args, **kwargs):
 
 #---------------------------------------------------------------------------------------------------
 
-emcc = hancho.Command(
+emcc = hancho.Config(
   desc = "Compile Emscripten'd {rel(in_src)}",
   command = "emcc {flags} {joined_includes} -c {rel(in_src)} -o {rel(out_obj)}",
   flags = [
@@ -29,7 +29,7 @@ emcc = hancho.Command(
   joined_includes = "{join_prefix('-I', get('includes', []))}"
 )
 
-emld = hancho.Command(
+emld = hancho.Config(
   desc = "Link Emscripten'd {rel(out_js)}",
   command = "emcc {flags} {rel(in_objs)} -o {out_js}",
   flags = [

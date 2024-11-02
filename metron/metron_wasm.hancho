@@ -1,86 +1,62 @@
 import glob
 
-def sorted_glob(*args, **kwargs):
-    return sorted(glob.glob(*args, **kwargs))
+hancho.config.build_tag = "wasm"
 
-#---------------------------------------------------------------------------------------------------
+if not 'wasm_rules' in hancho:
+    hancho.wasm_rules = hancho.load("{hancho_dir}/wasm_rules.hancho")
 
-emcc = hancho.Config(
-  desc = "Compile Emscripten'd {rel(in_src)}",
-  command = "emcc {flags} {joined_includes} -c {rel(in_src)} -o {rel(out_obj)}",
-  flags = [
-    "-std=c++20",
-    "-O0",
-    "-g3",
-    "-gsource-map",
-    "-MMD",
-    "-sNO_DISABLE_EXCEPTION_CATCHING",
-    "-Wno-deprecated-declarations",
-  ],
-  includes = [
-    ".",
+wasm_includes = [
     "{repo_dir}",
     "{repo_dir}/symlinks",
     "{repo_dir}/symlinks/metrolib",
     "{repo_dir}/symlinks/matcheroni",
     "{repo_dir}/symlinks/CLI11/include"
-  ],
-  out_obj = "{swap_ext(in_src, '.o')}",
-  joined_includes = "{join_prefix('-I', get('includes', []))}"
-)
-
-emld = hancho.Config(
-  desc = "Link Emscripten'd {rel(out_js)}",
-  command = "emcc {flags} {rel(in_objs)} -o {out_js}",
-  flags = [
-    "-sEXPORT_ES6",
-    "-sEXPORTED_RUNTIME_METHODS=['FS','callMain']",
-    "-sNO_DISABLE_EXCEPTION_CATCHING",
-    "-sTOTAL_STACK=32MB",
-    "-sINITIAL_MEMORY=256MB",
-    "-sALLOW_MEMORY_GROWTH",
-    "-sFORCE_FILESYSTEM"
-  ],
-)
+]
 
 #---------------------------------------------------------------------------------------------------
 
 metron_js_src = [
-  sorted_glob("*.cpp"),
-  sorted_glob("main/*.cpp"),
-  sorted_glob("nodes/*.cpp"),
+    glob.glob("*.cpp"),
+    glob.glob("main/*.cpp"),
+    glob.glob("nodes/*.cpp"),
 ]
 
 metron_objs = []
 
 for file in hancho.flatten(metron_js_src):
-  obj = hancho(emcc, in_src=file, build_tag = "wasm")
-  metron_objs.append(obj)
+    obj = hancho(
+        hancho.wasm_rules.emcc,
+        in_src=file,
+        includes = wasm_includes,
+    )
+    metron_objs.append(obj)
 
 metrolib_js_src = [
-  "{repo_dir}/symlinks/metrolib/metrolib/core/Platform.cpp",
-  "{repo_dir}/symlinks/metrolib/metrolib/core/Utils.cpp",
-  "{repo_dir}/symlinks/metrolib/metrolib/core/Err.cpp",
+    "{repo_dir}/symlinks/metrolib/metrolib/core/Platform.cpp",
+    "{repo_dir}/symlinks/metrolib/metrolib/core/Utils.cpp",
+    "{repo_dir}/symlinks/metrolib/metrolib/core/Err.cpp",
 ]
 
 metrolib_objs = []
 for file in hancho.flatten(metrolib_js_src):
-  obj = hancho(
-    emcc,
-    in_src=file,
-    repo_name = "metrolib",
-    build_tag = "wasm",
-    out_obj = "{swap_ext(path.basename(in_src), '.o')}",
-    build_dir = "{root_dir}/{build_root}/wasm/metrolib",
-  )
-  metrolib_objs.append(obj)
+    obj = hancho(
+        hancho.wasm_rules.emcc,
+        in_src=file,
+        # Because we're building files from another repo in this repo, we chop the path off in_src
+        out_obj = "{swap_ext(path.basename(in_src), '.o')}",
+        # and redirect build_dir to our own repo's metrolib dir.
+        build_dir = "{build_root}/{build_tag}/metrolib",
+        includes = wasm_includes,
+    )
+    metrolib_objs.append(obj)
 
 metron_js = hancho(
-  emld,
-  in_objs   = metron_objs + metrolib_objs,
-  out_js    = "{repo_dir}/docs/app/metron.js",
-  out_wasm  = "{repo_dir}/docs/app/metron.wasm",
-  build_tag = "wasm"
+    hancho.wasm_rules.emld,
+    in_objs   = metron_objs + metrolib_objs,
+
+    # Our data files go in metron/docs/app/* - _not_ in the build dir.
+    out_js    = "{repo_dir}/docs/app/metron.js",
+    out_wasm  = "{repo_dir}/docs/app/metron.wasm",
 )
 
 #---------------------------------------------------------------------------------------------------

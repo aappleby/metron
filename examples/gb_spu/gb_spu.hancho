@@ -5,7 +5,7 @@ gb_spu_sv = hancho(
 )
 
 gb_spu_vl = hancho(
-  hancho.metron_rules.verilator,
+  hancho.fpga_rules.verilator,
   in_top   = gb_spu_sv.promise("out_sv"),
   includes = ["{repo_dir}"],
 )

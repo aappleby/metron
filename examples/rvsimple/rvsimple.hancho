@@ -49,7 +49,7 @@ rvsimple_top_sv = hancho(
 )
 
 rvsimple_top_vl = hancho(
-    hancho.metron_rules.verilator,
+    hancho.fpga_rules.verilator,
     in_top   = rvsimple_top_sv.promise("out_sv"),
     in_deps  = rvsimple_sv,
     includes = ["{repo_dir}"]
@@ -76,7 +76,7 @@ rvsimple_vl_bin = hancho(
 ################################################################################
 
 rvsimple_ref_vl = hancho(
-    hancho.metron_rules.verilator,
+    hancho.fpga_rules.verilator,
     in_top   = "reference_sv/toplevel.sv",
     includes = [
         "{repo_dir}",

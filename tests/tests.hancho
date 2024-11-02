@@ -170,7 +170,7 @@ def test_lockstep(lockstep_file, should_fail = False):
     ]
 
     out_vl = hancho(
-        hancho.metron_rules.verilator,
+        hancho.fpga_rules.verilator,
         name = "test lockstep",
         in_top = out_sv,
         includes = lockstep_includes,

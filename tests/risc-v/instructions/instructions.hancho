@@ -3,24 +3,24 @@ import glob
 build_dir = hancho.config.expand("{build_dir}")
 
 build_rv_hex = hancho.Config(
-    command = [
+    command=[
         "riscv64-unknown-elf-gcc -mabi=ilp32 -march=rv32i -c {in_src} -o {out_o}",
         "riscv64-unknown-elf-ld -T{in_linkerscript} -melf32lriscv {out_o} -o {out_elf}",
         "riscv64-unknown-elf-objcopy -O binary {out_elf} {out_code_bin} -j .init -j .text --change-addresses -0x400000",
         "riscv64-unknown-elf-objcopy -O binary {out_elf} {out_data_bin} -j .data",
         "srec_cat {out_code_bin} -binary -byte-swap 4 -O {out_code_vh} -VMem 32",
-        "srec_cat {out_data_bin} -binary -byte-swap 4 -O {out_data_vh} -VMem 32"
+        "srec_cat {out_data_bin} -binary -byte-swap 4 -O {out_data_vh} -VMem 32",
     ],
-    in_linkerscript = "link.ld",
-    out_o = "{stem(in_src)}.o",
-    out_elf = "{stem(in_src)}.elf",
-    out_code_bin = "{stem(in_src)}.code.bin",
-    out_data_bin = "{stem(in_src)}.data.bin",
-    out_code_vh = "{stem(in_src)}.code.vh",
-    out_data_vh = "{stem(in_src)}.data.vh",
+    in_linkerscript="link.ld",
+    out_o="{stem(in_src)}.o",
+    out_elf="{stem(in_src)}.elf",
+    out_code_bin="{stem(in_src)}.code.bin",
+    out_data_bin="{stem(in_src)}.data.bin",
+    out_code_vh="{stem(in_src)}.code.vh",
+    out_data_vh="{stem(in_src)}.data.vh",
 )
 
 tasks = []
 for file in glob.glob("*.S"):
-    task = hancho(build_rv_hex, in_src = file)
+    task = hancho(build_rv_hex, in_src=file)
     tasks.append(task)

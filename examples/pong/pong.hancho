@@ -1,24 +1,18 @@
-pong_sv = hancho(
-    hancho.metron.convert,
-    in_src = "pong.h"
-)
+pong_sv = hancho(hancho.metron.convert, in_src="pong.h")
 
 pong_vl = hancho(
     hancho.fpga_rules.verilator,
-    in_top   = pong_sv.promise("out_sv"),
-    includes = ["{repo_dir}"]
+    in_top=pong_sv.promise("out_sv"),
+    includes=["{repo_dir}"],
 )
 
 pong_bin = hancho(
     hancho.base_rules.cpp_bin,
-    includes = ["{repo_dir}", "{repo_dir}/symlinks/metrolib"],
-    in_srcs = "main.cpp",
-    in_libs = [
-        pong_vl.promise("out_lib"),
-        hancho.metrolib.libcore
-    ],
-    out_bin = "pong",
-    sys_libs  = ["gcc", "c", "SDL2"],
+    includes=["{repo_dir}", "{repo_dir}/symlinks/metrolib"],
+    in_srcs="main.cpp",
+    in_libs=[pong_vl.promise("out_lib"), hancho.metrolib.libcore],
+    out_bin="pong",
+    sys_libs=["gcc", "c", "SDL2"],
 )
 
 # FIXME verilated version of pong

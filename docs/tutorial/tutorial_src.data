@@ -445,104 +445,102 @@ hancho.config.includes = [
     "/usr/local/share/verilator/include",
 ]
 
-uart_sv     = [hancho(hancho.metron.convert, in_src = src) for src in uart_h]
-uart_top_sv = hancho(hancho.metron.convert, in_src = uart_top_h)
+uart_sv = [hancho(hancho.metron.convert, in_src=src) for src in uart_h]
+uart_top_sv = hancho(hancho.metron.convert, in_src=uart_top_h)
 
 uart_v = [
-    hancho(
-        hancho.fpga_rules.sv2v,
-        in_sv = task.promise("out_sv"),
-        includes = "{repo_dir}"
-    )
+    hancho(hancho.fpga_rules.sv2v, in_sv=task.promise("out_sv"), includes="{repo_dir}")
     for task in uart_sv
 ]
 
 uart_top_v = hancho(
-    hancho.fpga_rules.sv2v,
-    in_sv = uart_top_sv.promise("out_sv"),
-    includes = ["{repo_dir}"]
+    hancho.fpga_rules.sv2v, in_sv=uart_top_sv.promise("out_sv"), includes=["{repo_dir}"]
 )
 
 # C++ testbench
 
 uart_bin = hancho(
     hancho.base_rules.cpp_bin,
-    name     = "uart_cpp",
-    in_srcs  = "main.cpp",
-    in_libs  = [hancho.metrolib.libcore],
-    out_bin  = "uart_cpp",
+    name="uart_cpp",
+    in_srcs="main.cpp",
+    in_libs=[hancho.metrolib.libcore],
+    out_bin="uart_cpp",
 )
 
 # Verilator testbench
 
 uart_top_vl = hancho(
     hancho.fpga_rules.verilator,
-    name     = "verilate uart_top",
-    in_top   = uart_top_sv.promise("out_sv"), # FIXME has to be a promise, because has to be a string...
-    in_deps  = uart_sv,
-    params   = {"message_file": "{in_message}"},
-    in_message = "message.hex",
+    name="verilate uart_top",
+    in_top=uart_top_sv.promise(
+        "out_sv"
+    ),  # FIXME has to be a promise, because has to be a string...
+    in_deps=uart_sv,
+    params={"message_file": "{in_message}"},
+    in_message="message.hex",
 )
 
 uart_bin_vl = hancho(
     hancho.base_rules.cpp_bin,
-    name     = "uart_vl",
-    in_srcs  = "main_vl.cpp",
-    in_deps  = uart_top_vl.promise("out_lib"), # needed so that the compile task depends on uart_top_vl
-    in_libs  = [hancho.metrolib.libcore, uart_top_vl.promise("out_lib")],
-    out_bin  = "uart_vl",
+    name="uart_vl",
+    in_srcs="main_vl.cpp",
+    in_deps=uart_top_vl.promise(
+        "out_lib"
+    ),  # needed so that the compile task depends on uart_top_vl
+    in_libs=[hancho.metrolib.libcore, uart_top_vl.promise("out_lib")],
+    out_bin="uart_vl",
 )
 
 # Icarus Verilog testbench
 
 uart_bin_iv = hancho(
     hancho.fpga_rules.iverilog,
-    name     = "uart_iv",
-    in_sv    = "uart_test_iv.v",
-    in_deps  = [uart_v, uart_top_v],
-    out_iv   = "uart_iv",
-    defines  = "-DIVERILOG",
-    top      = "uart_test",
-    params   = {"message_file": "{in_message}"},
-    in_message = "message.hex",
+    name="uart_iv",
+    in_sv="uart_test_iv.v",
+    in_deps=[uart_v, uart_top_v],
+    out_iv="uart_iv",
+    defines="-DIVERILOG",
+    top="uart_test",
+    params={"message_file": "{in_message}"},
+    in_message="message.hex",
 )
 
 # Synthesizable version of UART
 
 uart_yosys = hancho(
     hancho.fpga_rules.yosys,
-    in_sv    = "uart_test_ice40.v",
-    in_deps  = [uart_v, uart_top_v],
-    top      = "uart_test_ice40",
-    params   = {"message_file": "{in_message}"},
-    in_message = "message.hex",
+    in_sv="uart_test_ice40.v",
+    in_deps=[uart_v, uart_top_v],
+    top="uart_test_ice40",
+    params={"message_file": "{in_message}"},
+    in_message="message.hex",
 )
 
 uart_nextpnr = hancho(
     hancho.fpga_rules.nextpnr,
-    in_json  = uart_yosys.promise("out_json"),
-    out_asc  = "uart_test_ice40.asc",
-    chip     = "hx8k",
-    package  = "ct256",
-    pcf      = "ice40-hx8k-b-evn.pcf",
+    in_json=uart_yosys.promise("out_json"),
+    out_asc="uart_test_ice40.asc",
+    chip="hx8k",
+    package="ct256",
+    pcf="ice40-hx8k-b-evn.pcf",
 )
 
 uart_test_ice40_bin = hancho(
     hancho.fpga_rules.icepack,
-    in_asc  = uart_nextpnr.promise("out_asc"),
-    out_bin = "uart_test_ice40.bin",
+    in_asc=uart_nextpnr.promise("out_asc"),
+    out_bin="uart_test_ice40.bin",
 )
 
 ################################################################################
 
 test_uart = hancho.Config(
-    command = "{in_bin} examples/uart/message.hex",
-    out_log = "{stem(in_bin)}.test",
+    command="{in_bin} examples/uart/message.hex",
+    out_log="{stem(in_bin)}.test",
 )
 
-hancho(test_uart, in_bin = uart_bin,    task_dir = "{repo_dir}")
-hancho(test_uart, in_bin = uart_bin_vl, task_dir = "{repo_dir}")
-hancho(test_uart, in_bin = uart_bin_iv, task_dir = "{repo_dir}")
+hancho(test_uart, in_bin=uart_bin, task_dir="{repo_dir}")
+hancho(test_uart, in_bin=uart_bin_vl, task_dir="{repo_dir}")
+hancho(test_uart, in_bin=uart_bin_iv, task_dir="{repo_dir}")
 #ifndef UART_HELLO_H
 #define UART_HELLO_H
 

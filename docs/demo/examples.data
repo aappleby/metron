@@ -1,11 +1,11 @@
-gb_spu   = hancho.load("gb_spu/gb_spu.hancho")
-ibex     = hancho.load("ibex/ibex.hancho")
-j1       = hancho.load("j1/j1.hancho")
+gb_spu = hancho.load("gb_spu/gb_spu.hancho")
+ibex = hancho.load("ibex/ibex.hancho")
+j1 = hancho.load("j1/j1.hancho")
 picorv32 = hancho.load("picorv32/picorv32.hancho")
-pong     = hancho.load("pong/pong.hancho")
+pong = hancho.load("pong/pong.hancho")
 rvsimple = hancho.load("rvsimple/rvsimple.hancho")
 tutorial = hancho.load("tutorial/tutorial.hancho")
-uart     = hancho.load("uart/uart.hancho")
+uart = hancho.load("uart/uart.hancho")
 #ifndef METRO_BOY_SPU2_H
 #define METRO_BOY_SPU2_H
 #include "metron/metron_tools.h"
@@ -702,29 +702,28 @@ private:
 
 #endif // METRO_BOY_SPU2_H
 MetroBoySPU2.sv: MetroBoySPU2.h
-
 gb_spu_sv = hancho(
-  hancho.metron.convert,
-  in_src   = "MetroBoySPU2.h",
+    hancho.metron.convert,
+    in_src="MetroBoySPU2.h",
 )
 
 gb_spu_vl = hancho(
-  hancho.fpga_rules.verilator,
-  in_top   = gb_spu_sv.promise("out_sv"),
-  includes = ["{repo_dir}"],
+    hancho.fpga_rules.verilator,
+    in_top=gb_spu_sv.promise("out_sv"),
+    includes=["{repo_dir}"],
 )
 
 gb_spu_main = hancho(
-  hancho.base_rules.cpp_bin,
-  in_srcs  = "gb_spu_main.cpp",
-  in_deps  = gb_spu_vl.promise("out_header"),
-  in_objs  = gb_spu_vl.promise("out_lib"),
-  out_bin  = "gb_spu",
-  includes = [
-    "{repo_dir}",   # for metron/metron_tools.h
-    "{build_dir}",  # for gb_spu/VMetroBoySPU2.h
-    "/usr/local/share/verilator/include",
-  ],
+    hancho.base_rules.cpp_bin,
+    in_srcs="gb_spu_main.cpp",
+    in_deps=gb_spu_vl.promise("out_header"),
+    in_objs=gb_spu_vl.promise("out_lib"),
+    out_bin="gb_spu",
+    includes=[
+        "{repo_dir}",  # for metron/metron_tools.h
+        "{build_dir}",  # for gb_spu/VMetroBoySPU2.h
+        "/usr/local/share/verilator/include",
+    ],
 )
 Unfinished port of the Ibex RISC-V core to Metron.
 // Copyright lowRISC contributors.
@@ -2489,42 +2488,36 @@ private:
 
 };
 j1_bin = hancho(
-  hancho.base_rules.cpp_bin,
-  in_srcs = "main.cpp",
-  out_bin = "j1",
-  includes = "{repo_dir}",
+    hancho.base_rules.cpp_bin,
+    in_srcs="main.cpp",
+    out_bin="j1",
+    includes="{repo_dir}",
 )
 
-#j1_h = ["dpram.h", "j1.h"]
+# j1_h = ["dpram.h", "j1.h"]
 
-j1_top_sv = hancho(
-  hancho.metron.convert,
-  in_src = "j1.h"
-)
+j1_top_sv = hancho(hancho.metron.convert, in_src="j1.h")
 
-j1_dpram_sv = hancho(
-  hancho.metron.convert,
-  in_src = "dpram.h"
-)
+j1_dpram_sv = hancho(hancho.metron.convert, in_src="dpram.h")
 
 # doesn't currently compile
 
-#j1_top_vl = hancho(
+# j1_top_vl = hancho(
 #  rules.verilator,
 #  in_top   = j1_top_sv.promise("out_sv"),
 #  includes = ["{repo_dir}"],
-#)
+# )
 
-#j1_top_vl = rules.verilator(
+# j1_top_vl = rules.verilator(
 #  config,
 #  in_top = j1_top_sv.promise("out_sv"),
 #  includes = ["{repo_dir}"],
-#)
+# )
 
 
-#j1_sv = metron(j1_h)
+# j1_sv = metron(j1_h)
 
-#imports.rules.check_cpp_syntax(in_src = "j1.h")
+# imports.rules.check_cpp_syntax(in_src = "j1.h")
 j1.sv: j1.h \
  dpram.h
 main.o: main.cpp j1.h /home/aappleby/repos/metron/metron/metron_tools.h \
@@ -5985,27 +5978,21 @@ class Pong {
 //------------------------------------------------------------------------------
 
 #endif
-pong_sv = hancho(
-    hancho.metron.convert,
-    in_src = "pong.h"
-)
+pong_sv = hancho(hancho.metron.convert, in_src="pong.h")
 
 pong_vl = hancho(
     hancho.fpga_rules.verilator,
-    in_top   = pong_sv.promise("out_sv"),
-    includes = ["{repo_dir}"]
+    in_top=pong_sv.promise("out_sv"),
+    includes=["{repo_dir}"],
 )
 
 pong_bin = hancho(
     hancho.base_rules.cpp_bin,
-    includes = ["{repo_dir}", "{repo_dir}/symlinks/metrolib"],
-    in_srcs = "main.cpp",
-    in_libs = [
-        pong_vl.promise("out_lib"),
-        hancho.metrolib.libcore
-    ],
-    out_bin = "pong",
-    sys_libs  = ["gcc", "c", "SDL2"],
+    includes=["{repo_dir}", "{repo_dir}/symlinks/metrolib"],
+    in_srcs="main.cpp",
+    in_libs=[pong_vl.promise("out_lib"), hancho.metrolib.libcore],
+    out_bin="pong",
+    sys_libs=["gcc", "c", "SDL2"],
 )
 
 # FIXME verilated version of pong
@@ -7069,14 +7056,14 @@ class riscv_core {
 
 rvsimple_bin = hancho(
     hancho.base_rules.cpp_bin,
-    in_srcs = "main.cpp",
-    in_libs = hancho.metrolib.libcore,
-    out_bin = "rvsimple",
-    includes = [
+    in_srcs="main.cpp",
+    in_libs=hancho.metrolib.libcore,
+    out_bin="rvsimple",
+    includes=[
         "{repo_dir}",
         "{repo_dir}/symlinks",
         "{repo_dir}/symlinks/metrolib",
-    ]
+    ],
 )
 
 ################################################################################
@@ -7108,59 +7095,53 @@ _rvsimple_h = [
     "singlecycle_datapath.h",
 ]
 
-rvsimple_sv = [hancho(hancho.metron.convert, in_src = src) for src in _rvsimple_h]
+rvsimple_sv = [hancho(hancho.metron.convert, in_src=src) for src in _rvsimple_h]
 
-rvsimple_top_sv = hancho(
-    hancho.metron.convert,
-    in_src = _rvsimple_top_h
-)
+rvsimple_top_sv = hancho(hancho.metron.convert, in_src=_rvsimple_top_h)
 
 rvsimple_top_vl = hancho(
     hancho.fpga_rules.verilator,
-    in_top   = rvsimple_top_sv.promise("out_sv"),
-    in_deps  = rvsimple_sv,
-    includes = ["{repo_dir}"]
+    in_top=rvsimple_top_sv.promise("out_sv"),
+    in_deps=rvsimple_sv,
+    includes=["{repo_dir}"],
 )
 
 rvsimple_vl_bin = hancho(
     hancho.base_rules.cpp_bin,
-    in_srcs = "main_vl.cpp",
-    in_deps = rvsimple_top_vl.promise("out_header"), # must be here
-    in_libs = [
+    in_srcs="main_vl.cpp",
+    in_deps=rvsimple_top_vl.promise("out_header"),  # must be here
+    in_libs=[
         hancho.metrolib.libcore,
         rvsimple_top_vl.promise("out_lib"),
     ],
-    out_bin = "rvsimple_vl",
-    includes = [
+    out_bin="rvsimple_vl",
+    includes=[
         "{repo_dir}",
         "{repo_dir}/symlinks",
         "{repo_dir}/symlinks/metrolib",
         "{build_dir}",
         "/usr/local/share/verilator/include",
-    ]
+    ],
 )
 
 ################################################################################
 
 rvsimple_ref_vl = hancho(
     hancho.fpga_rules.verilator,
-    in_top   = "reference_sv/toplevel.sv",
-    includes = [
-        "{repo_dir}",
-        "reference_sv"
-    ],
+    in_top="reference_sv/toplevel.sv",
+    includes=["{repo_dir}", "reference_sv"],
 )
 
 rvsimple_ref_bin = hancho(
     hancho.base_rules.cpp_bin,
-    in_srcs = "main_ref_vl.cpp",
-    in_deps = rvsimple_ref_vl.promise("out_header"), # must be here
-    in_libs = [
+    in_srcs="main_ref_vl.cpp",
+    in_deps=rvsimple_ref_vl.promise("out_header"),  # must be here
+    in_libs=[
         hancho.metrolib.libcore,
         rvsimple_ref_vl.promise("out_lib"),
     ],
-    out_bin = "rvsimple_ref",
-    includes = [
+    out_bin="rvsimple_ref",
+    includes=[
         "{repo_dir}",
         "{repo_dir}/symlinks",
         "{repo_dir}/symlinks/metrolib",
@@ -7172,16 +7153,16 @@ rvsimple_ref_bin = hancho(
 ################################################################################
 
 test_rvsimple = hancho.Config(
-    desc      = "Test rvsimple binary '{in_bin}'",
-    command   = "{in_bin} {inst_dir}",
-    in_tests  = hancho.rv_inst.tasks,
-    out_log   = "{stem(in_bin)}.test",
-    inst_dir  = hancho.rv_inst.build_dir,
+    desc="Test rvsimple binary '{in_bin}'",
+    command="{in_bin} {inst_dir}",
+    in_tests=hancho.rv_inst.tasks,
+    out_log="{stem(in_bin)}.test",
+    inst_dir=hancho.rv_inst.build_dir,
 )
 
-hancho(test_rvsimple, in_bin = rvsimple_bin,     task_dir = "{repo_dir}")
-hancho(test_rvsimple, in_bin = rvsimple_vl_bin,  task_dir = "{repo_dir}")
-hancho(test_rvsimple, in_bin = rvsimple_ref_bin, task_dir = "{repo_dir}")
+hancho(test_rvsimple, in_bin=rvsimple_bin, task_dir="{repo_dir}")
+hancho(test_rvsimple, in_bin=rvsimple_vl_bin, task_dir="{repo_dir}")
+hancho(test_rvsimple, in_bin=rvsimple_ref_bin, task_dir="{repo_dir}")
 
 ################################################################################
 // RISC-V SiMPLE SV -- single-cycle controller
@@ -8149,104 +8130,102 @@ hancho.config.includes = [
     "/usr/local/share/verilator/include",
 ]
 
-uart_sv     = [hancho(hancho.metron.convert, in_src = src) for src in uart_h]
-uart_top_sv = hancho(hancho.metron.convert, in_src = uart_top_h)
+uart_sv = [hancho(hancho.metron.convert, in_src=src) for src in uart_h]
+uart_top_sv = hancho(hancho.metron.convert, in_src=uart_top_h)
 
 uart_v = [
-    hancho(
-        hancho.fpga_rules.sv2v,
-        in_sv = task.promise("out_sv"),
-        includes = "{repo_dir}"
-    )
+    hancho(hancho.fpga_rules.sv2v, in_sv=task.promise("out_sv"), includes="{repo_dir}")
     for task in uart_sv
 ]
 
 uart_top_v = hancho(
-    hancho.fpga_rules.sv2v,
-    in_sv = uart_top_sv.promise("out_sv"),
-    includes = ["{repo_dir}"]
+    hancho.fpga_rules.sv2v, in_sv=uart_top_sv.promise("out_sv"), includes=["{repo_dir}"]
 )
 
 # C++ testbench
 
 uart_bin = hancho(
     hancho.base_rules.cpp_bin,
-    name     = "uart_cpp",
-    in_srcs  = "main.cpp",
-    in_libs  = [hancho.metrolib.libcore],
-    out_bin  = "uart_cpp",
+    name="uart_cpp",
+    in_srcs="main.cpp",
+    in_libs=[hancho.metrolib.libcore],
+    out_bin="uart_cpp",
 )
 
 # Verilator testbench
 
 uart_top_vl = hancho(
     hancho.fpga_rules.verilator,
-    name     = "verilate uart_top",
-    in_top   = uart_top_sv.promise("out_sv"), # FIXME has to be a promise, because has to be a string...
-    in_deps  = uart_sv,
-    params   = {"message_file": "{in_message}"},
-    in_message = "message.hex",
+    name="verilate uart_top",
+    in_top=uart_top_sv.promise(
+        "out_sv"
+    ),  # FIXME has to be a promise, because has to be a string...
+    in_deps=uart_sv,
+    params={"message_file": "{in_message}"},
+    in_message="message.hex",
 )
 
 uart_bin_vl = hancho(
     hancho.base_rules.cpp_bin,
-    name     = "uart_vl",
-    in_srcs  = "main_vl.cpp",
-    in_deps  = uart_top_vl.promise("out_lib"), # needed so that the compile task depends on uart_top_vl
-    in_libs  = [hancho.metrolib.libcore, uart_top_vl.promise("out_lib")],
-    out_bin  = "uart_vl",
+    name="uart_vl",
+    in_srcs="main_vl.cpp",
+    in_deps=uart_top_vl.promise(
+        "out_lib"
+    ),  # needed so that the compile task depends on uart_top_vl
+    in_libs=[hancho.metrolib.libcore, uart_top_vl.promise("out_lib")],
+    out_bin="uart_vl",
 )
 
 # Icarus Verilog testbench
 
 uart_bin_iv = hancho(
     hancho.fpga_rules.iverilog,
-    name     = "uart_iv",
-    in_sv    = "uart_test_iv.v",
-    in_deps  = [uart_v, uart_top_v],
-    out_iv   = "uart_iv",
-    defines  = "-DIVERILOG",
-    top      = "uart_test",
-    params   = {"message_file": "{in_message}"},
-    in_message = "message.hex",
+    name="uart_iv",
+    in_sv="uart_test_iv.v",
+    in_deps=[uart_v, uart_top_v],
+    out_iv="uart_iv",
+    defines="-DIVERILOG",
+    top="uart_test",
+    params={"message_file": "{in_message}"},
+    in_message="message.hex",
 )
 
 # Synthesizable version of UART
 
 uart_yosys = hancho(
     hancho.fpga_rules.yosys,
-    in_sv    = "uart_test_ice40.v",
-    in_deps  = [uart_v, uart_top_v],
-    top      = "uart_test_ice40",
-    params   = {"message_file": "{in_message}"},
-    in_message = "message.hex",
+    in_sv="uart_test_ice40.v",
+    in_deps=[uart_v, uart_top_v],
+    top="uart_test_ice40",
+    params={"message_file": "{in_message}"},
+    in_message="message.hex",
 )
 
 uart_nextpnr = hancho(
     hancho.fpga_rules.nextpnr,
-    in_json  = uart_yosys.promise("out_json"),
-    out_asc  = "uart_test_ice40.asc",
-    chip     = "hx8k",
-    package  = "ct256",
-    pcf      = "ice40-hx8k-b-evn.pcf",
+    in_json=uart_yosys.promise("out_json"),
+    out_asc="uart_test_ice40.asc",
+    chip="hx8k",
+    package="ct256",
+    pcf="ice40-hx8k-b-evn.pcf",
 )
 
 uart_test_ice40_bin = hancho(
     hancho.fpga_rules.icepack,
-    in_asc  = uart_nextpnr.promise("out_asc"),
-    out_bin = "uart_test_ice40.bin",
+    in_asc=uart_nextpnr.promise("out_asc"),
+    out_bin="uart_test_ice40.bin",
 )
 
 ################################################################################
 
 test_uart = hancho.Config(
-    command = "{in_bin} examples/uart/message.hex",
-    out_log = "{stem(in_bin)}.test",
+    command="{in_bin} examples/uart/message.hex",
+    out_log="{stem(in_bin)}.test",
 )
 
-hancho(test_uart, in_bin = uart_bin,    task_dir = "{repo_dir}")
-hancho(test_uart, in_bin = uart_bin_vl, task_dir = "{repo_dir}")
-hancho(test_uart, in_bin = uart_bin_iv, task_dir = "{repo_dir}")
+hancho(test_uart, in_bin=uart_bin, task_dir="{repo_dir}")
+hancho(test_uart, in_bin=uart_bin_vl, task_dir="{repo_dir}")
+hancho(test_uart, in_bin=uart_bin_iv, task_dir="{repo_dir}")
 #ifndef UART_HELLO_H
 #define UART_HELLO_H
 

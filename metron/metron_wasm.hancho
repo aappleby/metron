@@ -2,7 +2,7 @@ import glob
 
 hancho.config.build_tag = "wasm"
 
-if not 'wasm_rules' in hancho:
+if not "wasm_rules" in hancho:
     hancho.wasm_rules = hancho.load("{hancho_dir}/wasm_rules.hancho")
 
 wasm_includes = [
@@ -10,10 +10,10 @@ wasm_includes = [
     "{repo_dir}/symlinks",
     "{repo_dir}/symlinks/metrolib",
     "{repo_dir}/symlinks/matcheroni",
-    "{repo_dir}/symlinks/CLI11/include"
+    "{repo_dir}/symlinks/CLI11/include",
 ]
 
-#---------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------
 
 metron_js_src = [
     glob.glob("*.cpp"),
@@ -27,7 +27,7 @@ for file in hancho.flatten(metron_js_src):
     obj = hancho(
         hancho.wasm_rules.emcc,
         in_src=file,
-        includes = wasm_includes,
+        includes=wasm_includes,
     )
     metron_objs.append(obj)
 
@@ -43,20 +43,19 @@ for file in hancho.flatten(metrolib_js_src):
         hancho.wasm_rules.emcc,
         in_src=file,
         # Because we're building files from another repo in this repo, we chop the path off in_src
-        out_obj = "{swap_ext(path.basename(in_src), '.o')}",
+        out_obj="{swap_ext(path.basename(in_src), '.o')}",
         # and redirect build_dir to our own repo's metrolib dir.
-        build_dir = "{build_root}/{build_tag}/metrolib",
-        includes = wasm_includes,
+        build_dir="{build_root}/{build_tag}/metrolib",
+        includes=wasm_includes,
     )
     metrolib_objs.append(obj)
 
 metron_js = hancho(
     hancho.wasm_rules.emld,
-    in_objs   = metron_objs + metrolib_objs,
-
+    in_objs=metron_objs + metrolib_objs,
     # Our data files go in metron/docs/app/* - _not_ in the build dir.
-    out_js    = "{repo_dir}/docs/app/metron.js",
-    out_wasm  = "{repo_dir}/docs/app/metron.wasm",
+    out_js="{repo_dir}/docs/app/metron.js",
+    out_wasm="{repo_dir}/docs/app/metron.wasm",
 )
 
-#---------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------

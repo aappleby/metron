@@ -1,24 +1,23 @@
-
 gb_spu_sv = hancho(
-  hancho.metron.convert,
-  in_src   = "MetroBoySPU2.h",
+    hancho.metron.convert,
+    in_src="MetroBoySPU2.h",
 )
 
 gb_spu_vl = hancho(
-  hancho.fpga_rules.verilator,
-  in_top   = gb_spu_sv.promise("out_sv"),
-  includes = ["{repo_dir}"],
+    hancho.fpga_rules.verilator,
+    in_top=gb_spu_sv.promise("out_sv"),
+    includes=["{repo_dir}"],
 )
 
 gb_spu_main = hancho(
-  hancho.base_rules.cpp_bin,
-  in_srcs  = "gb_spu_main.cpp",
-  in_deps  = gb_spu_vl.promise("out_header"),
-  in_objs  = gb_spu_vl.promise("out_lib"),
-  out_bin  = "gb_spu",
-  includes = [
-    "{repo_dir}",   # for metron/metron_tools.h
-    "{build_dir}",  # for gb_spu/VMetroBoySPU2.h
-    "/usr/local/share/verilator/include",
-  ],
+    hancho.base_rules.cpp_bin,
+    in_srcs="gb_spu_main.cpp",
+    in_deps=gb_spu_vl.promise("out_header"),
+    in_objs=gb_spu_vl.promise("out_lib"),
+    out_bin="gb_spu",
+    includes=[
+        "{repo_dir}",  # for metron/metron_tools.h
+        "{build_dir}",  # for gb_spu/VMetroBoySPU2.h
+        "/usr/local/share/verilator/include",
+    ],
 )

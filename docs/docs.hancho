@@ -1,30 +1,31 @@
+# Bundled headers for demo & tutoria
+
 import glob
 from os import path
 
-#---------------------------------------------------------------------------------------------------
-# Bundled headers for demo & tutorial
 
 def sorted_glob(*args, **kwargs):
     results = glob.glob(*args, **kwargs)
     results = [path.abspath(p) for p in results]
     return sorted(results)
 
+
 examples_data = hancho(
     hancho.wasm_rules.ems_package,
-    task_dir    = "{repo_dir}",
-    preloads    = "examples tests/metron",
-    in_examples = sorted_glob("../examples/**/*.h"),
-    in_tests    = sorted_glob("../tests/metron/**/*.h"),
-    out_data    = "{repo_dir}/docs/demo/examples.data",
-    out_js      = "{repo_dir}/docs/demo/examples.js",
+    task_dir="{repo_dir}",
+    preloads="examples tests/metron",
+    in_examples=sorted_glob("../examples/**/*.h"),
+    in_tests=sorted_glob("../tests/metron/**/*.h"),
+    out_data="{repo_dir}/docs/demo/examples.data",
+    out_js="{repo_dir}/docs/demo/examples.js",
 )
 
 tutorial_data = hancho(
     hancho.wasm_rules.ems_package,
-    task_dir    = "{repo_dir}",
-    preloads    = "examples/tutorial examples/uart",
-    in_tutorial = sorted_glob("../examples/tutorial/*.h"),
-    in_uart     = sorted_glob("../examples/uart/*.h"),
-    out_data    = "{repo_dir}/docs/tutorial/tutorial_src.data",
-    out_js      = "{repo_dir}/docs/tutorial/tutorial_src.js",
+    task_dir="{repo_dir}",
+    preloads="examples/tutorial examples/uart",
+    in_tutorial=sorted_glob("../examples/tutorial/*.h"),
+    in_uart=sorted_glob("../examples/uart/*.h"),
+    out_data="{repo_dir}/docs/tutorial/tutorial_src.data",
+    out_js="{repo_dir}/docs/tutorial/tutorial_src.js",
 )

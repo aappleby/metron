@@ -12,7 +12,7 @@ pong_bin = hancho(
     in_srcs="main.cpp",
     in_libs=[pong_vl.promise("out_lib"), hancho.metrolib.libcore],
     out_bin="pong",
-    sys_libs=["gcc", "c", "SDL2"],
+    sys_libs=["-lgcc", "-lc", "-lSDL2"],
 )
 
 # FIXME verilated version of pong

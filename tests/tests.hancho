@@ -8,7 +8,7 @@ test_logic_bin = hancho(
     hancho.base_rules.cpp_bin,
     name="utils/test_logic",
     in_srcs="utils/test_logic.cpp",
-    in_objs=hancho.metrolib.libcore,
+    in_libs=hancho.metrolib.libcore,
     out_bin="utils/test_logic",
     includes=["{repo_dir}", "{repo_dir}/symlinks/metrolib"],
 )

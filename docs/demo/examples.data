@@ -717,7 +717,7 @@ gb_spu_main = hancho(
     hancho.base_rules.cpp_bin,
     in_srcs="gb_spu_main.cpp",
     in_deps=gb_spu_vl.promise("out_header"),
-    in_objs=gb_spu_vl.promise("out_lib"),
+    in_libs=gb_spu_vl.promise("out_lib"),
     out_bin="gb_spu",
     includes=[
         "{repo_dir}",  # for metron/metron_tools.h
@@ -5992,7 +5992,7 @@ pong_bin = hancho(
     in_srcs="main.cpp",
     in_libs=[pong_vl.promise("out_lib"), hancho.metrolib.libcore],
     out_bin="pong",
-    sys_libs=["gcc", "c", "SDL2"],
+    sys_libs=["-lgcc", "-lc", "-lSDL2"],
 )
 
 # FIXME verilated version of pong

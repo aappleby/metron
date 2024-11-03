@@ -17,7 +17,7 @@ _cpp_config = hancho.Config(
         "no-unused-variable",
         "no-unused-but-set-variable",
     ],
-    sys_libs=["gcc", "c", "SDL2"],
+    sys_libs=["-lgcc", "-lc", "-lSDL2"],
 )
 
 metron_lib = hancho(
@@ -33,7 +33,7 @@ metron_bin = hancho(
     _cpp_config,
     name="metron_bin",
     in_srcs=glob.glob("main/*.cpp"),
-    in_objs=[metron_lib, hancho.metrolib.libcore],
+    in_libs=[metron_lib, hancho.metrolib.libcore],
     out_bin="metron",
 )
 

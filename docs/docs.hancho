@@ -16,8 +16,12 @@ examples_data = hancho(
     preloads="examples tests/metron",
     in_examples=sorted_glob("../examples/**/*.h"),
     in_tests=sorted_glob("../tests/metron/**/*.h"),
-    out_data="{repo_dir}/docs/demo/examples.data",
-    out_js="{repo_dir}/docs/demo/examples.js",
+
+    out_data="examples.data",
+    out_js="examples.js",
+
+    # Our data files go in docs/demo, not build/
+    build_dir="{repo_dir}/docs/demo",
 )
 
 tutorial_data = hancho(
@@ -26,6 +30,10 @@ tutorial_data = hancho(
     preloads="examples/tutorial examples/uart",
     in_tutorial=sorted_glob("../examples/tutorial/*.h"),
     in_uart=sorted_glob("../examples/uart/*.h"),
-    out_data="{repo_dir}/docs/tutorial/tutorial_src.data",
-    out_js="{repo_dir}/docs/tutorial/tutorial_src.js",
+
+    out_data="tutorial_src.data",
+    out_js="tutorial_src.js",
+
+    # Our data files go in docs/tutorial, not build/
+    build_dir="{repo_dir}/docs/tutorial",
 )

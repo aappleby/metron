@@ -678,7 +678,9 @@ int main_new() {
   if (global_options.dst_name.size()) {
     auto dst_path = split_path(global_options.dst_name);
     dst_path.pop_back();
-    mkdir_all(dst_path);
+
+    // Don't do this, we end up creating {repo}/home/user/.....
+    //mkdir_all(dst_path);
 
     FILE* out_file = fopen(global_options.dst_name.c_str(), "wb");
     if (!out_file) {

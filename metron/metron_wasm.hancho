@@ -53,9 +53,10 @@ for file in hancho.flatten(metrolib_js_src):
 metron_js = hancho(
     hancho.wasm_rules.emld,
     in_objs=metron_objs + metrolib_objs,
-    # Our data files go in metron/docs/app/* - _not_ in the build dir.
-    out_js="{repo_dir}/docs/app/metron.js",
-    out_wasm="{repo_dir}/docs/app/metron.wasm",
+    out_js="metron.js",
+    out_wasm="metron.wasm",
+    # Our data files go in docs/app, not build/
+    build_dir="{repo_dir}/docs/app",
 )
 
 # ---------------------------------------------------------------------------------------------------

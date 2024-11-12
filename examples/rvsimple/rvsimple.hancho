@@ -106,8 +106,8 @@ test_rvsimple = hancho.Config(
     inst_dir=hancho.rv_inst.build_dir,
 )
 
-hancho(test_rvsimple, in_bin=rvsimple_bin, task_dir="{repo_dir}")
-hancho(test_rvsimple, in_bin=rvsimple_vl_bin, task_dir="{repo_dir}")
+hancho(test_rvsimple, in_bin=rvsimple_bin,     task_dir="{repo_dir}")
+hancho(test_rvsimple, in_bin=rvsimple_vl_bin,  task_dir="{repo_dir}")
 hancho(test_rvsimple, in_bin=rvsimple_ref_bin, task_dir="{repo_dir}")
 
 ################################################################################

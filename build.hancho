@@ -1,21 +1,6 @@
-if "base_rules" not in hancho:
-    hancho.base_rules = hancho.load("{hancho_dir}/base_rules.hancho")
+hancho.base_rules = hancho.repo("{hancho_dir}/base_rules.hancho")
+hancho.metrolib   = hancho.repo("symlinks/metrolib/build.hancho")
+hancho.metron     = hancho.load("metron/metron.hancho")
 
-if "fpga_rules" not in hancho:
-    hancho.fpga_rules = hancho.load("{hancho_dir}/fpga_rules.hancho")
-
-if "wasm_rules" not in hancho:
-    hancho.wasm_rules = hancho.load("{hancho_dir}/wasm_rules.hancho")
-
-if "metrolib" not in hancho:
-    hancho.metrolib = hancho.repo("{repo_dir}/symlinks/metrolib/build.hancho")
-
-hancho.metron = hancho.load("metron/metron.hancho")
-hancho.rv_inst = hancho.load("tests/risc-v/instructions/instructions.hancho")
-hancho.examples = hancho.load("examples/examples.hancho")
-hancho.wasm = hancho.load("metron/metron_wasm.hancho")
-hancho.tests = hancho.load("tests/tests.hancho")
-hancho.docs = hancho.load("docs/docs.hancho")
-
-# The only thing we need to export is 'convert'
-convert = hancho.metron.convert
+metron_bin = hancho.metron.metron_bin
+convert    = hancho.metron.convert

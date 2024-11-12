@@ -6703,42 +6703,6 @@ class instruction_decoder {
 };
 
 #endif // INSTRUCTION_DECODER_H
-main.o: main.cpp \
- /home/aappleby/repos/metron/symlinks/CLI11/include/CLI/App.hpp \
- /home/aappleby/repos/metron/symlinks/CLI11/include/CLI/ConfigFwd.hpp \
- /home/aappleby/repos/metron/symlinks/CLI11/include/CLI/Error.hpp \
- /home/aappleby/repos/metron/symlinks/CLI11/include/CLI/Macros.hpp \
- /home/aappleby/repos/metron/symlinks/CLI11/include/CLI/StringTools.hpp \
- /home/aappleby/repos/metron/symlinks/CLI11/include/CLI/impl/StringTools_inl.hpp \
- /home/aappleby/repos/metron/symlinks/CLI11/include/CLI/FormatterFwd.hpp \
- /home/aappleby/repos/metron/symlinks/CLI11/include/CLI/Option.hpp \
- /home/aappleby/repos/metron/symlinks/CLI11/include/CLI/Split.hpp \
- /home/aappleby/repos/metron/symlinks/CLI11/include/CLI/impl/Split_inl.hpp \
- /home/aappleby/repos/metron/symlinks/CLI11/include/CLI/Validators.hpp \
- /home/aappleby/repos/metron/symlinks/CLI11/include/CLI/TypeTools.hpp \
- /home/aappleby/repos/metron/symlinks/CLI11/include/CLI/Encoding.hpp \
- /home/aappleby/repos/metron/symlinks/CLI11/include/CLI/impl/Encoding_inl.hpp \
- /home/aappleby/repos/metron/symlinks/CLI11/include/CLI/impl/Validators_inl.hpp \
- /home/aappleby/repos/metron/symlinks/CLI11/include/CLI/impl/Option_inl.hpp \
- /home/aappleby/repos/metron/symlinks/CLI11/include/CLI/impl/App_inl.hpp \
- /home/aappleby/repos/metron/symlinks/CLI11/include/CLI/impl/../Argv.hpp \
- /home/aappleby/repos/metron/symlinks/CLI11/include/CLI/impl/../impl/Argv_inl.hpp \
- /home/aappleby/repos/metron/symlinks/CLI11/include/CLI/Config.hpp \
- /home/aappleby/repos/metron/symlinks/CLI11/include/CLI/impl/Config_inl.hpp \
- /home/aappleby/repos/metron/symlinks/CLI11/include/CLI/Formatter.hpp \
- /home/aappleby/repos/metron/symlinks/CLI11/include/CLI/impl/Formatter_inl.hpp \
- /home/aappleby/repos/metron/symlinks/metrolib/metrolib/core/Platform.h \
- /home/aappleby/repos/metron/symlinks/metrolib/metrolib/core/Tests.h \
- /home/aappleby/repos/metron/symlinks/metrolib/metrolib/core/Log.h \
- /home/aappleby/repos/metron/symlinks/metrolib/metrolib/core/Utils.h \
- /home/aappleby/repos/metron/symlinks/metrolib/metrolib/core/Constants.h \
- toplevel.h config.h /home/aappleby/repos/metron/metron/metron_tools.h \
- constants.h example_data_memory_bus.h example_data_memory.h \
- example_text_memory_bus.h example_text_memory.h riscv_core.h \
- data_memory_interface.h singlecycle_ctlpath.h alu_control.h \
- control_transfer.h singlecycle_control.h singlecycle_datapath.h adder.h \
- alu.h immediate_generator.h instruction_decoder.h multiplexer2.h \
- multiplexer4.h multiplexer8.h regfile.h register.h
 // RISC-V SiMPLE SV -- multiplexer module
 // BSD 3-Clause License
 // (c) 2017-2019, Arthur Matos, Marcus Vinicius Lamar, Universidade de Brasília,
@@ -7160,8 +7124,8 @@ test_rvsimple = hancho.Config(
     inst_dir=hancho.rv_inst.build_dir,
 )
 
-hancho(test_rvsimple, in_bin=rvsimple_bin, task_dir="{repo_dir}")
-hancho(test_rvsimple, in_bin=rvsimple_vl_bin, task_dir="{repo_dir}")
+hancho(test_rvsimple, in_bin=rvsimple_bin,     task_dir="{repo_dir}")
+hancho(test_rvsimple, in_bin=rvsimple_vl_bin,  task_dir="{repo_dir}")
 hancho(test_rvsimple, in_bin=rvsimple_ref_bin, task_dir="{repo_dir}")
 
 ################################################################################

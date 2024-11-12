@@ -1,0 +1,11 @@
+hancho.base_rules = hancho.repo("{hancho_dir}/base_rules.hancho")
+hancho.fpga_rules = hancho.repo("{hancho_dir}/fpga_rules.hancho")
+hancho.wasm_rules = hancho.repo("{hancho_dir}/wasm_rules.hancho")
+hancho.metrolib   = hancho.repo("symlinks/metrolib/build.hancho")
+
+hancho.metron = hancho.load("build.hancho")
+hancho.rv_inst = hancho.load("tests/risc-v/instructions/instructions.hancho")
+hancho.examples = hancho.load("examples/examples.hancho")
+hancho.wasm = hancho.load("metron/metron_wasm.hancho")
+hancho.tests = hancho.load("tests/tests.hancho")
+hancho.docs = hancho.load("docs/docs.hancho")

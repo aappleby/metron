@@ -3,9 +3,9 @@
 #include "metrolib/core/Platform.h"
 #include "metrolib/core/Tests.h"
 #include "reference_sv/Vtoplevel.h"
-#include "CLI11/include/CLI/App.hpp"
-#include "CLI11/include/CLI/Config.hpp"
-#include "CLI11/include/CLI/Formatter.hpp"
+#include "third_party/CLI11/include/CLI/App.hpp"
+#include "third_party/CLI11/include/CLI/Config.hpp"
+#include "third_party/CLI11/include/CLI/Formatter.hpp"
 
 //------------------------------------------------------------------------------
 

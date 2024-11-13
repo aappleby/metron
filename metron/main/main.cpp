@@ -2,9 +2,9 @@
 
 #include "metrolib/core/Log.h"
 
-#include "CLI11/include/CLI/App.hpp"
-#include "CLI11/include/CLI/Config.hpp"
-#include "CLI11/include/CLI/Formatter.hpp"
+#include "third_party/CLI11/include/CLI/App.hpp"
+#include "third_party/CLI11/include/CLI/Config.hpp"
+#include "third_party/CLI11/include/CLI/Formatter.hpp"
 
 #include <stdio.h>
 #include <stdarg.h>

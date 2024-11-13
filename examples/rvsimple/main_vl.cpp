@@ -4,9 +4,9 @@
 #include "metrolib/core/Tests.h"
 #include "Vtoplevel.h"
 #include "Vtoplevel___024root.h"
-#include "CLI11/include/CLI/App.hpp"
-#include "CLI11/include/CLI/Config.hpp"
-#include "CLI11/include/CLI/Formatter.hpp"
+#include "third_party/CLI11/include/CLI/App.hpp"
+#include "third_party/CLI11/include/CLI/Config.hpp"
+#include "third_party/CLI11/include/CLI/Formatter.hpp"
 #include "metron/metron_tools.h"
 
 //------------------------------------------------------------------------------

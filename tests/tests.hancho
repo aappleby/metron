@@ -47,7 +47,7 @@ test_yosys_synth = hancho.Config(
         "touch {out_pass}",
     ],
     out_pass="{in_src}.yosys_synth.pass",
-    joined_includes="{join_prefix('-I', get('includes', []))}",
+    joined_includes="{join('-I', get('includes', []))}",
 )
 
 test_verilator = hancho.Config(
@@ -58,7 +58,7 @@ test_verilator = hancho.Config(
         "touch {out_pass}",
     ],
     out_pass="{in_src}.verilator.pass",
-    joined_includes="{join_prefix('-I', get('includes', []))}",
+    joined_includes="{join('-I', get('includes', []))}",
 )
 
 test_icarus = hancho.Config(
@@ -69,7 +69,7 @@ test_icarus = hancho.Config(
         "touch {out_pass}",
     ],
     out_pass="{in_src}.icarus.pass",
-    joined_includes="{join_prefix('-I', get('includes', []))}",
+    joined_includes="{join('-I', get('includes', []))}",
 )
 
 test_syntax = hancho.Config(
@@ -87,7 +87,7 @@ test_metron = hancho.Config(
     desc="test metron {rel(in_src)}",
     command="{in_metron} -q -c {rel(in_src)} -o {rel(out_sv)}",
     in_metron=hancho.metron.metron_bin,
-    out_sv="{swap_ext(in_src, '.sv')}",
+    out_sv="{ext(in_src, '.sv')}",
     # out_pass   = "{in_src}.metron.pass"
 )
 
@@ -105,8 +105,8 @@ test_sv2v = hancho.Config(
     test_helpers,
     desc="test sv2v {rel(in_src)}",
     command="sv2v {joined_includes} {rel(in_src)} -w {rel(out_v)}",
-    out_v="{swap_ext(in_src, '.v')}",
-    joined_includes="{join_prefix('-I', get('includes', []))}",
+    out_v="{ext(in_src, '.v')}",
+    joined_includes="{join('-I', get('includes', []))}",
 )
 
 # ---------------------------------------------------------------------------------------------------
@@ -180,7 +180,7 @@ def test_lockstep(lockstep_file, should_fail=False):
         in_src="lockstep/test_lockstep.cpp",
         in_hdr=lockstep_file,
         in_deps=out_vl.promise("out_header"),
-        out_obj="{swap_ext(in_hdr, '.o')}",
+        out_obj="{ext(in_hdr, '.o')}",
         includes=lockstep_includes,
         defines=[
             "MT_TOP=Module",
@@ -188,15 +188,15 @@ def test_lockstep(lockstep_file, should_fail=False):
             "MT_HEADER={in_hdr}",
             "VL_HEADER={build_dir}/lockstep/V{stem(in_hdr)}.h",
         ],
-        joined_defines="{join_prefix('-D', get('defines', []))}",
-        joined_includes="{join_prefix('-I', get('includes', []))}",
+        joined_defines="{join('-D', get('defines', []))}",
+        joined_includes="{join('-I', get('includes', []))}",
     )
 
     lockstep_bin = hancho(
         command="g++ {in_obj} {in_lib} -o {rel(out_bin)}",
         in_obj=lockstep_obj,
         in_lib=[out_vl.promise("out_lib"), hancho.metrolib.libcore],
-        out_bin="{swap_ext(in_obj, '')}",
+        out_bin="{ext(in_obj, '')}",
     )
 
     hancho(

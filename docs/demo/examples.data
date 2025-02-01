@@ -702,6 +702,8 @@ private:
 
 #endif // METRO_BOY_SPU2_H
 MetroBoySPU2.sv: MetroBoySPU2.h
+!<arch>
+build/MetroBoySPU2.sv: MetroBoySPU2.h
 gb_spu_sv = hancho(
     hancho.metron.convert,
     in_src="MetroBoySPU2.h",

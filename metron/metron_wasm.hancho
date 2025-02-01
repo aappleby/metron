@@ -43,10 +43,9 @@ for file in hancho.flatten(metrolib_js_src):
         hancho.wasm_rules.emcc,
         in_src=file,
         # Because we're building files from another repo in this repo, we chop the path off in_src
-        out_obj="{swap_ext(path.basename(in_src), '.o')}",
+        out_obj="{ext(path.basename(in_src), '.o')}",
         # and redirect build_dir to our own repo's metrolib dir.
 
-        #"{build_root}/{repo_name}/{build_tag}/{rel_path(task_dir, repo_dir)}"
         build_dir="{build_root}/metrolib/{build_tag}",
         includes=wasm_includes,
     )

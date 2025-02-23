@@ -1,6 +1,6 @@
 import glob
 
-hancho.config.includes = ["{repo_dir}", "{build_dir}/metron/pass"]
+hancho.context.includes = ["{repo_dir}", "{build_dir}/metron/pass"]
 
 # ---------------------------------------------------------------------------------------------------
 

@@ -8,7 +8,7 @@ uart_h = [
     "uart_tx.h",
 ]
 
-hancho.config.includes = [
+hancho.context.includes = [
     ".",
     "{repo_dir}",
     "{repo_dir}/symlinks/metrolib",

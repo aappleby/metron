@@ -1,6 +1,6 @@
 import glob
 
-_cpp_config = hancho.Config(
+_cpp_config = hancho.Context(
     cpp_flags=["-rdynamic", "-ggdb3"],
     includes=[
         "{repo_dir}",
@@ -37,7 +37,7 @@ metron_bin = hancho(
     out_bin="metron",
 )
 
-convert = hancho.Config(
+convert = hancho.Context(
     desc="Run Hancho on {rel(in_src)}",
     command="{in_binary} {joined_includes} -q -v -e -c {rel(in_src)} -o {rel(out_sv)}",
     in_binary=metron_bin,

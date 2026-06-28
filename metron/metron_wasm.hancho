@@ -1,6 +1,6 @@
 import glob
 
-hancho.config.build_tag = "wasm"
+hancho.context.build_tag = "wasm"
 
 if not "wasm_rules" in hancho:
     hancho.wasm_rules = hancho.load("{hancho_dir}/wasm_rules.hancho")

@@ -1,6 +1,8 @@
-hancho.base_rules = hancho.repo("{hancho_dir}/base_rules.hancho")
-hancho.metrolib   = hancho.repo("symlinks/metrolib/build.hancho")
-hancho.metron     = hancho.load("metron/metron.hancho")
+import hancho
 
-metron_bin = hancho.metron.metron_bin
-convert    = hancho.metron.convert
+#tools      = hancho.repo("{hancho_dir}/tools/tools_base.hancho")
+#metrolib   = hancho.repo("symlinks/metrolib/build.hancho")
+metron     = hancho.load("metron/metron.hancho")
+
+metron_bin = metron.metron_bin
+convert    = metron.convert

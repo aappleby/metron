@@ -34,12 +34,12 @@ def gen_chparams(c):
     return result
 
 
-test_helpers = hancho.Config(
+test_helpers = config(
     gen_chparams=gen_chparams,
     params={},
 )
 
-test_yosys_synth = hancho.Config(
+test_yosys_synth = task(
     test_helpers,
     desc="test yosys synth {rel(in_src)}",
     command=[
@@ -50,7 +50,7 @@ test_yosys_synth = hancho.Config(
     joined_includes="{join('-I', get('includes', []))}",
 )
 
-test_verilator = hancho.Config(
+test_verilator = task(
     test_helpers,
     desc="test verilator {rel(in_src)}",
     command=[
@@ -61,7 +61,7 @@ test_verilator = hancho.Config(
     joined_includes="{join('-I', get('includes', []))}",
 )
 
-test_icarus = hancho.Config(
+test_icarus = task(
     test_helpers,
     desc="test icarus {rel(in_src)}",
     command=[
@@ -72,7 +72,7 @@ test_icarus = hancho.Config(
     joined_includes="{join('-I', get('includes', []))}",
 )
 
-test_syntax = hancho.Config(
+test_syntax = task(
     test_helpers,
     desc="test c++ syntax {rel(in_src)}",
     command=[
@@ -82,7 +82,7 @@ test_syntax = hancho.Config(
     out_pass="{in_src}.syntax.pass",
 )
 
-test_metron = hancho.Config(
+test_metron = task(
     test_helpers,
     desc="test metron {rel(in_src)}",
     command="{in_metron} -q -c {rel(in_src)} -o {rel(out_sv)}",
@@ -91,7 +91,7 @@ test_metron = hancho.Config(
     # out_pass   = "{in_src}.metron.pass"
 )
 
-test_diff = hancho.Config(
+test_diff = task(
     test_helpers,
     desc="test diff {rel(in_src_A)} {rel(in_src_B)}",
     command=[
@@ -101,7 +101,7 @@ test_diff = hancho.Config(
     out_pass="{in_src_A}.diff.pass",
 )
 
-test_sv2v = hancho.Config(
+test_sv2v = task(
     test_helpers,
     desc="test sv2v {rel(in_src)}",
     command="sv2v {joined_includes} {rel(in_src)} -w {rel(out_v)}",

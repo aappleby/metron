@@ -22,6 +22,8 @@ const char* instructions[38] = {
 double total_tocks = 0;
 double total_time = 0;
 
+
+
 TestResults test_instruction(
   std::string& inst_path,
   const char* test_name,
@@ -77,6 +79,8 @@ int main(int argc, const char** argv) {
   std::string inst_path;
   int reps = 1;
   int max_cycles = 1000;
+
+  //"tests/risc-v/instructions/build/benchmark.code.vh",
 
   app.add_option("inst_path", inst_path, "Path to the compiled instructions");
   app.add_option("-r,--reps", reps, "How many times to repeat the test");

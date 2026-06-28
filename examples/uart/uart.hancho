@@ -104,7 +104,7 @@ uart_test_ice40_bin = hancho(
 
 ################################################################################
 
-test_uart = hancho.Config(
+test_uart = task(
     command="{in_bin} examples/uart/message.hex",
     out_log="{stem(in_bin)}.test",
 )

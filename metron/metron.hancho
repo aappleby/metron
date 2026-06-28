@@ -1,6 +1,10 @@
 import glob
+import hancho
 
-_cpp_config = hancho.Context(
+tools    = hancho.repo("{hancho_dir}/tools/tools_base.hancho")
+metrolib = hancho.repo("{repo_dir}/symlinks/metrolib/build.hancho")
+
+cpp_config = hancho.Dict(
     cpp_flags=["-rdynamic", "-ggdb3"],
     includes=[
         "{repo_dir}",
@@ -17,30 +21,31 @@ _cpp_config = hancho.Context(
         "no-unused-variable",
         "no-unused-but-set-variable",
     ],
-    sys_libs=["-lgcc", "-lc", "-lSDL2"],
+    sys_libs=["gcc", "c", "SDL2"],
 )
 
-metron_lib = hancho(
-    hancho.base_rules.cpp_lib,
-    _cpp_config,
+metron_lib = hancho.task(
+    tools.cpp_lib,
+    cpp_config,
     name="metron_lib",
     in_srcs=glob.glob("*.cpp") + glob.glob("nodes/*.cpp"),
     out_lib="libmetron.a",
 )
 
-metron_bin = hancho(
-    hancho.base_rules.cpp_bin,
-    _cpp_config,
+metron_bin = hancho.task(
+    tools.cpp_bin,
+    cpp_config,
     name="metron_bin",
     in_srcs=glob.glob("main/*.cpp"),
-    in_libs=[metron_lib, hancho.metrolib.libcore],
+    in_libs=[metron_lib, metrolib.core],
     out_bin="metron",
+    debug = True,
 )
 
-convert = hancho.Context(
-    desc="Run Hancho on {rel(in_src)}",
-    command="{in_binary} {joined_includes} -q -v -e -c {rel(in_src)} -o {rel(out_sv)}",
-    in_binary=metron_bin,
-    out_sv="{ext(in_src, '.sv')}",
-    joined_includes="{join('-I', get('includes', []))}",
+convert = hancho.Tool(
+    desc    = "Run Hancho on {in_src}",
+    command = "{in_bin} {flags} {weave('-I', includes)} -c {in_src} -o {out_sv}",
+    flags   = ['-q', '-v', '-e'],
+    in_bin  = metron_bin,
+    out_sv  = "{ext(in_src, '.sv')}",
 )
